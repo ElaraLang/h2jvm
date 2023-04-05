@@ -1,9 +1,9 @@
 module Main where
 
 import JVM.Data.Abstract.ClassFile
-import JVM.Data.JVMVersion
 import JVM.Data.Abstract.Name
 import JVM.Data.Convert
+import JVM.Data.JVMVersion
 
 import Data.ByteString qualified as BS
 
@@ -20,6 +20,7 @@ main = do
                 [Public, Final]
                 (Just "java.lang.Object")
                 ["java.util.List"]
+                [SourceFile "out.java"]
     let classFile' = convert classFile
     let bs = runPut (writeBinary classFile')
     BS.writeFile "out.class" (BS.toStrict bs)

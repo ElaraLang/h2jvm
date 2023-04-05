@@ -79,6 +79,7 @@ data Attribute
         , codeAttributes :: Vector AttributeInfo
         }
     | ConstantValueAttribute Word16
+    | SourceFileAttribute Word16
     deriving (Show)
 
 data ExceptionTableEntry = ExceptionTableEntry
@@ -137,6 +138,8 @@ putAttribute (CodeAttribute maxStack maxLocals code exceptionTable codeAttribute
     putByteString codeStr
     putExceptionTable exceptionTable
     putAttributes codeAttributes
+putAttribute (SourceFileAttribute sfIndex) = do
+    putWord16be sfIndex
 
 putExceptionTable :: Vector ExceptionTableEntry -> Put
 putExceptionTable = writeList putWord16be
