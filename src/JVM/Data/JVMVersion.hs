@@ -1,16 +1,20 @@
 -- | Information about JVM Versions
-module JVM.Data.Abstract.JVMVersion where
+module JVM.Data.JVMVersion where
 
 import Data.Binary (Word16)
 
 -- | A JVM Version Number
 newtype JVMVersion = JVMVersion Word16 deriving (Eq, Ord)
 
-getMajor :: JVMVersion -> Word16
-getMajor (JVMVersion v) = v
+newtype MajorVersion = MajorVersion { getMajorVersion :: Word16 } deriving (Eq, Ord, Num, Show)
 
-getMinor :: JVMVersion -> Word16
-getMinor _ = 0 -- currently all JVM versions are 0
+newtype MinorVersion = MinorVersion {getMinorVersion :: Word16} deriving (Eq, Ord, Num, Show)
+
+getMajor :: JVMVersion -> MajorVersion
+getMajor (JVMVersion v) = MajorVersion v
+
+getMinor :: JVMVersion -> MinorVersion
+getMinor _ = MinorVersion 0 -- currently all JVM versions are 0
 
 java6 :: JVMVersion
 java6 = JVMVersion 50

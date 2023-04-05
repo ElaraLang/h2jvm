@@ -1,5 +1,6 @@
 module JVM.Data.Abstract.Name where
 
+import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Data.Text qualified as T
 
@@ -29,6 +30,9 @@ parseClassName :: Text -> ClassName
 parseClassName = ClassName
 
 data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Show)
+
+instance IsString QualifiedClassName where
+    fromString = parseQualifiedClassName . T.pack
 
 {- | Parse a 'QualifiedClassName' from a 'Text'\
 >>> parseQualifiedClassName "java.lang.Object"

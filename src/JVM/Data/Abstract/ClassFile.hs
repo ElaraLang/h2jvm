@@ -2,8 +2,8 @@
 module JVM.Data.Abstract.ClassFile where
 
 import JVM.Data.Abstract.AccessFlags (ClassAccessFlag)
-import JVM.Data.Abstract.JVMVersion (JVMVersion)
 import JVM.Data.Abstract.Name
+import JVM.Data.JVMVersion (JVMVersion)
 
 data ClassFile = ClassFile
     { name :: QualifiedClassName
@@ -12,4 +12,3 @@ data ClassFile = ClassFile
     , superClass :: Maybe QualifiedClassName
     , interfaces :: [QualifiedClassName]
     }
-

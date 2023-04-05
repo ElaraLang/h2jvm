@@ -70,9 +70,9 @@ library
     JVM.Data.Abstract.AccessFlags
     JVM.Data.Abstract.ClassFile
     JVM.Data.Abstract.ConstantPool
-    JVM.Data.Abstract.JVMVersion
     JVM.Data.Abstract.Name
     JVM.Data.Convert
+    JVM.Data.JVMVersion
     JVM.Data.Raw.AccessFlags
     JVM.Data.Raw.ClassFile
     JVM.Data.Raw.ConstantPool
@@ -129,7 +129,7 @@ test-suite h2jvm-test
 
   -- Test dependencies.
   build-depends:
-    , base   ^>=4.17.0.0
-    , h2jvm
+    , base        ^>=4.17.0.0
     , binary
     , bytestring
+    , h2jvm

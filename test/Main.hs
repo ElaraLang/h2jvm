@@ -1,7 +1,7 @@
 module Main where
 
 import JVM.Data.Abstract.ClassFile
-import JVM.Data.Abstract.JVMVersion
+import JVM.Data.JVMVersion
 import JVM.Data.Abstract.Name
 import JVM.Data.Convert
 
@@ -15,11 +15,11 @@ main :: IO ()
 main = do
     let classFile =
             ClassFile
-                (parseQualifiedClassName "java.lang.Test")
+                "out"
                 java17
                 [Public, Final]
-                (Just (parseQualifiedClassName "java.lang.Object"))
-                []
+                (Just "java.lang.Object")
+                ["java.util.List"]
     let classFile' = convert classFile
     let bs = runPut (writeBinary classFile')
     BS.writeFile "out.class" (BS.toStrict bs)

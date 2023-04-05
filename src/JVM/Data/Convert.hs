@@ -5,16 +5,14 @@
 module JVM.Data.Convert where
 
 import Data.Bits ((.|.))
-import Data.Foldable (traverse_)
-import Data.Map qualified as M
 import Data.Maybe (fromMaybe)
 import Data.Vector qualified as V
 import Data.Word (Word16)
 import JVM.Data.Abstract.AccessFlags qualified as Abs
 import JVM.Data.Abstract.ClassFile qualified as Abs
-import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry, CPUTF8Entry), findIndexOf, runConstantPoolM)
-import JVM.Data.Abstract.JVMVersion (getMajor, getMinor)
+import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry), findIndexOf, runConstantPoolM)
 import JVM.Data.Abstract.Name (QualifiedClassName, parseQualifiedClassName, toInternalName)
+import JVM.Data.JVMVersion (getMajor, getMinor)
 import JVM.Data.Raw.AccessFlags
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
@@ -46,8 +44,8 @@ convert Abs.ClassFile{..} = do
             pure $
                 Raw.ClassFile
                     MagicNumbers.classMagic
-                    (getMajor version)
                     (getMinor version)
+                    (getMajor version)
                     mempty -- temporary empty constant pool
                     flags
                     nameIndex
@@ -56,4 +54,4 @@ convert Abs.ClassFile{..} = do
                     mempty
                     mempty
                     mempty
-    (temp{Raw.constantPool = finalConstantPool})
+    temp{Raw.constantPool = finalConstantPool}

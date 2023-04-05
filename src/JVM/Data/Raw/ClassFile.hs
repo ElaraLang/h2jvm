@@ -7,9 +7,11 @@ import Data.Binary.Builder (toLazyByteString)
 import Data.Binary.Put
 import Data.Binary.Write (WriteBinary (writeBinary), writeList)
 import Data.ByteString qualified as B
+import Data.Coerce
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Data.Word
+import JVM.Data.JVMVersion (MajorVersion (..), MinorVersion (getMinorVersion))
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo)
 import JVM.Data.Raw.Instruction (Instruction)
 
@@ -41,8 +43,8 @@ This has the added bonus of making it impossible to construct an invalid class f
 -}
 data ClassFile = ClassFile
     { magic :: Word32
-    , minorVersion :: Word16
-    , majorVersion :: Word16
+    , minorVersion :: MinorVersion
+    , majorVersion :: MajorVersion
     , constantPool :: Vector ConstantPoolInfo
     , accessFlags :: Word16
     , thisClass :: Word16
@@ -159,8 +161,8 @@ instance WriteBinary MethodInfo where
 instance WriteBinary ClassFile where
     writeBinary ClassFile{..} = do
         putWord32be magic
-        putWord16be minorVersion
-        putWord16be majorVersion
+        putWord16be (getMinorVersion minorVersion)
+        putWord16be (getMajorVersion majorVersion)
         putConstantPool constantPool
         putWord16be accessFlags
         putWord16be thisClass
