@@ -57,7 +57,9 @@ common warnings
   ghc-options: -Wall
 
 common extensions
-  default-extensions: OverloadedStrings
+  default-extensions:
+    OverloadedStrings
+    TypeFamilies
 
 library
   import:           warnings, extensions
@@ -70,8 +72,13 @@ library
     JVM.Data.Abstract.AccessFlags
     JVM.Data.Abstract.ClassFile
     JVM.Data.Abstract.ConstantPool
+    JVM.Data.Abstract.Field
     JVM.Data.Abstract.Name
+    JVM.Data.Abstract.Type
     JVM.Data.Convert
+    JVM.Data.Convert.Field
+    JVM.Data.Convert.Numbers
+    JVM.Data.Convert.Type
     JVM.Data.JVMVersion
     JVM.Data.Raw.AccessFlags
     JVM.Data.Raw.ClassFile
@@ -88,8 +95,7 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:
-    , base          ^>=4.17.0.0
-    , bimap
+    , base          >=4.16.0.0
     , binary
     , bytestring
     , containers
@@ -129,7 +135,7 @@ test-suite h2jvm-test
 
   -- Test dependencies.
   build-depends:
-    , base        ^>=4.17.0.0
+    , base        ^>=4.16.0.0
     , binary
     , bytestring
     , h2jvm

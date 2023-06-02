@@ -14,7 +14,6 @@ import Prelude hiding (lookup)
 
 data IndexedMap a = IndexedMap !(IM.IntMap a) !(M.Map a Int)
 
-
 {- | An empty indexed map
 >>> lookup @String 1 empty
 Nothing

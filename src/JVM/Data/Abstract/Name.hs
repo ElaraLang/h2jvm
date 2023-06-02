@@ -54,3 +54,13 @@ parseQualifiedClassName t = case T.splitOn "." t of
 toInternalName :: QualifiedClassName -> Text
 toInternalName (QualifiedClassName (PackageName []) (ClassName c)) = c
 toInternalName (QualifiedClassName (PackageName p) (ClassName c)) = T.intercalate "/" (p <> [c])
+
+{- | Convert a 'QualifiedClassName' to a 'FilePath' that one would expect the class file to be in
+>>> suitableFilePath "java.lang.Object"
+"java/lang/Object.class"
+
+>>> suitableFilePath "Object"
+"Object.class"
+-}
+suitableFilePath :: QualifiedClassName -> FilePath
+suitableFilePath (QualifiedClassName (PackageName p) (ClassName c)) = T.unpack $ T.intercalate "/" (p <> [c <> ".class"])

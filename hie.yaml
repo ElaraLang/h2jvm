@@ -1,0 +1,7 @@
+cradle:
+  cabal:
+    - path: "src"
+      component: "lib:h2jvm"
+
+    - path: "test"
+      component: "h2jvm:test:h2jvm-test"

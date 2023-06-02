@@ -25,3 +25,5 @@ cabal.project.local~
 .vscode/
 
 *.class
+
+.direnv/

@@ -7,7 +7,6 @@ import Data.Binary.Builder (toLazyByteString)
 import Data.Binary.Put
 import Data.Binary.Write (WriteBinary (writeBinary), writeList)
 import Data.ByteString qualified as B
-import Data.Coerce
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Data.Word

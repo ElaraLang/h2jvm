@@ -11,3 +11,13 @@ data ClassAccessFlag
     | Annotation
     | Enum
 
+data FieldAccessFlag
+    = FPublic
+    | FPrivate
+    | FProtected
+    | FStatic
+    | FFinal
+    | FVolatile
+    | FTransient
+    | FSynthetic
+    | FEnum

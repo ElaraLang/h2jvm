@@ -14,6 +14,7 @@ import JVM.Data.Abstract.AccessFlags qualified as AbsFlag
 import JVM.Data.Abstract.ClassFile qualified as Abs
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry, CPUTF8Entry), findIndexOf, runConstantPoolM)
 import JVM.Data.Abstract.Name (QualifiedClassName, parseQualifiedClassName, toInternalName)
+import JVM.Data.Convert.Field (convertField)
 import JVM.Data.JVMVersion (getMajor, getMinor)
 import JVM.Data.Raw.AccessFlags
 import JVM.Data.Raw.ClassFile qualified as Raw
@@ -44,7 +45,7 @@ convertClassAttributes = traverse convertClassAttribute
         nameIndex <- findIndexOf (CPUTF8Entry "SourceFile")
         textIndex <- findIndexOf (CPUTF8Entry text)
         pure $ Raw.AttributeInfo nameIndex (Raw.SourceFileAttribute textIndex)
-    convertClassAttribute _ = error $ "convertClassAttribute"
+    convertClassAttribute _ = error "convertClassAttribute"
 
 convert :: Abs.ClassFile -> Raw.ClassFile
 convert Abs.ClassFile{..} = do
@@ -54,6 +55,7 @@ convert Abs.ClassFile{..} = do
             let flags = convertAccessFlags accessFlags
             interfaces' <- traverse (findIndexOf . CPClassEntry . toInternalName) interfaces
             attributes' <- convertClassAttributes attributes
+            fields' <- traverse convertField fields
             pure $
                 Raw.ClassFile
                     MagicNumbers.classMagic
@@ -64,7 +66,7 @@ convert Abs.ClassFile{..} = do
                     nameIndex
                     superIndex
                     (V.fromList interfaces')
-                    mempty
+                    (V.fromList fields')
                     mempty
                     (V.fromList attributes')
     temp{Raw.constantPool = finalConstantPool}

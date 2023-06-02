@@ -5,6 +5,7 @@ module JVM.Data.Abstract.ClassFile where
 
 import Data.Text (Text)
 import JVM.Data.Abstract.AccessFlags (ClassAccessFlag)
+import JVM.Data.Abstract.Field (ClassFileField)
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion (JVMVersion)
 
@@ -14,6 +15,7 @@ data ClassFile = ClassFile
     , accessFlags :: [ClassAccessFlag]
     , superClass :: Maybe QualifiedClassName
     , interfaces :: [QualifiedClassName]
+    , fields :: [ClassFileField]
     , attributes :: [ClassFileAttribute]
     }
 
