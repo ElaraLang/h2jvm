@@ -20,7 +20,9 @@ main = do
                 [Public, Final]
                 (Just "java.lang.Object")
                 ["java.util.List"]
+                []
                 [SourceFile "out.java"]
+
     let classFile' = convert classFile
     let bs = runPut (writeBinary classFile')
     BS.writeFile "out.class" (BS.toStrict bs)
