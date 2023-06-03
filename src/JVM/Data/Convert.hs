@@ -13,8 +13,11 @@ import Data.Word (Word16)
 import JVM.Data.Abstract.AccessFlags qualified as AbsFlag
 import JVM.Data.Abstract.ClassFile qualified as Abs
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry, CPUTF8Entry), findIndexOf, runConstantPoolM)
-import JVM.Data.Abstract.Name (QualifiedClassName, parseQualifiedClassName, toInternalName)
+import JVM.Data.Abstract.Name (QualifiedClassName, parseQualifiedClassName)
+import JVM.Data.Abstract.Type (ClassInfoType (..))
+import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
 import JVM.Data.Convert.Field (convertField)
+import JVM.Data.Convert.Method (convertMethod)
 import JVM.Data.JVMVersion (getMajor, getMinor)
 import JVM.Data.Raw.AccessFlags
 import JVM.Data.Raw.ClassFile qualified as Raw
@@ -23,20 +26,6 @@ import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
 
 jloName :: QualifiedClassName
 jloName = parseQualifiedClassName "java.lang.Object"
-
-convertAccessFlags :: [AbsFlag.ClassAccessFlag] -> Word16
-convertAccessFlags = foldr ((.|.) . convertAccessFlag) 0
-  where
-    convertAccessFlag =
-        accessFlagValue . \case
-            AbsFlag.Public -> ACC_PUBLIC
-            AbsFlag.Final -> ACC_FINAL
-            AbsFlag.Super -> ACC_SUPER
-            AbsFlag.Interface -> ACC_INTERFACE
-            AbsFlag.Abstract -> ACC_ABSTRACT
-            AbsFlag.Synthetic -> ACC_SYNTHETIC
-            AbsFlag.Annotation -> ACC_ANNOTATION
-            AbsFlag.Enum -> ACC_ENUM
 
 convertClassAttributes :: [Abs.ClassFileAttribute] -> State (IndexedMap ConstantPoolInfo) [Raw.AttributeInfo]
 convertClassAttributes = traverse convertClassAttribute
@@ -50,12 +39,13 @@ convertClassAttributes = traverse convertClassAttribute
 convert :: Abs.ClassFile -> Raw.ClassFile
 convert Abs.ClassFile{..} = do
     let (temp, finalConstantPool) = runConstantPoolM $ do
-            nameIndex <- findIndexOf (CPClassEntry $ toInternalName name)
-            superIndex <- findIndexOf (CPClassEntry $ toInternalName (fromMaybe jloName superClass))
-            let flags = convertAccessFlags accessFlags
-            interfaces' <- traverse (findIndexOf . CPClassEntry . toInternalName) interfaces
+            nameIndex <- findIndexOf (CPClassEntry $ ClassInfoType name)
+            superIndex <- findIndexOf (CPClassEntry $ ClassInfoType (fromMaybe jloName superClass))
+            let flags = accessFlagsToWord16 accessFlags
+            interfaces' <- traverse (findIndexOf . CPClassEntry . ClassInfoType) interfaces
             attributes' <- convertClassAttributes attributes
             fields' <- traverse convertField fields
+            methods' <- traverse convertMethod methods
             pure $
                 Raw.ClassFile
                     MagicNumbers.classMagic
@@ -67,6 +57,6 @@ convert Abs.ClassFile{..} = do
                     superIndex
                     (V.fromList interfaces')
                     (V.fromList fields')
-                    mempty
+                    (V.fromList methods')
                     (V.fromList attributes')
     temp{Raw.constantPool = finalConstantPool}

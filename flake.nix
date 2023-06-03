@@ -50,7 +50,10 @@
           programs.hlint.enable = false;
 
           programs.ormolu.package = pkgs.haskellPackages.fourmolu;
-
+          settings.formatter.ormolu.options = [
+            "--ghc-opt"
+            "-XImportQualifiedPost"
+          ];
         };
 
         mission-control.scripts = {

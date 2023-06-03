@@ -23,3 +23,18 @@ data FieldAccessFlag
     | FSynthetic
     | FEnum
     deriving (Show)
+
+data MethodAccessFlag
+    = MPublic
+    | MPrivate
+    | MProtected
+    | MStatic
+    | MFinal
+    | MSynchronized
+    | MBridge
+    | MVarargs
+    | MNative
+    | MAbstract
+    | MStrict
+    | MSynthetic
+    deriving (Show)

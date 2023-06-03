@@ -7,7 +7,7 @@ import Data.Text qualified as T
 {- | A JVM package name
 This is defined as a potentially empty list of identifiers, which would be separated by dots in the source code
 -}
-newtype PackageName = PackageName [Text] deriving (Show)
+newtype PackageName = PackageName [Text] deriving (Show, Eq, Ord)
 
 {- | Parse a 'PackageName' from a 'Text'
 
@@ -23,23 +23,28 @@ parsePackageName t = case T.splitOn "." t of
     xs -> PackageName xs
 
 -- | A JVM class name
-newtype ClassName = ClassName Text deriving (Show)
+newtype ClassName = ClassName Text deriving (Show, Eq, Ord)
 
 -- | Parse a 'ClassName' from a 'Text'
 parseClassName :: Text -> ClassName
 parseClassName = ClassName
 
-data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Show)
+data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Show, Eq, Ord)
 
 instance IsString QualifiedClassName where
     fromString = parseQualifiedClassName . T.pack
 
-{- | Parse a 'QualifiedClassName' from a 'Text'\
+{- | Parse a 'QualifiedClassName' from a 'Text'
+
 >>> parseQualifiedClassName "java.lang.Object"
 QualifiedClassName (PackageName ["java","lang"]) (ClassName "Object")
 
 >>> parseQualifiedClassName "Object"
 QualifiedClassName (PackageName []) (ClassName "Object")
+
+This function is lenient and will accept invalid class names:
+>>> parseQualifiedClassName "123invalid"
+QualifiedClassName (PackageName []) (ClassName "123invalid")
 -}
 parseQualifiedClassName :: Text -> QualifiedClassName
 parseQualifiedClassName t = case T.splitOn "." t of

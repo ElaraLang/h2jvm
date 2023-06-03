@@ -2,7 +2,7 @@ module JVM.Data.Abstract.Type where
 
 import JVM.Data.Abstract.Name (QualifiedClassName)
 
-data BaseType
+data PrimitiveType
     = Byte
     | Char
     | Double
@@ -11,10 +11,15 @@ data BaseType
     | Long
     | Short
     | Boolean
-    deriving (Show)
+    deriving (Show, Eq, Ord)
 
 data FieldType
-    = BaseFieldType BaseType
+    = PrimitiveFieldType PrimitiveType
     | ObjectFieldType QualifiedClassName
     | ArrayFieldType FieldType
-    deriving (Show)
+    deriving (Show, Eq, Ord)
+
+data ClassInfoType
+    = ClassInfoType QualifiedClassName
+    | ArrayClassInfoType ClassInfoType
+    deriving (Show, Eq, Ord)

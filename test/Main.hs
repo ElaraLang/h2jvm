@@ -10,6 +10,8 @@ import Data.ByteString qualified as BS
 import Data.Binary.Put
 import Data.Binary.Write (WriteBinary (..))
 import JVM.Data.Abstract.AccessFlags
+import JVM.Data.Abstract.Method (ClassFileMethod (ClassFileMethod), MethodDescriptor (..), ReturnDescriptor (VoidReturn))
+import JVM.Data.Abstract.Type
 
 main :: IO ()
 main = do
@@ -21,6 +23,12 @@ main = do
                 (Just "java.lang.Object")
                 ["java.util.List"]
                 []
+                [ ClassFileMethod
+                    [MPublic, MStatic]
+                    "main"
+                    (MethodDescriptor [ObjectFieldType (parseQualifiedClassName "java.lang.String")] VoidReturn)
+                    []
+                ]
                 [SourceFile "out.java"]
 
     let classFile' = convert classFile

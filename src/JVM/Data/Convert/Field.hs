@@ -9,24 +9,10 @@ import Data.Word (Word16)
 import JVM.Data.Abstract.AccessFlags qualified as Abs
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), ConstantPoolM, findIndexOf)
 import JVM.Data.Abstract.Field qualified as Abs
+import JVM.Data.Convert.AccessFlag (accessFlagsToWord16, convertAccessFlag)
 import JVM.Data.Convert.Type (fieldTypeDescriptor)
-import JVM.Data.Raw.AccessFlags (AccessFlags (..), accessFlagValue)
+import JVM.Data.Raw.AccessFlags (AccessFlag (..), accessFlagValue)
 import JVM.Data.Raw.ClassFile qualified as Raw
-
-convertAccessFlags :: [Abs.FieldAccessFlag] -> Word16
-convertAccessFlags = foldr ((.|.) . convertAccessFlag) 0
-  where
-    convertAccessFlag =
-        accessFlagValue . \case
-            Abs.FPublic -> ACC_PUBLIC
-            Abs.FPrivate -> ACC_PRIVATE
-            Abs.FProtected -> ACC_PROTECTED
-            Abs.FStatic -> ACC_STATIC
-            Abs.FFinal -> ACC_FINAL
-            Abs.FVolatile -> ACC_VOLATILE
-            Abs.FTransient -> ACC_TRANSIENT
-            Abs.FSynthetic -> ACC_SYNTHETIC
-            Abs.FEnum -> ACC_ENUM
 
 convertConstantValue :: Abs.ConstantValue -> ConstantPoolM Word16
 convertConstantValue =
@@ -49,4 +35,4 @@ convertField Abs.ClassFileField{..} = do
     nameIndex <- findIndexOf (CPUTF8Entry fieldName)
     descriptorIndex <- findIndexOf (CPUTF8Entry (fieldTypeDescriptor fieldType))
     attributes <- traverse convertFieldAttribute fieldAttributes
-    pure $ Raw.FieldInfo (convertAccessFlags fieldAccessFlags) nameIndex descriptorIndex (V.fromList attributes)
+    pure $ Raw.FieldInfo (accessFlagsToWord16 fieldAccessFlags) nameIndex descriptorIndex (V.fromList attributes)

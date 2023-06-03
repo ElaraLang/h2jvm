@@ -54,6 +54,21 @@ accessFlag_ANNOTATION = 0x2000
 accessFlag_ENUM :: Word16
 accessFlag_ENUM = 0x4000
 
+accessFlag_SYNCHRONIZED :: Word16
+accessFlag_SYNCHRONIZED = 0x0020
+
+accessFlag_BRIDGE :: Word16
+accessFlag_BRIDGE = 0x0040
+
+accessFlag_VARARGS :: Word16
+accessFlag_VARARGS = 0x0080
+
+accessFlag_NATIVE :: Word16
+accessFlag_NATIVE = 0x0100
+
+accessFlag_STRICT :: Word16
+accessFlag_STRICT = 0x0800
+
 --
 -- Constant Pool Tags
 --

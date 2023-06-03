@@ -73,10 +73,13 @@ library
     JVM.Data.Abstract.ClassFile
     JVM.Data.Abstract.ConstantPool
     JVM.Data.Abstract.Field
+    JVM.Data.Abstract.Method
     JVM.Data.Abstract.Name
     JVM.Data.Abstract.Type
     JVM.Data.Convert
+    JVM.Data.Convert.AccessFlag
     JVM.Data.Convert.Field
+    JVM.Data.Convert.Method
     JVM.Data.Convert.Numbers
     JVM.Data.Convert.Type
     JVM.Data.JVMVersion

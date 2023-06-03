@@ -6,7 +6,7 @@ import Data.Text (Text)
 import JVM.Data.Abstract.Name (toInternalName)
 import JVM.Data.Abstract.Type qualified as Abs
 
-baseTypeDescriptor :: Abs.BaseType -> Text
+baseTypeDescriptor :: Abs.PrimitiveType -> Text
 baseTypeDescriptor = \case
     Abs.Byte -> "B"
     Abs.Char -> "C"
@@ -19,6 +19,11 @@ baseTypeDescriptor = \case
 
 fieldTypeDescriptor :: Abs.FieldType -> Text
 fieldTypeDescriptor = \case
-    Abs.BaseFieldType base -> baseTypeDescriptor base
+    Abs.PrimitiveFieldType base -> baseTypeDescriptor base
     Abs.ObjectFieldType name -> "L" <> toInternalName name <> ";"
     Abs.ArrayFieldType fieldType -> "[" <> fieldTypeDescriptor fieldType
+
+classInfoTypeDescriptor :: Abs.ClassInfoType -> Text
+classInfoTypeDescriptor = \case
+    Abs.ClassInfoType name -> toInternalName name
+    Abs.ArrayClassInfoType classInfoType -> "[" <> classInfoTypeDescriptor classInfoType

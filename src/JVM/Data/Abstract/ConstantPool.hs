@@ -13,17 +13,19 @@ import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Vector (Vector)
 import Data.Word (Word16)
+import JVM.Data.Abstract.Type (ClassInfoType)
 import JVM.Data.Convert.Numbers (toJVMFloat, toJVMLong)
+import JVM.Data.Convert.Type (classInfoTypeDescriptor)
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo (..))
 
-{- | High level representation of a constant pool entry
-This tries to hide indexes as much as possible -- some entries require expansion to multiple entries
+{- | High-level, type-safe representation of a constant pool entry
+This tries to hide indexes as much as possible, instead just allowing the values to be provided directly.
+These are transformed into the correct indexes when the constant pool is built, which uses a state monad to avoid repeating entries.
 -}
 data ConstantPoolEntry
     = -- | A class reference
-      CPClassEntry
-        Text
-        -- ^ The name of the class
+      CPClassEntry ClassInfoType
+                   -- ^ The class being referenced
     | CPFieldRefEntry Text ()
     | CPMethodRefEntry Text ()
     | CPInterfaceMethodRefEntry Text ()
@@ -39,7 +41,7 @@ data ConstantPoolEntry
     | CPInvokeDynamicEntry Int -- TODO and this one
     deriving (Show, Eq, Ord)
 
-transformEntry :: ConstantPoolEntry -> State (IndexedMap ConstantPoolInfo) Int
+transformEntry :: ConstantPoolEntry -> ConstantPoolM Int
 transformEntry (CPUTF8Entry text) = IM.lookupOrInsertM (UTF8Info $ encodeUtf8 text)
 transformEntry (CPIntegerEntry i) = IM.lookupOrInsertM (IntegerInfo $ fromIntegral i)
 transformEntry (CPFloatEntry f) = IM.lookupOrInsertM (FloatInfo (toJVMFloat f))
@@ -53,7 +55,8 @@ transformEntry (CPDoubleEntry d) = do
     let (high, low) = toJVMLong (round d)
     IM.lookupOrInsertM (DoubleInfo high low)
 transformEntry (CPClassEntry name) = do
-    nameIndex <- transformEntry (CPUTF8Entry name)
+    let className = classInfoTypeDescriptor name
+    nameIndex <- transformEntry (CPUTF8Entry className)
     IM.lookupOrInsertM (ClassInfo $ fromIntegral nameIndex)
 transformEntry _ = error "transformEntry"
 
