@@ -11,10 +11,12 @@ data ClassFileField = ClassFileField
     , fieldType :: FieldType
     , fieldAttributes :: [FieldAttribute]
     }
+    deriving (Show)
 
 data FieldAttribute
     = ConstantValue ConstantValue
     | Synthetic
+    deriving (Show)
 
 data ConstantValue
     = ConstantLong JVMLong
@@ -22,3 +24,4 @@ data ConstantValue
     | ConstantDouble JVMDouble
     | ConstantInteger JVMInt
     | ConstantString JVMString
+    deriving (Show)

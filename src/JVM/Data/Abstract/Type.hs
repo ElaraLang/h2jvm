@@ -11,8 +11,10 @@ data BaseType
     | Long
     | Short
     | Boolean
+    deriving (Show)
 
 data FieldType
     = BaseFieldType BaseType
     | ObjectFieldType QualifiedClassName
     | ArrayFieldType FieldType
+    deriving (Show)

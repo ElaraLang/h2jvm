@@ -18,6 +18,7 @@ data ClassFile = ClassFile
     , fields :: [ClassFileField]
     , attributes :: [ClassFileAttribute]
     }
+    deriving (Show)
 
 data ClassFileAttribute
     = InnerClasses [InnerClassInfo]
@@ -30,6 +31,7 @@ data ClassFileAttribute
     | RuntimeVisibleAnnotations
     | RuntimeInvisibleAnnotations
     | BootstrapMethods
+    deriving (Show)
 
 data InnerClassInfo = InnerClassInfo
     { innerClassInfo :: QualifiedClassName
@@ -37,3 +39,4 @@ data InnerClassInfo = InnerClassInfo
     , innerName :: Text
     , accessFlags :: [ClassAccessFlag]
     }
+    deriving (Show)

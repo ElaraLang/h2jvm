@@ -4,7 +4,7 @@ module JVM.Data.JVMVersion where
 import Data.Binary (Word16)
 
 -- | A JVM Version Number
-newtype JVMVersion = JVMVersion Word16 deriving (Eq, Ord)
+newtype JVMVersion = JVMVersion Word16 deriving (Eq, Ord, Show)
 
 newtype MajorVersion = MajorVersion {getMajorVersion :: Word16} deriving (Eq, Ord, Num, Show)
 

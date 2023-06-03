@@ -10,6 +10,7 @@ data ClassAccessFlag
     | Synthetic
     | Annotation
     | Enum
+    deriving (Show)
 
 data FieldAccessFlag
     = FPublic
@@ -21,3 +22,4 @@ data FieldAccessFlag
     | FTransient
     | FSynthetic
     | FEnum
+    deriving (Show)
