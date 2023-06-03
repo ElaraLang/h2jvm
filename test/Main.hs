@@ -10,7 +10,7 @@ import Data.ByteString qualified as BS
 import Data.Binary.Put
 import Data.Binary.Write (WriteBinary (..))
 import JVM.Data.Abstract.AccessFlags
-import JVM.Data.Abstract.Method (ClassFileMethod (ClassFileMethod), MethodDescriptor (..), ReturnDescriptor (VoidReturn))
+import JVM.Data.Abstract.Method (ClassFileMethod (ClassFileMethod), CodeAttributeData (CodeAttributeData), MethodAttribute (..), MethodDescriptor (..), ReturnDescriptor (VoidReturn))
 import JVM.Data.Abstract.Type
 
 main :: IO ()
@@ -27,7 +27,7 @@ main = do
                     [MPublic, MStatic]
                     "main"
                     (MethodDescriptor [ObjectFieldType (parseQualifiedClassName "java.lang.String")] VoidReturn)
-                    []
+                    [Code $ CodeAttributeData 2 1 [] [] []]
                 ]
                 [SourceFile "out.java"]
 

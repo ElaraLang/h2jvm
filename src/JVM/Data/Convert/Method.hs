@@ -4,6 +4,7 @@ module JVM.Data.Convert.Method where
 
 import Data.Text (Text)
 import Data.Vector qualified as V
+import JVM.Data.Abstract.ClassFile (ClassFile (name))
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPUTF8Entry), ConstantPoolM, findIndexOf)
 import JVM.Data.Abstract.Method
 import JVM.Data.Abstract.Method qualified as Abs
@@ -20,7 +21,28 @@ convertMethodDescriptor (Abs.MethodDescriptor params ret) =
      in "(" <> mconcat params' <> ")" <> ret'
 
 convertMethodAttribute :: Abs.MethodAttribute -> ConstantPoolM Raw.AttributeInfo
-convertMethodAttribute _ = error "convertMethodAttribute"
+convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
+    let maxStack' = fromIntegral maxStack
+        maxLocals' = fromIntegral maxLocals
+        code' = V.fromList code
+
+    exceptionTable' <- convertExceptionTable exceptionTable
+    attributes' <- convertCodeAttributes codeAttributes
+    nameIndex <- findIndexOf (CPUTF8Entry "Code")
+
+    pure $ Raw.AttributeInfo nameIndex (Raw.CodeAttribute maxStack' maxLocals' code' exceptionTable' attributes')
+  where
+    convertExceptionTable :: [Abs.ExceptionTableEntry] -> ConstantPoolM (V.Vector Raw.ExceptionTableEntry)
+    convertExceptionTable = fmap V.fromList . traverse convertExceptionTableEntry
+
+    convertExceptionTableEntry :: Abs.ExceptionTableEntry -> ConstantPoolM Raw.ExceptionTableEntry
+    convertExceptionTableEntry = undefined
+
+    convertCodeAttributes :: [Abs.CodeAttribute] -> ConstantPoolM (V.Vector Raw.AttributeInfo)
+    convertCodeAttributes = fmap V.fromList . traverse convertCodeAttribute'
+
+    convertCodeAttribute' :: Abs.CodeAttribute -> ConstantPoolM Raw.AttributeInfo
+    convertCodeAttribute' = undefined
 
 convertMethod :: Abs.ClassFileMethod -> ConstantPoolM Raw.MethodInfo
 convertMethod Abs.ClassFileMethod{..} = do

@@ -5,6 +5,7 @@ This aims to eliminate the need to manually specify the index of the constant
 -}
 module JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), findIndexOf, runConstantPoolM, ConstantPoolM) where
 
+import Control.Monad.Identity (Identity)
 import Control.Monad.State
 import Data.IndexedMap (IndexedMap)
 import Data.IndexedMap qualified as IM
@@ -60,7 +61,8 @@ transformEntry (CPClassEntry name) = do
     IM.lookupOrInsertM (ClassInfo $ fromIntegral nameIndex)
 transformEntry _ = error "transformEntry"
 
-type ConstantPoolM a = State (IndexedMap ConstantPoolInfo) a
+type ConstantPoolT m a = StateT (IndexedMap ConstantPoolInfo) m a
+type ConstantPoolM a = ConstantPoolT Identity a
 
 findIndexOf :: ConstantPoolEntry -> ConstantPoolM Word16
 findIndexOf = fmap fromIntegral . transformEntry

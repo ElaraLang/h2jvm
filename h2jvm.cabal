@@ -73,6 +73,7 @@ library
     JVM.Data.Abstract.ClassFile
     JVM.Data.Abstract.ConstantPool
     JVM.Data.Abstract.Field
+    JVM.Data.Abstract.Instruction
     JVM.Data.Abstract.Method
     JVM.Data.Abstract.Name
     JVM.Data.Abstract.Type
@@ -101,6 +102,7 @@ library
     , base          >=4.16.0.0
     , binary
     , bytestring
+    , free
     , containers
     , lens          >=5.0
     , mtl
