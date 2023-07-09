@@ -4,7 +4,6 @@
 module JVM.Data.Abstract.Instruction where
 
 import Control.Monad.Free hiding (Free, Pure)
-import Control.Monad.Free.Church (foldF)
 import Control.Monad.Trans.Free
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPIntegerEntry), ConstantPoolM, findIndexOf)
 import JVM.Data.Raw.Instruction qualified as Raw
@@ -48,27 +47,27 @@ aaLoad ref index = liftInstruction (AALoadF ref index id)
 aaStore :: Reference -> Int -> InstructionM ()
 aaStore ref index = liftInstruction (AAStoreF ref index () ())
 
-{- | Run an instruction monad, returning the instruction list
- >>> runInstructionM (aaLoad 0 1 >>= aaStore 2)
- [AALoad 0 1,AAStore 2 0]
--}
-runInstructionM :: InstructionM a -> ConstantPoolM [Raw.Instruction]
-runInstructionM program = case runFree program of
-    Pure _ -> pure []
-    Free (AALoadF ref index next) -> do
-        ref' <- findIndexOf (CPIntegerEntry (fromIntegral ref))
-        index' <- findIndexOf (CPIntegerEntry (fromIntegral index))
-        pure
-            [ Raw.LDC ref'
-            , Raw.LDC index'
-            , Raw.AALoad
-            ] <> runInstructionM (next 0)
-    Free (AAStoreF ref index () next) -> do
-        ref' <- findIndexOf (CPIntegerEntry (fromIntegral ref))
-        index' <- findIndexOf (CPIntegerEntry (fromIntegral index))
-        pure
-            [ Raw.LDC ref'
-            , Raw.LDC index'
-            , Raw.AAStore
-            ]
-            <> runInstructionM next
+-- {- | Run an instruction monad, returning the instruction list
+--  >>> runInstructionM (aaLoad 0 1 >>= aaStore 2)
+--  [AALoad 0 1,AAStore 2 0]
+-- -}
+-- runInstructionM :: InstructionM a -> ConstantPoolM [Raw.Instruction]
+-- runInstructionM program = case runFree program of
+--     Pure _ -> pure []
+--     Free (AALoadF ref index next) -> do
+--         ref' <- findIndexOf (CPIntegerEntry (fromIntegral ref))
+--         index' <- findIndexOf (CPIntegerEntry (fromIntegral index))
+--         pure
+--             [ Raw.LDC ref'
+--             , Raw.LDC index'
+--             , Raw.AALoad
+--             ] <> runInstructionM (next 0)
+--     Free (AAStoreF ref index () next) -> do
+--         ref' <- findIndexOf (CPIntegerEntry (fromIntegral ref))
+--         index' <- findIndexOf (CPIntegerEntry (fromIntegral index))
+--         pure
+--             [ Raw.LDC ref'
+--             , Raw.LDC index'
+--             , Raw.AAStore
+--             ]
+--             <> runInstructionM next
