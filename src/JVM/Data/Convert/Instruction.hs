@@ -19,4 +19,5 @@ convertInstruction (Abs.LDC ldc) = do
                 LDCClass c -> CPClassEntry c
             )
     pure (Raw.LDC idx)
+convertInstruction Abs.AReturn = pure Raw.AReturn
 convertInstruction other = error ("Instruction not implemented: " <> show other)
