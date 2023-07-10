@@ -16,6 +16,7 @@ data Instruction
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
+    | GetStatic ClassInfoType Text FieldType
     | Return
     deriving (Show, Eq, Ord)
 

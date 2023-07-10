@@ -27,6 +27,9 @@ convertInstruction (Abs.LDC ldc) = do
 convertInstruction (Abs.PutStatic c n t) = do
     idx <- findIndexOf (CPFieldRefEntry c n t)
     pure (Raw.PutStatic idx)
+convertInstruction (Abs.GetStatic c n t) = do
+    idx <- findIndexOf (CPFieldRefEntry c n t)
+    pure (Raw.GetStatic idx)
 convertInstruction Abs.AReturn = pure Raw.AReturn
 convertInstruction Abs.Return = pure Raw.Return
 convertInstruction other = error ("Instruction not implemented: " <> show other)
