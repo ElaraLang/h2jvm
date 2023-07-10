@@ -2,8 +2,9 @@ module JVM.Data.Abstract.Method where
 
 import Data.Text (Text)
 import JVM.Data.Abstract.AccessFlags (MethodAccessFlag)
+import JVM.Data.Abstract.Descriptor (MethodDescriptor)
+import JVM.Data.Abstract.Instruction (Instruction)
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
-import JVM.Data.Raw.Instruction (Instruction)
 
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
@@ -11,15 +12,6 @@ data ClassFileMethod = ClassFileMethod
     , methodDescriptor :: MethodDescriptor
     , methodAttributes :: [MethodAttribute]
     }
-    deriving (Show)
-
-data MethodDescriptor
-    = MethodDescriptor [FieldType] ReturnDescriptor
-    deriving (Show)
-
-data ReturnDescriptor
-    = VoidReturn
-    | Return FieldType
     deriving (Show)
 
 data MethodAttribute

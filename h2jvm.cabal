@@ -72,6 +72,7 @@ library
     JVM.Data.Abstract.AccessFlags
     JVM.Data.Abstract.ClassFile
     JVM.Data.Abstract.ConstantPool
+    JVM.Data.Abstract.Descriptor
     JVM.Data.Abstract.Field
     JVM.Data.Abstract.Instruction
     JVM.Data.Abstract.Method
@@ -79,7 +80,9 @@ library
     JVM.Data.Abstract.Type
     JVM.Data.Convert
     JVM.Data.Convert.AccessFlag
+    JVM.Data.Convert.Descriptor
     JVM.Data.Convert.Field
+    JVM.Data.Convert.Instruction
     JVM.Data.Convert.Method
     JVM.Data.Convert.Numbers
     JVM.Data.Convert.Type
@@ -102,8 +105,8 @@ library
     , base          >=4.16.0.0
     , binary
     , bytestring
-    , free
     , containers
+    , free
     , lens          >=5.0
     , mtl
     , text
@@ -144,3 +147,5 @@ test-suite h2jvm-test
     , binary
     , bytestring
     , h2jvm
+    , hspec
+    , vector

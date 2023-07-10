@@ -6,26 +6,21 @@ import Data.Text (Text)
 import Data.Vector qualified as V
 import JVM.Data.Abstract.ClassFile (ClassFile (name))
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPUTF8Entry), ConstantPoolM, findIndexOf)
+import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), ReturnDescriptor (..))
 import JVM.Data.Abstract.Method
 import JVM.Data.Abstract.Method qualified as Abs
 import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
+import JVM.Data.Convert.Descriptor (convertMethodDescriptor)
+import JVM.Data.Convert.Instruction (convertInstruction)
 import JVM.Data.Convert.Type (fieldTypeDescriptor)
 import JVM.Data.Raw.ClassFile qualified as Raw
-
-convertMethodDescriptor :: Abs.MethodDescriptor -> Text
-convertMethodDescriptor (Abs.MethodDescriptor params ret) =
-    let params' = map fieldTypeDescriptor params
-        ret' = case ret of
-            Abs.VoidReturn -> "V"
-            Abs.Return t -> fieldTypeDescriptor t
-     in "(" <> mconcat params' <> ")" <> ret'
 
 convertMethodAttribute :: Abs.MethodAttribute -> ConstantPoolM Raw.AttributeInfo
 convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
     let maxStack' = fromIntegral maxStack
         maxLocals' = fromIntegral maxLocals
-        code' = V.fromList code
 
+    code' <- V.fromList <$> traverse convertInstruction code
     exceptionTable' <- convertExceptionTable exceptionTable
     attributes' <- convertCodeAttributes codeAttributes
     nameIndex <- findIndexOf (CPUTF8Entry "Code")
