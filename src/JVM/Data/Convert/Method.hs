@@ -25,7 +25,7 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
     attributes' <- convertCodeAttributes codeAttributes
     nameIndex <- findIndexOf (CPUTF8Entry "Code")
 
-    pure $ Raw.AttributeInfo nameIndex (Raw.CodeAttribute maxStack' maxLocals' code' exceptionTable' attributes')
+    pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.CodeAttribute maxStack' maxLocals' code' exceptionTable' attributes')
   where
     convertExceptionTable :: [Abs.ExceptionTableEntry] -> ConstantPoolM (V.Vector Raw.ExceptionTableEntry)
     convertExceptionTable = fmap V.fromList . traverse convertExceptionTableEntry
@@ -45,4 +45,4 @@ convertMethod Abs.ClassFileMethod{..} = do
     nameIndex <- findIndexOf (CPUTF8Entry methodName)
     descriptorIndex <- findIndexOf (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
     attributes <- traverse convertMethodAttribute methodAttributes
-    pure $ Raw.MethodInfo flags nameIndex descriptorIndex (V.fromList attributes)
+    pure $ Raw.MethodInfo flags (fromIntegral nameIndex) (fromIntegral descriptorIndex) (V.fromList attributes)

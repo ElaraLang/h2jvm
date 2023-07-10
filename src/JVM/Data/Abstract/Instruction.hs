@@ -14,6 +14,7 @@ data Instruction
     | AReturn
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | LDC LDCEntry
+    | Return
     deriving (Show, Eq, Ord)
 
 data LDCEntry

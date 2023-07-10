@@ -102,13 +102,14 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:
-    , base          >=4.16.0.0
+    , base           >=4.16.0.0
     , binary
     , bytestring
     , containers
     , free
-    , lens          >=5.0
+    , lens           >=5.0
     , mtl
+    , pretty-simple
     , text
     , transformers
     , vector
@@ -143,9 +144,10 @@ test-suite h2jvm-test
 
   -- Test dependencies.
   build-depends:
-    , base        ^>=4.16.0.0
+    , base           ^>=4.16.0.0
     , binary
     , bytestring
     , h2jvm
     , hspec
+    , pretty-simple
     , vector

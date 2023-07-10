@@ -7,17 +7,20 @@ import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 convertInstruction :: Abs.Instruction -> ConstantPoolM Raw.Instruction
 convertInstruction Abs.ALoad0 = pure Raw.ALoad0
 convertInstruction (Abs.InvokeStatic c n m) = do
-    idx <- findIndexOf (CPMethodRefEntry c n m)
-    pure (Raw.InvokeStatic idx)
+  idx <- findIndexOf (CPMethodRefEntry c n m)
+  pure (Raw.InvokeStatic idx)
 convertInstruction (Abs.LDC ldc) = do
-    idx <-
-        findIndexOf
-            ( case ldc of
-                LDCInt i -> CPIntegerEntry i
-                LDCFloat f -> CPFloatEntry f
-                LDCString s -> CPStringEntry s
-                LDCClass c -> CPClassEntry c
-            )
-    pure (Raw.LDC idx)
+  idx <-
+    findIndexOf
+      ( case ldc of
+          LDCInt i -> CPIntegerEntry i
+          LDCFloat f -> CPFloatEntry f
+          LDCString s -> CPStringEntry s
+          LDCClass c -> CPClassEntry c
+      )
+
+  pure (Raw.LDC (fromIntegral idx)) -- for some reason, the index is a u8, not a u16
+  -- TODO: this should probably do a bounds check on the index
 convertInstruction Abs.AReturn = pure Raw.AReturn
+convertInstruction Abs.Return = pure Raw.Return
 convertInstruction other = error ("Instruction not implemented: " <> show other)

@@ -603,7 +603,7 @@ instruction_lConst1 :: Word8
 instruction_lConst1 = 10
 
 instruction_ldc :: Word8
-instruction_ldc = 18
+instruction_ldc = 0x12
 
 instruction_ldcW :: Word8
 instruction_ldcW = 19
