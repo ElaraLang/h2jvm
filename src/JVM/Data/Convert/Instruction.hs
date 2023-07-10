@@ -9,6 +9,9 @@ convertInstruction Abs.ALoad0 = pure Raw.ALoad0
 convertInstruction (Abs.InvokeStatic c n m) = do
   idx <- findIndexOf (CPMethodRefEntry c n m)
   pure (Raw.InvokeStatic idx)
+convertInstruction (Abs.InvokeVirtual c n m) = do
+  idx <- findIndexOf (CPMethodRefEntry c n m)
+  pure (Raw.InvokeVirtual idx)
 convertInstruction (Abs.LDC ldc) = do
   idx <-
     findIndexOf
