@@ -11,6 +11,14 @@ type Reference = Int
 
 data Instruction
     = ALoad0
-    | InvokeStatic ClassInfoType Text MethodDescriptor
     | AReturn
+    | InvokeStatic ClassInfoType Text MethodDescriptor
+    | LDC LDCEntry
+    deriving (Show, Eq, Ord)
+
+data LDCEntry
+    = LDCInt Int
+    | LDCFloat Float
+    | LDCString Text
+    | LDCClass ClassInfoType
     deriving (Show, Eq, Ord)
