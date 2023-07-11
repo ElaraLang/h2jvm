@@ -13,7 +13,7 @@ import JVM.Data.Abstract.Method
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion
 
-newtype ClassBuilderT m a = ClassBuilderT {runClassBuilderT :: StateT ClassFile m a}
+newtype ClassBuilderT m a = ClassBuilderT {unClassBuilderT :: StateT ClassFile m a}
     deriving newtype (Functor, Applicative, Monad, MonadState ClassFile, MonadTrans)
 
 type ClassBuilder a = ClassBuilderT Identity a
@@ -61,6 +61,10 @@ dummyClass name version =
         , attributes = []
         }
 
-runClassBuilder :: Monad m => ClassBuilderT m a -> QualifiedClassName -> JVMVersion -> m (a, ClassFile)
-runClassBuilder m n v =
-    runStateT (runClassBuilderT m) (dummyClass n v)
+runClassBuilderT :: Monad m => QualifiedClassName -> JVMVersion -> ClassBuilderT m a -> m (a, ClassFile)
+runClassBuilderT n v m =
+    runStateT (unClassBuilderT m) (dummyClass n v)
+
+runClassBuilder :: QualifiedClassName -> JVMVersion -> ClassBuilder a -> (a, ClassFile)
+runClassBuilder n v m =
+    runIdentity $ runClassBuilderT n v m
