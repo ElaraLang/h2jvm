@@ -16,23 +16,23 @@ import JVM.Data.Raw.ClassFile qualified as Raw
 
 convertConstantValue :: Abs.ConstantValue -> ConstantPoolM Word16
 convertConstantValue =
-  fmap fromIntegral . findIndexOf . \case
-    Abs.ConstantInteger i -> CPIntegerEntry (fromIntegral i)
-    Abs.ConstantFloat f -> CPFloatEntry f
-    Abs.ConstantLong l -> CPLongEntry (fromIntegral l)
-    Abs.ConstantDouble d -> CPDoubleEntry d
-    Abs.ConstantString s -> CPStringEntry s
+    fmap fromIntegral . findIndexOf . \case
+        Abs.ConstantInteger i -> CPIntegerEntry (fromIntegral i)
+        Abs.ConstantFloat f -> CPFloatEntry f
+        Abs.ConstantLong l -> CPLongEntry (fromIntegral l)
+        Abs.ConstantDouble d -> CPDoubleEntry d
+        Abs.ConstantString s -> CPStringEntry s
 
 convertFieldAttribute :: Abs.FieldAttribute -> ConstantPoolM Raw.AttributeInfo
 convertFieldAttribute (Abs.ConstantValue constantValue) = do
-  nameIndex <- findIndexOf (CPUTF8Entry "ConstantValue")
-  constantValueIndex <- convertConstantValue constantValue
-  pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.ConstantValueAttribute constantValueIndex)
+    nameIndex <- findIndexOf (CPUTF8Entry "ConstantValue")
+    constantValueIndex <- convertConstantValue constantValue
+    pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.ConstantValueAttribute constantValueIndex)
 convertFieldAttribute _ = error "convertFieldAttribute"
 
 convertField :: Abs.ClassFileField -> ConstantPoolM Raw.FieldInfo
-convertField Abs.ClassFileField {..} = do
-  nameIndex <- findIndexOf (CPUTF8Entry fieldName)
-  descriptorIndex <- findIndexOf (CPUTF8Entry (fieldTypeDescriptor fieldType))
-  attributes <- traverse convertFieldAttribute fieldAttributes
-  pure $ Raw.FieldInfo (accessFlagsToWord16 fieldAccessFlags) (fromIntegral nameIndex) (fromIntegral descriptorIndex) (V.fromList attributes)
+convertField Abs.ClassFileField{..} = do
+    nameIndex <- findIndexOf (CPUTF8Entry fieldName)
+    descriptorIndex <- findIndexOf (CPUTF8Entry (fieldTypeDescriptor fieldType))
+    attributes <- traverse convertFieldAttribute fieldAttributes
+    pure $ Raw.FieldInfo (accessFlagsToWord16 fieldAccessFlags) (fromIntegral nameIndex) (fromIntegral descriptorIndex) (V.fromList attributes)

@@ -70,6 +70,7 @@ library
     Data.Binary.Write
     Data.IndexedMap
     JVM.Data.Abstract.AccessFlags
+    JVM.Data.Abstract.Builder
     JVM.Data.Abstract.ClassFile
     JVM.Data.Abstract.ConstantPool
     JVM.Data.Abstract.Descriptor
