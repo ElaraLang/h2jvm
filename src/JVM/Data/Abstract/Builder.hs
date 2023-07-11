@@ -16,7 +16,7 @@ import JVM.Data.JVMVersion
 newtype ClassBuilderT m a = ClassBuilderT {unClassBuilderT :: StateT ClassFile m a}
     deriving newtype (Functor, Applicative, Monad, MonadState ClassFile, MonadTrans)
 
-type ClassBuilder a = ClassBuilderT Identity a
+type ClassBuilder = ClassBuilderT Identity
 
 addAccessFlag :: Monad m => ClassAccessFlag -> ClassBuilderT m ()
 addAccessFlag flag = modify (\c -> c{accessFlags = flag : accessFlags c})
