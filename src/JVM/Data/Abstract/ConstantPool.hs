@@ -3,7 +3,7 @@
 {- | Provides a monadic interface to the constant pool.
  This aims to eliminate the need to manually specify the index of the constant
 -}
-module JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), findIndexOf, runConstantPoolM, ConstantPoolM) where
+module JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), findIndexOf, runConstantPoolM, ConstantPoolT, ConstantPoolM, runConstantPoolT) where
 
 import Control.Monad.Identity (Identity)
 import Control.Monad.State
@@ -91,3 +91,8 @@ findIndexOf = fmap fromIntegral . transformEntry
 
 runConstantPoolM :: ConstantPoolM a -> (a, Vector ConstantPoolInfo)
 runConstantPoolM m = let (a, cp) = runState m IM.empty in (a, IM.toVector cp)
+
+runConstantPoolT :: Monad m => ConstantPoolT m a2 -> m (a2, Vector ConstantPoolInfo)
+runConstantPoolT m = do
+    (a, cp) <- runStateT m IM.empty
+    pure (a, IM.toVector cp)
