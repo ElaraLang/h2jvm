@@ -32,4 +32,7 @@ convertInstruction (Abs.GetStatic c n t) = do
     pure (Raw.GetStatic idx)
 convertInstruction Abs.AReturn = pure Raw.AReturn
 convertInstruction Abs.Return = pure Raw.Return
+convertInstruction (Abs.CheckCast t) = do
+    idx <- findIndexOf (CPClassEntry t)
+    pure (Raw.CheckCast idx)
 convertInstruction other = error ("Instruction not implemented: " <> show other)

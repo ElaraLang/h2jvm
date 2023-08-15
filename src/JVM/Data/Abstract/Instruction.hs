@@ -17,6 +17,7 @@ data Instruction
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType
+    | CheckCast ClassInfoType
     | Return
     deriving (Show, Eq, Ord)
 
