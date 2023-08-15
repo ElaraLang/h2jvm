@@ -143,6 +143,10 @@ test-suite h2jvm-test
   -- The entrypoint to the test suite.
   main-is:          Main.hs
 
+  other-modules:
+    Convert
+    Util
+
   -- Test dependencies.
   build-depends:
     , base           ^>=4.16.0.0

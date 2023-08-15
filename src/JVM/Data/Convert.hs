@@ -5,12 +5,9 @@
 module JVM.Data.Convert where
 
 import Control.Monad.State
-import Data.Bits ((.|.))
 import Data.IndexedMap (IndexedMap)
 import Data.Maybe (fromMaybe)
 import Data.Vector qualified as V
-import Data.Word (Word16)
-import JVM.Data.Abstract.AccessFlags qualified as AbsFlag
 import JVM.Data.Abstract.ClassFile qualified as Abs
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry, CPUTF8Entry), findIndexOf, runConstantPoolM)
 import JVM.Data.Abstract.Name (QualifiedClassName, parseQualifiedClassName)
@@ -19,7 +16,6 @@ import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
 import JVM.Data.Convert.Field (convertField)
 import JVM.Data.Convert.Method (convertMethod)
 import JVM.Data.JVMVersion (getMajor, getMinor)
-import JVM.Data.Raw.AccessFlags
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo)
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
