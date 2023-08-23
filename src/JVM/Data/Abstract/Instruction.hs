@@ -12,6 +12,7 @@ type Reference = Int
 data Instruction
     = ALoad0
     | AReturn
+    | AThrow 
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | LDC LDCEntry
