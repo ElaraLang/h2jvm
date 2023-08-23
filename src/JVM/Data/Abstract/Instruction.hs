@@ -13,6 +13,7 @@ data Instruction
     = ALoad0
     | AReturn
     | AThrow 
+    | AConstNull
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | LDC LDCEntry
