@@ -1,4 +1,4 @@
-{- | An indexed map is an efficient map with integer keys, that can efficiently retrieve the key of a value.
+{- | An indexed map is an efficient map with integer keys, that can efficiently retrieve the key from a value.
 This is used to efficiently build up a constant pool without duplicating entries.
 Because of the specialised nature, its indexes start at 1, not 0. I would apologise but I'm not sorry.
 -}
