@@ -3,7 +3,7 @@
 {- | Provides a monadic interface to the constant pool.
  This aims to eliminate the need to manually specify the index of the constant
 -}
-module JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), findIndexOf, runConstantPoolM, ConstantPoolT, ConstantPoolM, runConstantPoolT) where
+module JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), FieldRef (..), MethodRef (..), findIndexOf, runConstantPoolM, ConstantPoolT, ConstantPoolM, runConstantPoolT) where
 
 import Control.Monad.Identity (Identity)
 import Control.Monad.State
@@ -13,9 +13,7 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Vector (Vector)
-import Data.Word (Word16)
-import JVM.Data.Abstract.Descriptor (MethodDescriptor)
-import JVM.Data.Abstract.Method (ClassFileMethod (methodDescriptor))
+import JVM.Data.Abstract.Descriptor (BootstrapMethodDescriptor, MethodDescriptor)
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 import JVM.Data.Convert.Descriptor (convertMethodDescriptor)
 import JVM.Data.Convert.Numbers (toJVMFloat, toJVMLong)
@@ -31,14 +29,8 @@ data ConstantPoolEntry
     = -- | A class reference
       CPClassEntry ClassInfoType
                    -- ^ The class being referenced
-    | CPFieldRefEntry ClassInfoType Text FieldType
-    | CPMethodRefEntry
-        ClassInfoType
-        -- ^ The class containing the method
-        Text
-        -- ^ The name of the method
-        MethodDescriptor
-        -- ^ The descriptor of the method
+    | CPFieldRefEntry FieldRef
+    | CPMethodRefEntry MethodRef
     | CPInterfaceMethodRefEntry Text ()
     | CPStringEntry Text
     | CPIntegerEntry Int
@@ -47,9 +39,41 @@ data ConstantPoolEntry
     | CPDoubleEntry Double
     | CPNameAndTypeEntry Text Text
     | CPUTF8Entry Text
-    | CPMethodHandleEntry Int -- TODO figure this one out
+    | CPMethodHandleEntry MethodHandleEntry
     | CPMethodTypeEntry Text -- TODO and this one
-    | CPInvokeDynamicEntry Int -- TODO and this one
+    | -- | CONSTANT_InvokeDynamic_info
+      CPInvokeDynamicEntry
+        BootstrapMethodDescriptor
+        -- ^ bootstrap_method_attr(_index)
+        Text
+        -- ^ name(_and_type_index)
+        MethodDescriptor
+        -- ^ (name_and_)type(_index)
+    deriving (Show, Eq, Ord)
+
+data FieldRef = FieldRef ClassInfoType Text FieldType
+    deriving (Show, Eq, Ord)
+
+data MethodRef
+    = MethodRef
+        ClassInfoType
+        -- ^ The class containing the method
+        Text
+        -- ^ The name of the method
+        MethodDescriptor
+        -- ^ The descriptor of the method
+    deriving (Show, Eq, Ord)
+
+data MethodHandleEntry
+    = MHGetField FieldRef
+    | MHGetStatic FieldRef
+    | MHPutField FieldRef
+    | MHPutStatic FieldRef
+    | MHInvokeVirtual MethodRef
+    | MHNewInvokeSpecial MethodRef
+    | MHInvokeStatic MethodRef
+    | MHInvokeSpecial MethodRef
+    | MHInvokeInterface MethodRef
     deriving (Show, Eq, Ord)
 
 transformEntry :: ConstantPoolEntry -> ConstantPoolM Int
@@ -69,7 +93,7 @@ transformEntry (CPClassEntry name) = do
     let className = classInfoTypeDescriptor name
     nameIndex <- transformEntry (CPUTF8Entry className)
     IM.lookupOrInsertM (ClassInfo $ fromIntegral nameIndex)
-transformEntry (CPMethodRefEntry classRef name methodDescriptor) = do
+transformEntry (CPMethodRefEntry (MethodRef classRef name methodDescriptor)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
     IM.lookupOrInsertM (MethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
@@ -77,7 +101,7 @@ transformEntry (CPNameAndTypeEntry name descriptor) = do
     nameIndex <- transformEntry (CPUTF8Entry name)
     descriptorIndex <- transformEntry (CPUTF8Entry descriptor)
     IM.lookupOrInsertM (NameAndTypeInfo (fromIntegral nameIndex) (fromIntegral descriptorIndex))
-transformEntry (CPFieldRefEntry classRef name fieldType) = do
+transformEntry (CPFieldRefEntry (FieldRef classRef name fieldType)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (fieldTypeDescriptor fieldType))
     IM.lookupOrInsertM (FieldRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))

@@ -6,6 +6,8 @@ import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 import JVM.Data.Abstract.Instruction (Instruction)
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 
+
+
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
     , methodName :: Text

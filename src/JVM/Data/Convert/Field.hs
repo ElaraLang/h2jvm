@@ -3,15 +3,12 @@
 
 module JVM.Data.Convert.Field where
 
-import Data.Bits ((.|.))
 import Data.Vector qualified as V
 import Data.Word (Word16)
-import JVM.Data.Abstract.AccessFlags qualified as Abs
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), ConstantPoolM, findIndexOf)
 import JVM.Data.Abstract.Field qualified as Abs
-import JVM.Data.Convert.AccessFlag (accessFlagsToWord16, convertAccessFlag)
+import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
 import JVM.Data.Convert.Type (fieldTypeDescriptor)
-import JVM.Data.Raw.AccessFlags (AccessFlag (..), accessFlagValue)
 import JVM.Data.Raw.ClassFile qualified as Raw
 
 convertConstantValue :: Abs.ConstantValue -> ConstantPoolM Word16
