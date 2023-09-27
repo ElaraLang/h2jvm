@@ -75,7 +75,7 @@
           run = {
             description = "Run the project with ghcid auto-recompile";
             exec = ''
-              ghcid -c "cabal repl h2jvm:test:h2jvm-test" --warnings -T :main
+              ghcid -c "cabal repl h2jvm:test:h2jvm-test" --warnings -T :main --colour=always
             '';
             category = "Primary";
           };
