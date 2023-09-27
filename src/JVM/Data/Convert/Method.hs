@@ -2,17 +2,13 @@
 
 module JVM.Data.Convert.Method where
 
-import Data.Text (Text)
 import Data.Vector qualified as V
-import JVM.Data.Abstract.ClassFile (ClassFile (name))
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPUTF8Entry), ConstantPoolM, findIndexOf)
-import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), ReturnDescriptor (..))
 import JVM.Data.Abstract.Method
 import JVM.Data.Abstract.Method qualified as Abs
 import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
 import JVM.Data.Convert.Descriptor (convertMethodDescriptor)
 import JVM.Data.Convert.Instruction (convertInstruction)
-import JVM.Data.Convert.Type (fieldTypeDescriptor)
 import JVM.Data.Raw.ClassFile qualified as Raw
 
 convertMethodAttribute :: Abs.MethodAttribute -> ConstantPoolM Raw.AttributeInfo

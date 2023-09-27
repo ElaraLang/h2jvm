@@ -16,7 +16,7 @@ data Instruction
     | AConstNull
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
-    | InvokeDynamic 
+    | InvokeDynamic BootstrapMethodDescriptor Text MethodDescriptor
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType

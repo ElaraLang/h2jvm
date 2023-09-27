@@ -19,6 +19,7 @@ import JVM.Data.Convert.Descriptor (convertMethodDescriptor)
 import JVM.Data.Convert.Numbers (toJVMFloat, toJVMLong)
 import JVM.Data.Convert.Type (classInfoTypeDescriptor, fieldTypeDescriptor)
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo (..))
+import JVM.Data.Raw.MagicNumbers
 import JVM.Data.Raw.Types (U2)
 
 {- | High-level, type-safe representation of a constant pool entry
@@ -105,13 +106,52 @@ transformEntry (CPFieldRefEntry (FieldRef classRef name fieldType)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (fieldTypeDescriptor fieldType))
     IM.lookupOrInsertM (FieldRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
+transformEntry (CPMethodHandleEntry methodHandleEntry) = do
+    let transformFieldMHE f@(FieldRef{}) = findIndexOf (CPFieldRefEntry f)
+    let transformMethodMHE m@(MethodRef{}) = findIndexOf (CPMethodRefEntry m)
+
+    (referenceKind, referenceIndex) <- case methodHandleEntry of
+        MHGetField fr -> do
+            fri <- transformFieldMHE fr
+            pure (_REF_getField, fri)
+        MHGetStatic fr -> do
+            fri <- transformFieldMHE fr
+            pure (_REF_getStatic, fri)
+        MHPutField fr -> do
+            fri <- transformFieldMHE fr
+            pure (_REF_putField, fri)
+        MHPutStatic fr -> do
+            fri <- transformFieldMHE fr
+            pure (_REF_putStatic, fri)
+        MHInvokeVirtual mr -> do
+            mri <- transformMethodMHE mr
+            pure (_REF_invokeVirtual, mri)
+        MHNewInvokeSpecial mr -> do
+            mri <- transformMethodMHE mr
+            pure (_REF_newInvokeSpecial, mri)
+        MHInvokeStatic mr -> do
+            mri <- transformMethodMHE mr
+            pure (_REF_invokeStatic, mri)
+        MHInvokeSpecial mr -> do
+            mri <- transformMethodMHE mr
+            pure (_REF_invokeSpecial, mri)
+        MHInvokeInterface mr -> do
+            mri <- transformMethodMHE mr
+            pure (_REF_invokeInterface, mri)
+    IM.lookupOrInsertM (MethodHandleInfo referenceKind referenceIndex)
+transformEntry (CPInvokeDynamicEntry bootstrapMethodDescriptor name methodDescriptor) = do
+    nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
+    IM.lookupOrInsertM (InvokeDynamicInfo (fromIntegral nameAndTypeIndex) _)
 
 type ConstantPoolT m a = StateT (IndexedMap ConstantPoolInfo) m a
 
 type ConstantPoolM a = ConstantPoolT Identity a
 
 findIndexOf :: ConstantPoolEntry -> ConstantPoolM U2
-findIndexOf = fmap fromIntegral . transformEntry
+findIndexOf = fmap toU2OrError . transformEntry
+  where
+    toU2OrError :: Int -> U2
+    toU2OrError i = if i > fromIntegral (maxBound @U2) then error "Constant pool index out of bounds, too many entries?" else fromIntegral i
 
 runConstantPoolM :: ConstantPoolM a -> (a, Vector ConstantPoolInfo)
 runConstantPoolM m = let (a, cp) = runState m IM.empty in (a, IM.toVector cp)

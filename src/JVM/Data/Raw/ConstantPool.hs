@@ -24,7 +24,7 @@ data ConstantPoolInfo
     | DoubleInfo {highBytes :: U4, lowBytes :: U4}
     | NameAndTypeInfo {nameIndex :: U2, descriptorIndex :: U2}
     | UTF8Info {utfBytes :: ByteString}
-    | MethodHandleInfo {referenceKind :: Word8, referenceIndex :: U2}
+    | MethodHandleInfo {referenceKind :: U1, referenceIndex :: U2}
     | MethodTypeInfo {descriptorIndex :: U2}
     | InvokeDynamicInfo {bootstrapMethodAttrIndex :: U2, nameAndTypeIndex :: U2}
     deriving (Show, Eq, Ord)
