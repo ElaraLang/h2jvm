@@ -14,17 +14,10 @@ import Data.Map qualified as M
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Prelude hiding (lookup)
+import GHC.Exts (IsList(..))
 
 data IndexedMap a = IndexedMap !(IM.IntMap a) !(M.Map a Int)
 
-instance (Show a) => Show (IndexedMap a) where
-    show (IndexedMap im _) = show im
-
-instance (Eq a) => Eq (IndexedMap a) where
-    (IndexedMap im _) == (IndexedMap im' _) = im == im'
-
-instance (Ord a) => Ord (IndexedMap a) where
-    compare (IndexedMap im _) (IndexedMap im' _) = compare im im'
 
 {- | An empty indexed map
 >>> lookup @String 1 empty
@@ -55,6 +48,16 @@ Just 2
 -}
 lookupIndex :: (Ord a) => a -> IndexedMap a -> Maybe Int
 lookupIndex a (IndexedMap _ m) = M.lookup a m
+
+{- | Find the index of the first element that satisfies the predicate, if any
+>>> lookupIndexWhere (== "hello") (singleton "hello")
+Just 1
+
+>>> lookupIndexWhere (== "hello") (singleton "world")
+Nothing
+-}
+lookupIndexWhere :: (a -> Bool) -> IndexedMap a -> Maybe Int
+lookupIndexWhere f (IndexedMap m _) = fst <$> IM.lookupMin (IM.filter f m)
 
 -- | Insert a value into the map without checking if it already exists
 insert :: (Ord a) => a -> IndexedMap a -> (Int, IndexedMap a)
@@ -98,6 +101,29 @@ toVector i | isEmpty i = V.empty
 toVector (IndexedMap im _) = do
     let (maxIndex, _) = IM.findMax im
     V.generate maxIndex ((im IM.!) . (1 +))
+
+
+-- 
+-- Instances
+--
+
+
+instance (Show a) => Show (IndexedMap a) where
+    show (IndexedMap im _) = show im
+
+instance (Eq a) => Eq (IndexedMap a) where
+    (IndexedMap im _) == (IndexedMap im' _) = im == im'
+
+instance (Ord a) => Ord (IndexedMap a) where
+    compare (IndexedMap im _) (IndexedMap im' _) = compare im im'
+
+instance Foldable IndexedMap where
+    foldMap f (IndexedMap im _) = foldMap f im
+
+instance Ord a => IsList (IndexedMap a) where
+    type Item (IndexedMap a) = a
+    fromList = foldr (\a b -> snd $ insert a b) empty
+    toList = toList . toVector
 
 {- | Semigroup instance for IndexedMap
  | This is a left-biased union of the two maps

@@ -146,6 +146,15 @@ putAttribute (CodeAttribute maxStack maxLocals code exceptionTable codeAttribute
     putAttributes codeAttributes
 putAttribute (SourceFileAttribute sfIndex) = do
     putWord16be sfIndex
+putAttribute (BootstrapMethodsAttribute bms) = do
+    putWord16be $ fromIntegral $ V.length bms
+    mapM_ putBootstrapMethod bms
+
+putBootstrapMethod :: BootstrapMethod -> Put
+putBootstrapMethod BootstrapMethod{..} = do
+    putWord16be bootstrapMethodRef
+    putWord16be $ fromIntegral $ V.length bootstrapArguments
+    mapM_ putWord16be bootstrapArguments
 
 putExceptionTable :: Vector ExceptionTableEntry -> Put
 putExceptionTable = writeList putWord16be

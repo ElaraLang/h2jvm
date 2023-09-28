@@ -90,7 +90,7 @@ transformEntry (CPMethodHandleEntry methodHandleEntry) = do
 transformEntry (CPInvokeDynamicEntry bootstrapMethod name methodDescriptor) = do
     nameAndTypeIndex <- findIndexOf (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
     bmIndex <- convertBootstrapMethod bootstrapMethod
-    
+
     lookupOrInsertM (InvokeDynamicInfo (fromIntegral nameAndTypeIndex) (fromIntegral bmIndex))
 transformEntry other = error $ "transformEntry: " <> show other
 
@@ -126,10 +126,16 @@ findIndexOf = fmap toU2OrError . transformEntry
             then error "Constant pool index out of bounds, too many entries?"
             else fromIntegral i
 
-runConstantPoolM :: ConstantPoolM a -> (a, Vector Raw.BootstrapMethod, Vector ConstantPoolInfo)
-runConstantPoolM = runIdentity . runConstantPoolT
+runConstantPoolM :: ConstantPoolM a -> (a, ConstantPoolState)
+runConstantPoolM = runConstantPoolMWith mempty
 
-runConstantPoolT :: Monad m => ConstantPoolT m a -> m (a, Vector Raw.BootstrapMethod, Vector ConstantPoolInfo)
-runConstantPoolT m = do
-    (a, s) <- runStateT m mempty
-    pure (a, IM.toVector (s.bootstrapMethods), IM.toVector (s.constantPool))
+runConstantPoolT :: Monad m => ConstantPoolT m a -> m (a, ConstantPoolState)
+runConstantPoolT = runConstantPoolTWith mempty
+
+runConstantPoolTWith :: Monad m => ConstantPoolState -> ConstantPoolT m a -> m (a, ConstantPoolState)
+runConstantPoolTWith = flip runStateT
+
+runConstantPoolMWith :: ConstantPoolState -> ConstantPoolM a -> (a, ConstantPoolState)
+runConstantPoolMWith = runIdentity .: runConstantPoolTWith
+  where
+    (.:) = (.) . (.)

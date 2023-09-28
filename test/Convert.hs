@@ -3,12 +3,12 @@
 
 module Convert where
 
-import Data.Vector
+import Data.IndexedMap qualified as IM
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor (MethodDescriptor (MethodDescriptor), ReturnDescriptor (TypeReturn))
 import JVM.Data.Abstract.Instruction (Instruction (..), LDCEntry (..))
 import JVM.Data.Abstract.Type (ClassInfoType (ClassInfoType), FieldType (..), PrimitiveType (Boolean, Char, Int))
-import JVM.Data.Convert.ConstantPool (runConstantPoolM)
+import JVM.Data.Convert.ConstantPool (ConstantPoolState (ConstantPoolState), runConstantPoolM)
 import JVM.Data.Convert.Instruction (convertInstruction)
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo (..))
@@ -20,7 +20,7 @@ import Util (shouldBeJust, shouldContain)
 spec :: Spec
 spec = describe "test conversions" $ do
     it "Converts a simple invokestatic instruction properly" $ do
-        let (inst, bms, constants) =
+        let (inst, ConstantPoolState constants bms) =
                 runConstantPoolM $
                     convertInstruction
                         ( InvokeStatic
@@ -34,18 +34,18 @@ spec = describe "test conversions" $ do
 
         bms `shouldBe` []
 
-        indexOfMethodRef <- shouldBeJust $ findIndex (\case MethodRefInfo _ _ -> True; _ -> False) constants
-        inst `shouldBe` Raw.InvokeStatic (fromIntegral indexOfMethodRef + 1)
+        indexOfMethodRef <- findCPIndex (\case MethodRefInfo _ _ -> True; _ -> False) constants
+        inst `shouldBe` Raw.InvokeStatic (fromIntegral indexOfMethodRef )
 
     it "Converts a simple ldc instruction properly" $ do
-        let (inst, bms, constants) = runConstantPoolM $ convertInstruction (LDC $ LDCString "hello")
+        let (inst, ConstantPoolState constants bms) = runConstantPoolM $ convertInstruction (LDC $ LDCString "hello")
         constants `shouldContain` Raw.UTF8Info "hello"
         bms `shouldBe` []
-        indexOfInteger <- shouldBeJust $ findIndex (\case StringInfo _ -> True; _ -> False) constants
-        inst `shouldBe` Raw.LDC (fromIntegral indexOfInteger + 1)
+        indexOfInteger <- findCPIndex (\case StringInfo _ -> True; _ -> False) constants
+        inst `shouldBe` Raw.LDC (fromIntegral indexOfInteger)
 
     it "Converts a simple indy instruction properly" $ do
-        let (inst, bms, constants) =
+        let (inst, ConstantPoolState constants bms) =
                 runConstantPoolM $
                     convertInstruction
                         ( InvokeDynamic
@@ -69,8 +69,9 @@ spec = describe "test conversions" $ do
         indexOfIndy <- findCPIndex (\case InvokeDynamicInfo _ _ -> True; _ -> False) constants
         strArgIndex <- findCPIndex (\case StringInfo _ -> True; _ -> False) constants
 
-        bms `shouldBe` [Raw.BootstrapMethod (fromIntegral indexOfMethodHandle) (fromList [fromIntegral strArgIndex])]
+
+        bms `shouldBe` IM.singleton (Raw.BootstrapMethod (fromIntegral indexOfMethodHandle) [fromIntegral strArgIndex])
         inst `shouldBe` Raw.InvokeDynamic (fromIntegral indexOfIndy)
 
-findCPIndex :: (a -> Bool) -> Vector a -> IO Int
-findCPIndex pred cp = shouldBeJust $ (+ 1) <$> findIndex pred cp
+findCPIndex :: (a -> Bool) -> IM.IndexedMap a -> IO Int
+findCPIndex pred cp = shouldBeJust $ IM.lookupIndexWhere pred cp
