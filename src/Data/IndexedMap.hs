@@ -13,11 +13,10 @@ import Data.IntMap qualified as IM
 import Data.Map qualified as M
 import Data.Vector (Vector)
 import Data.Vector qualified as V
+import GHC.Exts (IsList (..))
 import Prelude hiding (lookup)
-import GHC.Exts (IsList(..))
 
 data IndexedMap a = IndexedMap !(IM.IntMap a) !(M.Map a Int)
-
 
 {- | An empty indexed map
 >>> lookup @String 1 empty
@@ -102,11 +101,9 @@ toVector (IndexedMap im _) = do
     let (maxIndex, _) = IM.findMax im
     V.generate maxIndex ((im IM.!) . (1 +))
 
-
--- 
+--
 -- Instances
 --
-
 
 instance (Show a) => Show (IndexedMap a) where
     show (IndexedMap im _) = show im

@@ -38,7 +38,6 @@ convertInstruction Abs.Return = pure Raw.Return
 convertInstruction (Abs.CheckCast t) = do
     idx <- findIndexOf (CPClassEntry t)
     pure (Raw.CheckCast idx)
-
 convertInstruction (Abs.InvokeDynamic bm n m) = do
-    idx <- findIndexOf (CPInvokeDynamicEntry bm n m )
+    idx <- findIndexOf (CPInvokeDynamicEntry bm n m)
     pure (Raw.InvokeDynamic idx)

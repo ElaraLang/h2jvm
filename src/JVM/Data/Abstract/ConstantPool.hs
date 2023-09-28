@@ -3,7 +3,7 @@
 {- | Provides a monadic interface to the constant pool.
  This aims to eliminate the need to manually specify the index of the constant
 -}
-module JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), MethodHandleEntry (..), FieldRef (..), MethodRef (..), BootstrapMethod (..), BootstrapArgument(..), bmArgToCPEntry) where
+module JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), MethodHandleEntry (..), FieldRef (..), MethodRef (..), BootstrapMethod (..), BootstrapArgument (..), bmArgToCPEntry) where
 
 import Data.Int (Int64)
 import Data.Text (Text)

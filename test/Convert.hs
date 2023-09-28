@@ -35,7 +35,7 @@ spec = describe "test conversions" $ do
         bms `shouldBe` []
 
         indexOfMethodRef <- findCPIndex (\case MethodRefInfo _ _ -> True; _ -> False) constants
-        inst `shouldBe` Raw.InvokeStatic (fromIntegral indexOfMethodRef )
+        inst `shouldBe` Raw.InvokeStatic (fromIntegral indexOfMethodRef)
 
     it "Converts a simple ldc instruction properly" $ do
         let (inst, ConstantPoolState constants bms) = runConstantPoolM $ convertInstruction (LDC $ LDCString "hello")
@@ -68,7 +68,6 @@ spec = describe "test conversions" $ do
         indexOfMethodHandle <- findCPIndex (\case MethodHandleInfo _ _ -> True; _ -> False) constants
         indexOfIndy <- findCPIndex (\case InvokeDynamicInfo _ _ -> True; _ -> False) constants
         strArgIndex <- findCPIndex (\case StringInfo _ -> True; _ -> False) constants
-
 
         bms `shouldBe` IM.singleton (Raw.BootstrapMethod (fromIntegral indexOfMethodHandle) [fromIntegral strArgIndex])
         inst `shouldBe` Raw.InvokeDynamic (fromIntegral indexOfIndy)
