@@ -10,7 +10,7 @@ data ClassAccessFlag
     | Synthetic
     | Annotation
     | Enum
-    deriving (Show)
+    deriving (Show, Eq)
 
 data FieldAccessFlag
     = FPublic

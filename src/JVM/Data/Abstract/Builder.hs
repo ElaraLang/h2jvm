@@ -6,10 +6,11 @@ module JVM.Data.Abstract.Builder where
 
 import Control.Monad.State
 import Data.Functor.Identity
-import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute, methods)
+import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute (BootstrapMethods), methods)
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
 import JVM.Data.Abstract.ClassFile.Field
 import JVM.Data.Abstract.ClassFile.Method
+import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion
 
@@ -47,6 +48,14 @@ buildAndAddMethod m = m >>= addMethod
 
 addAttribute :: Monad m => ClassFileAttribute -> ClassBuilderT m ()
 addAttribute a = modify (\c -> c{attributes = a : attributes c})
+
+addBootstrapMethod :: Monad m => BootstrapMethod -> ClassBuilderT m ()
+addBootstrapMethod b = modify (\c -> c{attributes = mergeAttributes (attributes c)})
+  where
+    mergeAttributes :: [ClassFileAttribute] -> [ClassFileAttribute]
+    mergeAttributes [] = []
+    mergeAttributes (BootstrapMethods bs : as) = BootstrapMethods (b : bs) : mergeAttributes as
+    mergeAttributes (a : as) = a : mergeAttributes as
 
 dummyClass :: QualifiedClassName -> JVMVersion -> ClassFile
 dummyClass name version =

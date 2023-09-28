@@ -34,7 +34,7 @@ data ClassFileAttribute
     | RuntimeVisibleAnnotations
     | RuntimeInvisibleAnnotations
     | BootstrapMethods [BootstrapMethod]
-    deriving (Show)
+    deriving (Show, Eq)
 
 data InnerClassInfo = InnerClassInfo
     { innerClassInfo :: QualifiedClassName
@@ -42,4 +42,4 @@ data InnerClassInfo = InnerClassInfo
     , innerName :: Text
     , accessFlags :: [ClassAccessFlag]
     }
-    deriving (Show)
+    deriving (Show, Eq)
