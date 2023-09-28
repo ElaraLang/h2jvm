@@ -79,7 +79,14 @@ data Attribute
         }
     | ConstantValueAttribute Word16
     | SourceFileAttribute Word16
+    | BootstrapMethodsAttribute (Vector BootstrapMethod)
     deriving (Show)
+
+data BootstrapMethod = BootstrapMethod
+    { bootstrapMethodRef :: Word16
+    , bootstrapArguments :: Vector Word16
+    }
+    deriving (Show, Eq, Ord)
 
 data ExceptionTableEntry = ExceptionTableEntry
     { startPc :: Word16

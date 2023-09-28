@@ -3,10 +3,11 @@
 module JVM.Data.Convert.Method where
 
 import Data.Vector qualified as V
-import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPUTF8Entry), ConstantPoolM, findIndexOf)
-import JVM.Data.Abstract.Method
-import JVM.Data.Abstract.Method qualified as Abs
+import JVM.Data.Abstract.ClassFile.Method
+import JVM.Data.Abstract.ClassFile.Method qualified as Abs
+import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPUTF8Entry))
 import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
+import JVM.Data.Convert.ConstantPool
 import JVM.Data.Convert.Descriptor (convertMethodDescriptor)
 import JVM.Data.Convert.Instruction (convertInstruction)
 import JVM.Data.Raw.ClassFile qualified as Raw

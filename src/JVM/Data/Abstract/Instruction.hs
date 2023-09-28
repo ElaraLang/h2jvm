@@ -4,6 +4,7 @@
 module JVM.Data.Abstract.Instruction where
 
 import Data.Text (Text)
+import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 
@@ -12,11 +13,11 @@ type Reference = Int
 data Instruction
     = ALoad0
     | AReturn
-    | AThrow 
+    | AThrow
     | AConstNull
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
-    | InvokeDynamic BootstrapMethodDescriptor Text MethodDescriptor
+    | InvokeDynamic BootstrapMethod Text MethodDescriptor
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType

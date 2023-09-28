@@ -69,9 +69,9 @@ accessFlag_NATIVE = 0x0100
 accessFlag_STRICT :: Word16
 accessFlag_STRICT = 0x0800
 
--- 
+--
 -- Method Handle Kinds
--- 
+--
 
 _REF_getField :: Word8
 _REF_getField = 1
@@ -99,8 +99,6 @@ _REF_newInvokeSpecial = 8
 
 _REF_invokeInterface :: Word8
 _REF_invokeInterface = 9
-
-
 
 --
 -- Constant Pool Tags

@@ -1,15 +1,15 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 
--- | Provides a monadic interface for building classfiles in a high-level format.
+-- | Provides a monadic interface for building class files in a high-level format.
 module JVM.Data.Abstract.Builder where
 
 import Control.Monad.State
 import Data.Functor.Identity
-import JVM.Data.Abstract.AccessFlags (ClassAccessFlag)
 import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute, methods)
-import JVM.Data.Abstract.Field
-import JVM.Data.Abstract.Method
+import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
+import JVM.Data.Abstract.ClassFile.Field
+import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion
 

@@ -4,7 +4,7 @@ module JVM.Data.Convert.AccessFlag where
 
 import Data.Bits ((.|.))
 import Data.Word (Word16)
-import JVM.Data.Abstract.AccessFlags (ClassAccessFlag (..), FieldAccessFlag (..), MethodAccessFlag (..))
+import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag (..), FieldAccessFlag (..), MethodAccessFlag (..))
 import JVM.Data.Raw.AccessFlags (accessFlagValue)
 import JVM.Data.Raw.AccessFlags qualified as Raw
 

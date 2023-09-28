@@ -69,18 +69,19 @@ library
   exposed-modules:
     Data.Binary.Write
     Data.IndexedMap
-    JVM.Data.Abstract.AccessFlags
     JVM.Data.Abstract.Builder
     JVM.Data.Abstract.ClassFile
+    JVM.Data.Abstract.ClassFile.AccessFlags
+    JVM.Data.Abstract.ClassFile.Field
+    JVM.Data.Abstract.ClassFile.Method
     JVM.Data.Abstract.ConstantPool
     JVM.Data.Abstract.Descriptor
-    JVM.Data.Abstract.Field
     JVM.Data.Abstract.Instruction
-    JVM.Data.Abstract.Method
     JVM.Data.Abstract.Name
     JVM.Data.Abstract.Type
     JVM.Data.Convert
     JVM.Data.Convert.AccessFlag
+    JVM.Data.Convert.ConstantPool
     JVM.Data.Convert.Descriptor
     JVM.Data.Convert.Field
     JVM.Data.Convert.Instruction
@@ -142,7 +143,6 @@ test-suite h2jvm-test
 
   -- The entrypoint to the test suite.
   main-is:          Main.hs
-
   other-modules:
     Convert
     Util

@@ -5,9 +5,10 @@ module JVM.Data.Convert.Field where
 
 import Data.Vector qualified as V
 import Data.Word (Word16)
-import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), ConstantPoolM, findIndexOf)
-import JVM.Data.Abstract.Field qualified as Abs
+import JVM.Data.Abstract.ClassFile.Field qualified as Abs
+import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..))
 import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
+import JVM.Data.Convert.ConstantPool
 import JVM.Data.Convert.Type (fieldTypeDescriptor)
 import JVM.Data.Raw.ClassFile qualified as Raw
 

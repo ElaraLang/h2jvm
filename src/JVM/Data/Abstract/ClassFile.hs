@@ -4,9 +4,10 @@
 module JVM.Data.Abstract.ClassFile where
 
 import Data.Text (Text)
-import JVM.Data.Abstract.AccessFlags (ClassAccessFlag)
-import JVM.Data.Abstract.Field (ClassFileField)
-import JVM.Data.Abstract.Method (ClassFileMethod)
+import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
+import JVM.Data.Abstract.ClassFile.Field (ClassFileField)
+import JVM.Data.Abstract.ClassFile.Method (ClassFileMethod)
+import JVM.Data.Abstract.ConstantPool (BootstrapMethod)
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion (JVMVersion)
 
@@ -32,7 +33,7 @@ data ClassFileAttribute
     | Deprecated
     | RuntimeVisibleAnnotations
     | RuntimeInvisibleAnnotations
-    | BootstrapMethods
+    | BootstrapMethods [BootstrapMethod]
     deriving (Show)
 
 data InnerClassInfo = InnerClassInfo

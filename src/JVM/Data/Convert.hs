@@ -9,10 +9,11 @@ import Data.IndexedMap (IndexedMap)
 import Data.Maybe (fromMaybe)
 import Data.Vector qualified as V
 import JVM.Data.Abstract.ClassFile qualified as Abs
-import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry, CPUTF8Entry), findIndexOf, runConstantPoolM)
+import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry, CPUTF8Entry))
 import JVM.Data.Abstract.Name (QualifiedClassName, parseQualifiedClassName)
 import JVM.Data.Abstract.Type (ClassInfoType (..))
 import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
+import JVM.Data.Convert.ConstantPool
 import JVM.Data.Convert.Field (convertField)
 import JVM.Data.Convert.Method (convertMethod)
 import JVM.Data.JVMVersion (getMajor, getMinor)
@@ -23,7 +24,7 @@ import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
 jloName :: QualifiedClassName
 jloName = parseQualifiedClassName "java.lang.Object"
 
-convertClassAttributes :: [Abs.ClassFileAttribute] -> State (IndexedMap ConstantPoolInfo) [Raw.AttributeInfo]
+convertClassAttributes :: [Abs.ClassFileAttribute] -> ConstantPoolM [Raw.AttributeInfo]
 convertClassAttributes = traverse convertClassAttribute
   where
     convertClassAttribute (Abs.SourceFile text) = do
@@ -34,7 +35,7 @@ convertClassAttributes = traverse convertClassAttribute
 
 convert :: Abs.ClassFile -> Raw.ClassFile
 convert Abs.ClassFile{..} = do
-    let (temp, finalConstantPool) = runConstantPoolM $ do
+    let (temp, bootstrapMethods, finalConstantPool) = runConstantPoolM $ do
             nameIndex <- findIndexOf (CPClassEntry $ ClassInfoType name)
             superIndex <- findIndexOf (CPClassEntry $ ClassInfoType (fromMaybe jloName superClass))
             let flags = accessFlagsToWord16 accessFlags

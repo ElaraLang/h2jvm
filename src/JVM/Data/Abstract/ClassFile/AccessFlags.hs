@@ -1,4 +1,4 @@
-module JVM.Data.Abstract.AccessFlags where
+module JVM.Data.Abstract.ClassFile.AccessFlags where
 
 -- | Access flags for a class
 data ClassAccessFlag

@@ -1,7 +1,7 @@
-module JVM.Data.Abstract.Field where
+module JVM.Data.Abstract.ClassFile.Field where
 
 import Data.Text (Text)
-import JVM.Data.Abstract.AccessFlags (FieldAccessFlag)
+import JVM.Data.Abstract.ClassFile.AccessFlags (FieldAccessFlag)
 import JVM.Data.Abstract.Type (FieldType)
 import JVM.Data.Raw.Types (JVMDouble, JVMFloat, JVMInt, JVMLong, JVMString)
 

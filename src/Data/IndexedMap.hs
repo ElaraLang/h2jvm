@@ -1,11 +1,14 @@
+{-# LANGUAGE PartialTypeSignatures #-}
+
 {- | An indexed map is an efficient map with integer keys, that can efficiently retrieve the key from a value.
 This is used to efficiently build up a constant pool without duplicating entries.
 Because of the specialised nature, its indexes start at 1, not 0. I would apologise but I'm not sorry.
 -}
 module Data.IndexedMap where
 
+import Control.Lens (Lens', assign, use)
 import Control.Monad (forM_)
-import Control.Monad.State (MonadState (get, put), execState)
+import Control.Monad.State (MonadState, execState)
 import Data.IntMap qualified as IM
 import Data.Map qualified as M
 import Data.Vector (Vector)
@@ -13,6 +16,15 @@ import Data.Vector qualified as V
 import Prelude hiding (lookup)
 
 data IndexedMap a = IndexedMap !(IM.IntMap a) !(M.Map a Int)
+
+instance (Show a) => Show (IndexedMap a) where
+    show (IndexedMap im _) = show im
+
+instance (Eq a) => Eq (IndexedMap a) where
+    (IndexedMap im _) == (IndexedMap im' _) = im == im'
+
+instance (Ord a) => Ord (IndexedMap a) where
+    compare (IndexedMap im _) (IndexedMap im' _) = compare im im'
 
 {- | An empty indexed map
 >>> lookup @String 1 empty
@@ -57,10 +69,13 @@ lookupOrInsert a (IndexedMap m m') = case M.lookup a m' of
     Nothing -> insert a (IndexedMap m m')
 
 lookupOrInsertM :: (Ord a, MonadState (IndexedMap a) m) => a -> m Int
-lookupOrInsertM a = do
-    i <- get
+lookupOrInsertM = lookupOrInsertMOver id
+
+lookupOrInsertMOver :: (MonadState a m, Ord b) => Lens' a (IndexedMap b) -> b -> m Int
+lookupOrInsertMOver lens a = do
+    i <- use lens
     let (idx, new) = lookupOrInsert a i
-    put new
+    assign lens new
     pure idx
 
 isEmpty :: IndexedMap a -> Bool
@@ -84,8 +99,15 @@ toVector (IndexedMap im _) = do
     let (maxIndex, _) = IM.findMax im
     V.generate maxIndex ((im IM.!) . (1 +))
 
+{- | Semigroup instance for IndexedMap
+ | This is a left-biased union of the two maps
+-}
 instance (Ord a) => Semigroup (IndexedMap a) where
     l <> r =
         flip execState empty $ do
             forM_ (toVector l) lookupOrInsertM
             forM_ (toVector r) lookupOrInsertM
+
+-- | Monoid instance for IndexedMap
+instance (Ord a) => Monoid (IndexedMap a) where
+    mempty = empty

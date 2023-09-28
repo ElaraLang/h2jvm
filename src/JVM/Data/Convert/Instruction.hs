@@ -1,7 +1,8 @@
 module JVM.Data.Convert.Instruction where
 
-import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), ConstantPoolM, FieldRef (..), MethodRef (..), findIndexOf)
+import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), FieldRef (..), MethodRef (..))
 import JVM.Data.Abstract.Instruction as Abs (Instruction (..), LDCEntry (..))
+import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
 convertInstruction :: Abs.Instruction -> ConstantPoolM Raw.Instruction
@@ -37,4 +38,7 @@ convertInstruction Abs.Return = pure Raw.Return
 convertInstruction (Abs.CheckCast t) = do
     idx <- findIndexOf (CPClassEntry t)
     pure (Raw.CheckCast idx)
-convertInstruction other = error ("Instruction not implemented: " <> show other)
+
+convertInstruction (Abs.InvokeDynamic bm n m) = do
+    idx <- findIndexOf (CPInvokeDynamicEntry bm n m )
+    pure (Raw.InvokeDynamic idx)

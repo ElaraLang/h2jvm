@@ -10,7 +10,3 @@ data ReturnDescriptor
     = VoidReturn
     | TypeReturn FieldType
     deriving (Show, Eq, Ord)
-
-data BootstrapMethodDescriptor 
-    = BootstrapMethodDescriptor MethodDescriptor
-    deriving (Show, Eq, Ord)

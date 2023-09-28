@@ -1,12 +1,11 @@
-module JVM.Data.Abstract.Method where
+module JVM.Data.Abstract.ClassFile.Method where
 
 import Data.Text (Text)
-import JVM.Data.Abstract.AccessFlags (MethodAccessFlag)
+import JVM.Data.Abstract.ClassFile.AccessFlags (MethodAccessFlag)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
-import JVM.Data.Abstract.Instruction (Instruction)
+
+import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
-
-
 
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
