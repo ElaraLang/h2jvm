@@ -31,7 +31,7 @@ data ConstantPoolEntry
     | CPNameAndTypeEntry Text Text
     | CPUTF8Entry Text
     | CPMethodHandleEntry MethodHandleEntry
-    | CPMethodTypeEntry Void -- TODO and this one
+    | CPMethodTypeEntry MethodDescriptor
     | -- | CONSTANT_InvokeDynamic_info
       CPInvokeDynamicEntry
         BootstrapMethod
@@ -63,16 +63,15 @@ data BootstrapArgument
     = BMClassArg ClassInfoType
     | BMStringArg Text
     | BMIntArg Int
-    | BMMethodArg MethodRef
+    | BMMethodArg MethodDescriptor
     | BMMethodHandleArg MethodHandleEntry
-
     deriving (Show, Eq, Ord)
 
 bmArgToCPEntry :: BootstrapArgument -> ConstantPoolEntry
 bmArgToCPEntry (BMClassArg c) = CPClassEntry c
 bmArgToCPEntry (BMStringArg s) = CPStringEntry s
 bmArgToCPEntry (BMIntArg i) = CPIntegerEntry i
-bmArgToCPEntry (BMMethodArg m) = CPMethodRefEntry m
+bmArgToCPEntry (BMMethodArg m) = CPMethodTypeEntry m
 bmArgToCPEntry (BMMethodHandleArg m) = CPMethodHandleEntry m
 
 data MethodHandleEntry
