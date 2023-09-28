@@ -63,12 +63,17 @@ data BootstrapArgument
     = BMClassArg ClassInfoType
     | BMStringArg Text
     | BMIntArg Int
+    | BMMethodArg MethodRef
+    | BMMethodHandleArg MethodHandleEntry
+
     deriving (Show, Eq, Ord)
 
 bmArgToCPEntry :: BootstrapArgument -> ConstantPoolEntry
 bmArgToCPEntry (BMClassArg c) = CPClassEntry c
 bmArgToCPEntry (BMStringArg s) = CPStringEntry s
 bmArgToCPEntry (BMIntArg i) = CPIntegerEntry i
+bmArgToCPEntry (BMMethodArg m) = CPMethodRefEntry m
+bmArgToCPEntry (BMMethodHandleArg m) = CPMethodHandleEntry m
 
 data MethodHandleEntry
     = MHGetField FieldRef
