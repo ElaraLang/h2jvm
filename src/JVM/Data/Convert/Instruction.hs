@@ -29,7 +29,7 @@ convertInstruction (Abs.InvokeVirtual c n m) = do
     idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))
     pure (Raw.InvokeVirtual idx)
 convertInstruction (Abs.InvokeInterface c n m) = do
-    idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))
+    idx <- findIndexOf (CPInterfaceMethodRefEntry (MethodRef c n m))
     let count = countArguments m
     pure (Raw.InvokeInterface idx (fromIntegral count))
 convertInstruction (Abs.LDC ldc) = do

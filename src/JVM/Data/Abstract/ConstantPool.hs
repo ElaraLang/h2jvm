@@ -21,7 +21,7 @@ data ConstantPoolEntry
                    -- ^ The class being referenced
     | CPFieldRefEntry FieldRef
     | CPMethodRefEntry MethodRef
-    | CPInterfaceMethodRefEntry Text ()
+    | CPInterfaceMethodRefEntry MethodRef
     | CPStringEntry Text
     | CPIntegerEntry Int
     | CPFloatEntry Float
