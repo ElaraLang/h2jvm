@@ -7,6 +7,9 @@ import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
 convertInstruction :: Abs.Instruction -> ConstantPoolM Raw.Instruction
 convertInstruction Abs.ALoad0 = pure Raw.ALoad0
+convertInstruction Abs.ALoad1 = pure Raw.ALoad1
+convertInstruction Abs.ALoad2 = pure Raw.ALoad2
+convertInstruction Abs.ALoad3 = pure Raw.ALoad3
 convertInstruction Abs.AThrow = pure Raw.AThrow
 convertInstruction Abs.AConstNull = pure Raw.AConstNull
 convertInstruction (Abs.InvokeStatic c n m) = do

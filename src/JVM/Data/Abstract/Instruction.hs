@@ -12,6 +12,9 @@ type Reference = Int
 
 data Instruction
     = ALoad0
+    | ALoad1
+    | ALoad2
+    | ALoad3
     | AReturn
     | AThrow
     | AConstNull

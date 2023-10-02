@@ -9,7 +9,6 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
-import Data.Void (Void)
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 
 {- | High-level, type-safe representation of a constant pool entry
@@ -65,6 +64,7 @@ data BootstrapArgument
     | BMIntArg Int
     | BMMethodArg MethodDescriptor
     | BMMethodHandleArg MethodHandleEntry
+
     deriving (Show, Eq, Ord)
 
 bmArgToCPEntry :: BootstrapArgument -> ConstantPoolEntry
