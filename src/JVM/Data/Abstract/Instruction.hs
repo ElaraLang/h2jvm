@@ -19,6 +19,7 @@ data Instruction
     | AThrow
     | AConstNull
     | InvokeStatic ClassInfoType Text MethodDescriptor
+    | InvokeInterface ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | InvokeDynamic BootstrapMethod Text MethodDescriptor
     | LDC LDCEntry

@@ -1,9 +1,19 @@
 module JVM.Data.Convert.Instruction where
 
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), FieldRef (..), MethodRef (..))
+import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Instruction as Abs (Instruction (..), LDCEntry (..))
+import JVM.Data.Abstract.Type
 import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
+
+countArguments :: MethodDescriptor -> Int
+countArguments (MethodDescriptor args _) = sum (map countArgument args)
+  where
+    countArgument :: FieldType -> Int
+    countArgument (PrimitiveFieldType Double) = 2
+    countArgument (PrimitiveFieldType Long) = 2
+    countArgument _ = 1
 
 convertInstruction :: Abs.Instruction -> ConstantPoolM Raw.Instruction
 convertInstruction Abs.ALoad0 = pure Raw.ALoad0
@@ -18,6 +28,10 @@ convertInstruction (Abs.InvokeStatic c n m) = do
 convertInstruction (Abs.InvokeVirtual c n m) = do
     idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))
     pure (Raw.InvokeVirtual idx)
+convertInstruction (Abs.InvokeInterface c n m) = do
+    idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))
+    let count = countArguments m
+    pure (Raw.InvokeInterface idx (fromIntegral count))
 convertInstruction (Abs.LDC ldc) = do
     idx <-
         findIndexOf
