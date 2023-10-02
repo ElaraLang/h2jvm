@@ -46,6 +46,10 @@ transformEntry (CPMethodRefEntry (MethodRef classRef name methodDescriptor)) = d
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
     lookupOrInsertM (MethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
+transformEntry (CPInterfaceMethodRefEntry (MethodRef classRef name methodDescriptor)) = do
+    classIndex <- transformEntry (CPClassEntry classRef)
+    nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
+    lookupOrInsertM (InterfaceMethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
 transformEntry (CPNameAndTypeEntry name descriptor) = do
     nameIndex <- transformEntry (CPUTF8Entry name)
     descriptorIndex <- transformEntry (CPUTF8Entry descriptor)
@@ -90,9 +94,10 @@ transformEntry (CPMethodHandleEntry methodHandleEntry) = do
 transformEntry (CPInvokeDynamicEntry bootstrapMethod name methodDescriptor) = do
     nameAndTypeIndex <- findIndexOf (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
     bmIndex <- convertBootstrapMethod bootstrapMethod
-
     lookupOrInsertM (InvokeDynamicInfo (fromIntegral nameAndTypeIndex) (fromIntegral bmIndex))
-transformEntry other = error $ "transformEntry: " <> show other
+transformEntry (CPMethodTypeEntry methodDescriptor) = do
+    descriptorIndex <- transformEntry (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
+    lookupOrInsertM (MethodTypeInfo (fromIntegral descriptorIndex))
 
 convertBootstrapMethod :: Monad m => BootstrapMethod -> ConstantPoolT m Int
 convertBootstrapMethod (BootstrapMethod mhEntry args) = do
