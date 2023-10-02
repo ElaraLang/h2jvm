@@ -8,7 +8,7 @@ import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
 countArguments :: MethodDescriptor -> Int
-countArguments (MethodDescriptor args _) = sum (map countArgument args)
+countArguments (MethodDescriptor args _) = 1 + sum (map countArgument args)
   where
     countArgument :: FieldType -> Int
     countArgument (PrimitiveFieldType Double) = 2
