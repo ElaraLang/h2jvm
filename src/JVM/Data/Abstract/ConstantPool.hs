@@ -64,7 +64,6 @@ data BootstrapArgument
     | BMIntArg Int
     | BMMethodArg MethodDescriptor
     | BMMethodHandleArg MethodHandleEntry
-
     deriving (Show, Eq, Ord)
 
 bmArgToCPEntry :: BootstrapArgument -> ConstantPoolEntry
