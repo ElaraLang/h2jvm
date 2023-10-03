@@ -8,7 +8,6 @@ import Control.Monad.State.Strict
 import Data.IndexedMap (IndexedMap)
 import Data.IndexedMap qualified as IM
 import Data.Text.Encoding
-import Data.Vector (Vector)
 import Data.Vector qualified as V
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Convert.Descriptor

@@ -7,6 +7,7 @@ import Data.Text (Text)
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
+import JVM.Data.Raw.Types
 
 type Reference = Int
 
@@ -15,6 +16,12 @@ data Instruction
     | ALoad1
     | ALoad2
     | ALoad3
+    | ALoad U8
+    | AStore0
+    | AStore1
+    | AStore2
+    | AStore3
+    | AStore U8
     | AReturn
     | AThrow
     | AConstNull
