@@ -16,12 +16,12 @@ data Instruction
     | ALoad1
     | ALoad2
     | ALoad3
-    | ALoad U8
+    | ALoad U1
     | AStore0
     | AStore1
     | AStore2
     | AStore3
-    | AStore U8
+    | AStore U1
     | AReturn
     | AThrow
     | AConstNull

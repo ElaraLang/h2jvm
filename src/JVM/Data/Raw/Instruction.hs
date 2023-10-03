@@ -12,7 +12,7 @@ data Instruction
     = AALoad
     | AAStore
     | AConstNull
-    | ALoad Word8
+    | ALoad U1
     | ALoad0
     | ALoad1
     | ALoad2
@@ -20,7 +20,7 @@ data Instruction
     | ANewArray ConstantPoolIndex
     | AReturn
     | ArrayLength
-    | AStore Word8
+    | AStore U1
     | AStore0
     | AStore1
     | AStore2
