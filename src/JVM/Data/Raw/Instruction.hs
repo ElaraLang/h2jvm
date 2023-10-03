@@ -220,7 +220,7 @@ putInstruction = \case
     AALoad -> putWord8 MagicNumbers.instruction_aaLoad
     AAStore -> putWord8 MagicNumbers.instruction_aaStore
     AConstNull -> putWord8 MagicNumbers.instruction_aConstNull
-    ALoad -> putWord8 MagicNumbers.instruction_aLoad
+    ALoad n -> putWord8 MagicNumbers.instruction_aLoad *> putWord8 n
     ALoad0 -> putWord8 MagicNumbers.instruction_aLoad0
     ALoad1 -> putWord8 MagicNumbers.instruction_aLoad1
     ALoad2 -> putWord8 MagicNumbers.instruction_aLoad2
@@ -228,7 +228,7 @@ putInstruction = \case
     (ANewArray index) -> putWord8 MagicNumbers.instruction_aNewArray *> putWord16be index
     AReturn -> putWord8 MagicNumbers.instruction_aReturn
     ArrayLength -> putWord8 MagicNumbers.instruction_arrayLength
-    AStore -> putWord8 MagicNumbers.instruction_aStore
+    AStore n  -> putWord8 MagicNumbers.instruction_aStore *> putWord8 n
     AStore0 -> putWord8 MagicNumbers.instruction_aStore0
     AStore1 -> putWord8 MagicNumbers.instruction_aStore1
     AStore2 -> putWord8 MagicNumbers.instruction_aStore2
