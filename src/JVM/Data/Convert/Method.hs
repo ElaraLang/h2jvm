@@ -14,15 +14,13 @@ import JVM.Data.Raw.ClassFile qualified as Raw
 
 convertMethodAttribute :: Abs.MethodAttribute -> ConstantPoolM Raw.AttributeInfo
 convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
-    let maxStack' = fromIntegral maxStack
-        maxLocals' = fromIntegral maxLocals
 
     code' <- V.fromList <$> traverse convertInstruction code
     exceptionTable' <- convertExceptionTable exceptionTable
     attributes' <- convertCodeAttributes codeAttributes
     nameIndex <- findIndexOf (CPUTF8Entry "Code")
 
-    pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.CodeAttribute maxStack' maxLocals' code' exceptionTable' attributes')
+    pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.CodeAttribute maxStack maxLocals code' exceptionTable' attributes')
   where
     convertExceptionTable :: [Abs.ExceptionTableEntry] -> ConstantPoolM (V.Vector Raw.ExceptionTableEntry)
     convertExceptionTable = fmap V.fromList . traverse convertExceptionTableEntry

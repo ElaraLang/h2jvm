@@ -6,6 +6,7 @@ import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)
+import JVM.Data.Raw.Types (U2)
 
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
@@ -20,8 +21,8 @@ data MethodAttribute
     deriving (Show)
 
 data CodeAttributeData = CodeAttributeData
-    { maxStack :: Int
-    , maxLocals :: Int
+    { maxStack :: U2
+    , maxLocals :: U2
     , code :: [Instruction]
     , exceptionTable :: [ExceptionTableEntry]
     , codeAttributes :: [CodeAttribute]
