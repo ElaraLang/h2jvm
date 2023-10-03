@@ -14,7 +14,6 @@ import JVM.Data.Raw.ClassFile qualified as Raw
 
 convertMethodAttribute :: Abs.MethodAttribute -> ConstantPoolM Raw.AttributeInfo
 convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
-
     code' <- V.fromList <$> traverse convertInstruction code
     exceptionTable' <- convertExceptionTable exceptionTable
     attributes' <- convertCodeAttributes codeAttributes
