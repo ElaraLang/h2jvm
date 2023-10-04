@@ -72,3 +72,10 @@ convertInstruction (Abs.CheckCast t) = do
 convertInstruction (Abs.InvokeDynamic bm n m) = do
     idx <- findIndexOf (CPInvokeDynamicEntry bm n m)
     pure (Raw.InvokeDynamic idx)
+convertInstruction (Abs.IfEq offset) = pure (Raw.IfEq (fromIntegral offset))
+convertInstruction (Abs.IfNe offset) = pure (Raw.IfNe (fromIntegral offset))
+convertInstruction (Abs.IfLt offset) = pure (Raw.IfLt (fromIntegral offset))
+convertInstruction (Abs.IfGe offset) = pure (Raw.IfGe (fromIntegral offset))
+convertInstruction (Abs.IfGt offset) = pure (Raw.IfGt (fromIntegral offset))
+convertInstruction (Abs.IfLe offset) = pure (Raw.IfLe (fromIntegral offset))
+

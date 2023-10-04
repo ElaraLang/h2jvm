@@ -25,6 +25,12 @@ data Instruction
     | AReturn
     | AThrow
     | AConstNull
+    | IfEq Reference
+    | IfNe Reference
+    | IfLt Reference
+    | IfGe Reference
+    | IfGt Reference
+    | IfLe Reference
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeInterface ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
