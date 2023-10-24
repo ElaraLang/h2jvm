@@ -18,7 +18,6 @@ import Text.Pretty.Simple (
     CheckColorTty (NoCheckColorTty),
     defaultOutputOptionsDarkBg,
     pPrintOpt,
-    pShow,
  )
 
 main :: IO ()

@@ -1,9 +1,13 @@
 {-# LANGUAGE DataKinds #-}
 
--- | High level representation of a JVM instruction, with type-safe arguments and no stack manipulation needed.
+{- | High level representation of a JVM instruction, with type-safe arguments and no stack manipulation needed.
+ This is not a 1-1 mapping to the actual instructions, use 'JVM.Data.Raw.Instruction' for that.
+ Instead, this includes some conveniences like the 'Label' instruction to avoid manually dealing with jump offsets.
+-}
 module JVM.Data.Abstract.Instruction where
 
 import Data.Text (Text)
+import JVM.Data.Abstract.Builder.Label (Label)
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
@@ -25,16 +29,17 @@ data Instruction
     | AReturn
     | AThrow
     | AConstNull
-    | IfEq Reference
-    | IfNe Reference
-    | IfLt Reference
-    | IfGe Reference
-    | IfGt Reference
-    | IfLe Reference
+    | IfEq Label
+    | IfNe Label
+    | IfLt Label
+    | IfGe Label
+    | IfGt Label
+    | IfLe Label
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeInterface ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | InvokeDynamic BootstrapMethod Text MethodDescriptor
+    | Label Label
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType

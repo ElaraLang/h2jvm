@@ -15,6 +15,38 @@ countArguments (MethodDescriptor args _) = 1 + sum (map countArgument args)
     countArgument (PrimitiveFieldType Long) = 2
     countArgument _ = 1
 
+-- | The size of an instruction in bytes, used for calculating jump offsets
+instructionSize :: Abs.Instruction -> Int
+instructionSize Abs.ALoad0 = 1
+instructionSize Abs.ALoad1 = 1
+instructionSize Abs.ALoad2 = 1
+instructionSize Abs.ALoad3 = 1
+instructionSize (Abs.ALoad _) = 2
+instructionSize Abs.AStore0 = 1
+instructionSize Abs.AStore1 = 1
+instructionSize Abs.AStore2 = 1
+instructionSize Abs.AStore3 = 1
+instructionSize (Abs.AStore _) = 2
+instructionSize Abs.AReturn = 1
+instructionSize Abs.AThrow = 1
+instructionSize Abs.AConstNull = 1
+instructionSize (Abs.IfEq _) = 3
+instructionSize (Abs.IfNe _) = 3
+instructionSize (Abs.IfLt _) = 3
+instructionSize (Abs.IfGe _) = 3
+instructionSize (Abs.IfGt _) = 3
+instructionSize (Abs.IfLe _) = 3
+instructionSize (Abs.InvokeStatic{}) = 3
+instructionSize (Abs.InvokeVirtual{}) = 3
+instructionSize (Abs.InvokeInterface{}) = 5
+instructionSize (Abs.InvokeDynamic{}) = 5
+instructionSize (Abs.Label _) = 0
+instructionSize (Abs.LDC _) = 2
+instructionSize (Abs.PutStatic{}) = 3
+instructionSize (Abs.GetStatic{}) = 3
+instructionSize (Abs.CheckCast _) = 3
+instructionSize Abs.Return = 1
+
 convertInstruction :: Abs.Instruction -> ConstantPoolM Raw.Instruction
 convertInstruction Abs.ALoad0 = pure Raw.ALoad0
 convertInstruction Abs.ALoad1 = pure Raw.ALoad1
@@ -72,10 +104,10 @@ convertInstruction (Abs.CheckCast t) = do
 convertInstruction (Abs.InvokeDynamic bm n m) = do
     idx <- findIndexOf (CPInvokeDynamicEntry bm n m)
     pure (Raw.InvokeDynamic idx)
-convertInstruction (Abs.IfEq offset) = pure (Raw.IfEq (fromIntegral offset))
-convertInstruction (Abs.IfNe offset) = pure (Raw.IfNe (fromIntegral offset))
-convertInstruction (Abs.IfLt offset) = pure (Raw.IfLt (fromIntegral offset))
-convertInstruction (Abs.IfGe offset) = pure (Raw.IfGe (fromIntegral offset))
-convertInstruction (Abs.IfGt offset) = pure (Raw.IfGt (fromIntegral offset))
-convertInstruction (Abs.IfLe offset) = pure (Raw.IfLe (fromIntegral offset))
 
+-- convertInstruction (Abs.IfEq offset) = pure (Raw.IfEq (fromIntegral offset))
+-- convertInstruction (Abs.IfNe offset) = pure (Raw.IfNe (fromIntegral offset))
+-- convertInstruction (Abs.IfLt offset) = pure (Raw.IfLt (fromIntegral offset))
+-- convertInstruction (Abs.IfGe offset) = pure (Raw.IfGe (fromIntegral offset))
+-- convertInstruction (Abs.IfGt offset) = pure (Raw.IfGt (fromIntegral offset))
+-- convertInstruction (Abs.IfLe offset) = pure (Raw.IfLe (fromIntegral offset))
