@@ -28,6 +28,7 @@
 
           autoWire = [ "packages" "apps" "checks" ]; # Wire all but the devShell
 
+          basePackages = pkgs.haskell.packages.ghc94;
 
           devShell = {
             tools = hp: {
@@ -35,6 +36,14 @@
             } // config.treefmt.build.programs;
 
             hlsCheck.enable = false;
+          };
+
+          settings = {
+            ghcid = {
+              separateBinOutput = false;
+              check = false;
+            };
+
           };
         };
 
