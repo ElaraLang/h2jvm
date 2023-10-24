@@ -1,6 +1,7 @@
 module Main where
 
-import Convert (spec)
+import Builder qualified (spec)
+import Convert qualified (spec)
 import Data.Binary.Put
 import Data.Binary.Write (WriteBinary (..))
 import Data.ByteString qualified as BS
@@ -13,12 +14,17 @@ import JVM.Data.Abstract.Name
 import JVM.Data.Abstract.Type
 import JVM.Data.Convert
 import JVM.Data.JVMVersion
-import Test.Hspec (hspec)
+import Test.Hspec (Spec, hspec, describe)
 import Text.Pretty.Simple (
     CheckColorTty (NoCheckColorTty),
     defaultOutputOptionsDarkBg,
     pPrintOpt,
  )
+
+spec :: Spec
+spec = do
+    Convert.spec
+    Builder.spec
 
 main :: IO ()
 main = do
