@@ -70,6 +70,8 @@ library
     Data.Binary.Write
     Data.IndexedMap
     JVM.Data.Abstract.Builder
+    JVM.Data.Abstract.Builder.Code
+    JVM.Data.Abstract.Builder.Label
     JVM.Data.Abstract.ClassFile
     JVM.Data.Abstract.ClassFile.AccessFlags
     JVM.Data.Abstract.ClassFile.Field
@@ -104,7 +106,7 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:
-    , base           >=4.16.0.0
+    , base           >=4.17.1.0
     , binary
     , bytestring
     , containers
@@ -149,7 +151,7 @@ test-suite h2jvm-test
 
   -- Test dependencies.
   build-depends:
-    , base           ^>=4.16.0.0
+    , base           ^>=4.17.1.0
     , binary
     , bytestring
     , h2jvm
