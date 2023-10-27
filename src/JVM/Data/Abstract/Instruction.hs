@@ -44,6 +44,7 @@ data Instruction' label
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType
+    | Goto label
     | CheckCast ClassInfoType
     | Return
     deriving (Show, Eq, Ord, Functor)

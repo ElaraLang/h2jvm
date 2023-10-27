@@ -76,6 +76,7 @@ instructionSize (Abs.PutStatic{}) = 3
 instructionSize (Abs.GetStatic{}) = 3
 instructionSize (Abs.CheckCast _) = 3
 instructionSize Abs.Return = 1
+instructionSize (Abs.Goto _) = 3
 
 convertInstructions :: [Abs.Instruction] -> CodeConverter [Raw.Instruction]
 convertInstructions xs = do
@@ -199,4 +200,5 @@ convertInstruction o = Just <$> convertInstruction o
     convertInstruction (Abs.IfGe offset) = Raw.IfGe <$> mustBeResolved offset
     convertInstruction (Abs.IfGt offset) = Raw.IfGt <$> mustBeResolved offset
     convertInstruction (Abs.IfLe offset) = Raw.IfLe <$> mustBeResolved offset
+    convertInstruction (Abs.Goto offset) = Raw.Goto <$> mustBeResolved offset
     convertInstruction (Abs.Label _) = error "unreachable"
