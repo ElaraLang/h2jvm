@@ -32,3 +32,6 @@ emit' = tell
 
 runCodeBuilder :: CodeBuilder a -> [Instruction]
 runCodeBuilder = execWriter . flip evalStateT initialCodeState . unCodeBuilder
+
+runCodeBuilder' :: CodeBuilder a -> ([Instruction], a)
+runCodeBuilder' = runWriter . flip evalStateT initialCodeState . unCodeBuilder
