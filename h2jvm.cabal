@@ -88,6 +88,7 @@ library
     JVM.Data.Convert.Field
     JVM.Data.Convert.Instruction
     JVM.Data.Convert.Method
+    JVM.Data.Convert.Monad
     JVM.Data.Convert.Numbers
     JVM.Data.Convert.Type
     JVM.Data.JVMVersion
@@ -115,7 +116,7 @@ library
     , mtl
     , pretty-simple
     , text
-    , transformers
+    , transformers   >=0.6.1.0
     , vector
 
   -- Directories containing source files.

@@ -15,7 +15,8 @@ import JVM.Data.Raw.Types
 
 type Reference = Int
 
-data Instruction
+type Instruction = Instruction' Label
+data Instruction' label
     = ALoad0
     | ALoad1
     | ALoad2
@@ -29,23 +30,23 @@ data Instruction
     | AReturn
     | AThrow
     | AConstNull
-    | IfEq Label
-    | IfNe Label
-    | IfLt Label
-    | IfGe Label
-    | IfGt Label
-    | IfLe Label
+    | IfEq label
+    | IfNe label
+    | IfLt label
+    | IfGe label
+    | IfGt label
+    | IfLe label
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeInterface ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | InvokeDynamic BootstrapMethod Text MethodDescriptor
-    | Label Label
+    | Label label
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType
     | CheckCast ClassInfoType
     | Return
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Functor)
 
 data LDCEntry
     = LDCInt Int

@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module JVM.Data.Convert.ConstantPool where
 
 import Control.Lens (Lens', lens)
+import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.State.Strict
 import Data.IndexedMap (IndexedMap)
@@ -117,18 +119,32 @@ instance Semigroup ConstantPoolState where
 instance Monoid ConstantPoolState where
     mempty = ConstantPoolState mempty mempty
 
-type ConstantPoolT m a = (StateT ConstantPoolState m) a
+-- Constant Pool Monad
 
-type ConstantPoolM a = ConstantPoolT Identity a
+newtype ConstantPoolT m a = ConstantPoolT (StateT ConstantPoolState m a)
+    deriving (Functor, Applicative, Monad, MonadState ConstantPoolState, MonadTrans)
 
-findIndexOf :: Monad m => ConstantPoolEntry -> ConstantPoolT m U2
-findIndexOf = fmap toU2OrError . transformEntry
-  where
-    toU2OrError :: Int -> U2
-    toU2OrError i =
-        if i > fromIntegral (maxBound @U2)
-            then error "Constant pool index out of bounds, too many entries?"
-            else fromIntegral i
+type ConstantPoolM = ConstantPoolT Identity
+
+class Monad m => MonadConstantPool m where
+    findIndexOf :: ConstantPoolEntry -> m U2
+
+instance Monad m => MonadConstantPool (ConstantPoolT m) where
+    findIndexOf = fmap toU2OrError . transformEntry
+      where
+        toU2OrError :: Int -> U2
+        toU2OrError i =
+            if i > fromIntegral (maxBound @U2)
+                then error "Constant pool index out of bounds, too many entries?"
+                else fromIntegral i
+
+instance MonadConstantPool m => MonadConstantPool (StateT s m) where
+    findIndexOf = lift . findIndexOf
+
+instance MonadConstantPool m => MonadConstantPool (ExceptT e m) where
+    findIndexOf = lift . findIndexOf
+
+deriving instance MonadError e m => MonadError e (ConstantPoolT m)
 
 runConstantPoolM :: ConstantPoolM a -> (a, ConstantPoolState)
 runConstantPoolM = runConstantPoolMWith mempty
@@ -137,7 +153,7 @@ runConstantPoolT :: Monad m => ConstantPoolT m a -> m (a, ConstantPoolState)
 runConstantPoolT = runConstantPoolTWith mempty
 
 runConstantPoolTWith :: Monad m => ConstantPoolState -> ConstantPoolT m a -> m (a, ConstantPoolState)
-runConstantPoolTWith = flip runStateT
+runConstantPoolTWith s (ConstantPoolT t) = runStateT t s
 
 runConstantPoolMWith :: ConstantPoolState -> ConstantPoolM a -> (a, ConstantPoolState)
 runConstantPoolMWith = runIdentity .: runConstantPoolTWith

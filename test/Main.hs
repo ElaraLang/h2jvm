@@ -14,12 +14,13 @@ import JVM.Data.Abstract.Name
 import JVM.Data.Abstract.Type
 import JVM.Data.Convert
 import JVM.Data.JVMVersion
-import Test.Hspec (Spec, hspec, describe)
+import Test.Hspec (Spec, describe, hspec)
 import Text.Pretty.Simple (
     CheckColorTty (NoCheckColorTty),
     defaultOutputOptionsDarkBg,
     pPrintOpt,
  )
+import Util (shouldBeRight)
 
 spec :: Spec
 spec = do
@@ -71,5 +72,6 @@ main = do
 
     let classFile' = convert classFile
     pPrintOpt NoCheckColorTty defaultOutputOptionsDarkBg classFile'
-    let bs = runPut (writeBinary classFile')
+    classContents <- shouldBeRight classFile'
+    let bs = runPut (writeBinary classContents)
     BS.writeFile "out.class" (BS.toStrict bs)
