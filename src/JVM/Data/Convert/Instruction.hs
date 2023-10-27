@@ -106,7 +106,7 @@ insertAllLabels = traverse_ (\x -> incOffset x *> insertLabel x)
     insertLabel _ = pure ()
 
 modifyM :: (Monad m) => (s -> m s) -> StateT s m ()
-modifyM f = StateT $ \ s -> do
+modifyM f = StateT $ \s -> do
     s' <- f s
     return ((), s')
 
