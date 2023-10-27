@@ -13,7 +13,6 @@ import JVM.Data.Abstract.Type
 import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
-import Control.Monad.Trans.State (modifyM)
 import Data.Foldable (traverse_)
 import Data.Word (Word16)
 import JVM.Data.Convert.Monad (CodeConverterError (..), ConvertM)
@@ -105,6 +104,11 @@ insertAllLabels = traverse_ (\x -> incOffset x *> insertLabel x)
                 Just _ -> throwError (DuplicateLabel l currentOffset)
                 Nothing -> pure (s{labelOffsets = Map.insert l currentOffset (labelOffsets s)})
     insertLabel _ = pure ()
+
+modifyM :: (Monad m) => (s -> m s) -> StateT s m ()
+modifyM f = StateT $ \ s -> do
+    s' <- f s
+    return ((), s')
 
 -- | Turns labels into offsets where possible
 resolveLabel :: Abs.Instruction' MaybeResolvedLabel -> CodeConverter (Abs.Instruction' MaybeResolvedLabel)

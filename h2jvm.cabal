@@ -21,7 +21,7 @@ name:            h2jvm
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version:         0.4.0.0
+version:         0.4.0.1
 
 -- A short (one-line) description of the package.
 synopsis:
@@ -54,7 +54,7 @@ extra-doc-files: CHANGELOG.md
 -- extra-source-files:
 
 common warnings
-  ghc-options: -Wall
+  ghc-options: -Wall -Wunused-packages
 
 common extensions
   default-extensions:
@@ -116,7 +116,7 @@ library
     , mtl
     , pretty-simple
     , text
-    , transformers   >=0.6.1.0
+    , transformers
     , vector
 
   -- Directories containing source files.
