@@ -147,6 +147,7 @@ test-suite h2jvm-test
   -- The entrypoint to the test suite.
   main-is:          Main.hs
   other-modules:
+    Builder
     Convert
     Util
 
