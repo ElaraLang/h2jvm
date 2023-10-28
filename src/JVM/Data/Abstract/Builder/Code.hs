@@ -1,4 +1,4 @@
-module JVM.Data.Abstract.Builder.Code (CodeBuilderT(..), unCodeBuilder, runCodeBuilderT, runCodeBuilderT', CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder') where
+module JVM.Data.Abstract.Builder.Code (CodeBuilderT(..), unCodeBuilder,runCodeBuilderT, runCodeBuilderT', CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder') where
 
 import Control.Monad.Identity
 import Control.Monad.State
@@ -6,7 +6,7 @@ import Control.Monad.Writer
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 
-newtype CodeBuilderT m a = CodeBuilder {unCodeBuilder :: T}
+newtype CodeBuilderT m a = CodeBuilder {unCodeBuilder :: StateT CodeState (WriterT [Instruction] m) a}
     deriving (Functor, Applicative, Monad, MonadState CodeState, MonadWriter [Instruction])
 
 instance MonadTrans CodeBuilderT where
