@@ -95,7 +95,7 @@ insertAllLabels = traverse_ (\x -> incOffset x *> insertLabel x)
     incOffset (Label _) = pure () -- Label instructions have no representation in the bytecode, so they don't affect the offset
     incOffset inst = do
         offset <- gets currentOffset
-        traceM ("Offset: " ++ show offset ++ " for " ++ show inst)
+        traceM $! "Offset: " ++ show offset ++ " for " ++ show inst
         modify (\s -> s{currentOffset = offset + instructionSize inst})
 
     insertLabel :: Abs.Instruction -> CodeConverter ()
@@ -105,7 +105,9 @@ insertAllLabels = traverse_ (\x -> incOffset x *> insertLabel x)
         CodeConverter $ modifyM $ \s -> do
             case Map.lookup l (labelOffsets s) of
                 Just _ -> throwError (DuplicateLabel l currentOffset)
-                Nothing -> pure (s{labelOffsets = Map.insert l currentOffset (labelOffsets s)})
+                Nothing ->  do
+                    traceM $! "Inserting label " ++ show l ++ " at offset " ++ show currentOffset
+                    pure (s{labelOffsets = Map.insert l currentOffset (labelOffsets s)})
     insertLabel _ = pure ()
 
 modifyM :: (Monad m) => (s -> m s) -> StateT s m ()
