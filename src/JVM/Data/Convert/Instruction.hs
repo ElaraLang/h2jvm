@@ -128,6 +128,7 @@ resolveLabel inst =
             Abs.IfGe l -> Abs.IfGe <$> resolveLabel' l
             Abs.IfGt l -> Abs.IfGt <$> resolveLabel' l
             Abs.IfLe l -> Abs.IfLe <$> resolveLabel' l
+            Abs.Goto l -> Abs.Goto <$> resolveLabel' l
             _ -> pure inst
 
 mustBeResolved :: MaybeResolvedLabel -> CodeConverter Word16
