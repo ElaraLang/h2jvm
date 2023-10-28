@@ -1,12 +1,15 @@
 module JVM.Data.Abstract.Builder.Code (CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder') where
 
+import Control.Monad.Identity
 import Control.Monad.State
 import Control.Monad.Writer
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 
-newtype CodeBuilder a = CodeBuilder {unCodeBuilder :: StateT CodeState (Writer [Instruction]) a}
+newtype CodeBuilderT m a = CodeBuilder {unCodeBuilder :: StateT CodeState (WriterT [Instruction] m) a}
     deriving (Functor, Applicative, Monad, MonadState CodeState, MonadWriter [Instruction])
+
+type CodeBuilder = CodeBuilderT Identity
 
 newtype CodeState = CodeState
     { labelSource :: [Label]
@@ -33,5 +36,11 @@ emit' = tell
 runCodeBuilder :: CodeBuilder a -> [Instruction]
 runCodeBuilder = execWriter . flip evalStateT initialCodeState . unCodeBuilder
 
+runCodeBuilderT :: Monad m => CodeBuilderT m a -> m (a, [Instruction])
+runCodeBuilderT = runWriterT . flip evalStateT initialCodeState . unCodeBuilder
+
 runCodeBuilder' :: CodeBuilder a -> (a, [Instruction])
 runCodeBuilder' = runWriter . flip evalStateT initialCodeState . unCodeBuilder
+
+runCodeBuilderT' :: Monad m => CodeBuilderT m a -> m (a, [Instruction])
+runCodeBuilderT' = runWriterT . flip evalStateT initialCodeState . unCodeBuilder
