@@ -15,6 +15,7 @@ import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
 import Data.Foldable (traverse_)
 import Data.Word (Word16)
+import Debug.Trace (traceM)
 import JVM.Data.Convert.Monad (CodeConverterError (..), ConvertM)
 
 newtype CodeConverter a = CodeConverter {runCodeConverter :: (StateT ConvertState (ConstantPoolT (Except CodeConverterError))) a}
@@ -94,6 +95,7 @@ insertAllLabels = traverse_ (\x -> incOffset x *> insertLabel x)
     incOffset (Label _) = pure () -- Label instructions have no representation in the bytecode, so they don't affect the offset
     incOffset inst = do
         offset <- gets currentOffset
+        traceM ("Offset: " ++ show offset ++ " for " ++ show inst)
         modify (\s -> s{currentOffset = offset + instructionSize inst})
 
     insertLabel :: Abs.Instruction -> CodeConverter ()
