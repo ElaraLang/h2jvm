@@ -7,7 +7,10 @@ import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 
 newtype CodeBuilderT m a = CodeBuilder {unCodeBuilder :: StateT CodeState (WriterT [Instruction] m) a}
-    deriving (Functor, Applicative, Monad, MonadState CodeState, MonadWriter [Instruction], MonadTrans)
+    deriving (Functor, Applicative, Monad, MonadState CodeState, MonadWriter [Instruction])
+
+instance MonadTrans CodeBuilderT where
+    lift = CodeBuilder . lift . lift
 
 type CodeBuilder = CodeBuilderT Identity
 
