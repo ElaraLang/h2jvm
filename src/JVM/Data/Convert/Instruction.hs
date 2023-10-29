@@ -1,3 +1,6 @@
+-- | Converts abstract instructions into raw instructions
+-- This includes resolving labels into offsets
+-- TODO: this is very inefficient, requiring three passes over the instructions
 module JVM.Data.Convert.Instruction (fullyRunCodeConverter, convertInstructions) where
 
 import Control.Monad.Except
@@ -13,7 +16,6 @@ import JVM.Data.Abstract.Type
 import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
-import Data.Foldable (traverse_)
 import Data.Word (Word16)
 import Debug.Trace (traceM)
 import JVM.Data.Convert.Monad (CodeConverterError (..), ConvertM)
@@ -81,34 +83,38 @@ instructionSize (Abs.Goto _) = 3
 
 convertInstructions :: [Abs.Instruction] -> CodeConverter [Raw.Instruction]
 convertInstructions xs = do
-    insertAllLabels xs
-    insts <- traverse resolveLabel (fmap UnresolvedLabel <$> xs)
+    withOffsets <- insertAllLabels xs
+    insts <- traverse resolveLabel (fmap (fmap UnresolvedLabel) <$> withOffsets)
     catMaybes <$> traverse convertInstruction insts
 
 data MaybeResolvedLabel = ResolvedLabel Word16 | UnresolvedLabel Label
 
+data OffsetInstruction a = OffsetInstruction Word16 a
+    deriving (Show, Eq, Ord, Functor)
+
 -- | Inserts the corresponding label offsets into the state
-insertAllLabels :: [Abs.Instruction] -> CodeConverter ()
-insertAllLabels = traverse_ (\x -> incOffset x *> insertLabel x)
+insertAllLabels :: [Abs.Instruction] -> CodeConverter [OffsetInstruction Abs.Instruction]
+insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
   where
     incOffset :: Abs.Instruction -> CodeConverter ()
     incOffset (Label _) = pure () -- Label instructions have no representation in the bytecode, so they don't affect the offset
     incOffset inst = do
         offset <- gets currentOffset
-        traceM $! "Offset: " ++ show offset ++ " for " ++ show inst
         modify (\s -> s{currentOffset = offset + instructionSize inst})
 
-    insertLabel :: Abs.Instruction -> CodeConverter ()
+    insertLabel :: Abs.Instruction -> CodeConverter (OffsetInstruction Abs.Instruction)
     insertLabel (Label l) = do
         currentOffset <- gets currentOffset
 
         CodeConverter $ modifyM $ \s -> do
             case Map.lookup l (labelOffsets s) of
                 Just _ -> throwError (DuplicateLabel l currentOffset)
-                Nothing ->  do
-                    traceM $! "Inserting label " ++ show l ++ " at offset " ++ show currentOffset
+                Nothing -> do
                     pure (s{labelOffsets = Map.insert l currentOffset (labelOffsets s)})
-    insertLabel _ = pure ()
+        pure (OffsetInstruction (error "Label offset should not be evaluated") (Label l))
+    insertLabel x = do
+        offset <- gets currentOffset
+        pure (OffsetInstruction (offset - instructionSize x) x)
 
 modifyM :: (Monad m) => (s -> m s) -> StateT s m ()
 modifyM f = StateT $ \s -> do
@@ -116,8 +122,8 @@ modifyM f = StateT $ \s -> do
     return ((), s')
 
 -- | Turns labels into offsets where possible
-resolveLabel :: Abs.Instruction' MaybeResolvedLabel -> CodeConverter (Abs.Instruction' MaybeResolvedLabel)
-resolveLabel inst =
+resolveLabel :: OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> CodeConverter (OffsetInstruction (Abs.Instruction' MaybeResolvedLabel))
+resolveLabel (OffsetInstruction instOffset inst) =
     let resolveLabel' :: MaybeResolvedLabel -> CodeConverter MaybeResolvedLabel
         resolveLabel' r@(ResolvedLabel _) = pure r
         resolveLabel' (UnresolvedLabel l) = do
@@ -125,7 +131,7 @@ resolveLabel inst =
             case offset of
                 Just o -> pure (ResolvedLabel o)
                 Nothing -> pure (UnresolvedLabel l)
-     in case inst of
+     in OffsetInstruction instOffset <$> case inst of
             Abs.IfEq l -> Abs.IfEq <$> resolveLabel' l
             Abs.IfNe l -> Abs.IfNe <$> resolveLabel' l
             Abs.IfLt l -> Abs.IfLt <$> resolveLabel' l
@@ -135,13 +141,13 @@ resolveLabel inst =
             Abs.Goto l -> Abs.Goto <$> resolveLabel' l
             _ -> pure inst
 
-mustBeResolved :: MaybeResolvedLabel -> CodeConverter Word16
-mustBeResolved (ResolvedLabel i) = pure i
-mustBeResolved (UnresolvedLabel l) = throwError (UnmarkedLabel l)
+mustBeResolved :: Word16 -> MaybeResolvedLabel -> CodeConverter Word16
+mustBeResolved relativeTo (ResolvedLabel i) = pure (i - relativeTo)
+mustBeResolved _ (UnresolvedLabel l) = throwError (UnmarkedLabel l)
 
-convertInstruction :: Abs.Instruction' MaybeResolvedLabel -> CodeConverter (Maybe Raw.Instruction)
-convertInstruction (Abs.Label _) = pure Nothing
-convertInstruction o = Just <$> convertInstruction o
+convertInstruction :: OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> CodeConverter (Maybe Raw.Instruction)
+convertInstruction (OffsetInstruction _ (Abs.Label _)) = pure Nothing
+convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstruction o
   where
     convertInstruction Abs.ALoad0 = pure Raw.ALoad0
     convertInstruction Abs.ALoad1 = pure Raw.ALoad1
@@ -199,11 +205,11 @@ convertInstruction o = Just <$> convertInstruction o
     convertInstruction (Abs.InvokeDynamic bm n m) = do
         idx <- findIndexOf (CPInvokeDynamicEntry bm n m)
         pure (Raw.InvokeDynamic idx)
-    convertInstruction (Abs.IfEq offset) = Raw.IfEq <$> mustBeResolved offset
-    convertInstruction (Abs.IfNe offset) = Raw.IfNe <$> mustBeResolved offset
-    convertInstruction (Abs.IfLt offset) = Raw.IfLt <$> mustBeResolved offset
-    convertInstruction (Abs.IfGe offset) = Raw.IfGe <$> mustBeResolved offset
-    convertInstruction (Abs.IfGt offset) = Raw.IfGt <$> mustBeResolved offset
-    convertInstruction (Abs.IfLe offset) = Raw.IfLe <$> mustBeResolved offset
-    convertInstruction (Abs.Goto offset) = Raw.Goto <$> mustBeResolved offset
+    convertInstruction (Abs.IfEq offset) = Raw.IfEq <$> mustBeResolved instOffset offset
+    convertInstruction (Abs.IfNe offset) = Raw.IfNe <$> mustBeResolved instOffset offset
+    convertInstruction (Abs.IfLt offset) = Raw.IfLt <$> mustBeResolved instOffset offset
+    convertInstruction (Abs.IfGe offset) = Raw.IfGe <$> mustBeResolved instOffset offset
+    convertInstruction (Abs.IfGt offset) = Raw.IfGt <$> mustBeResolved instOffset offset
+    convertInstruction (Abs.IfLe offset) = Raw.IfLe <$> mustBeResolved instOffset offset
+    convertInstruction (Abs.Goto offset) = Raw.Goto <$> mustBeResolved instOffset offset
     convertInstruction (Abs.Label _) = error "unreachable"
