@@ -1,5 +1,9 @@
 module Builder where
 
+import Control.Monad.IO.Class
+import Data.Binary.Put
+import Data.Binary.Write
+import Data.ByteString qualified as BS
 import JVM.Data.Abstract.Builder (addMethod, runClassBuilder)
 import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.ClassFile.AccessFlags
@@ -7,15 +11,11 @@ import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type as JVM
+import JVM.Data.Convert
 import JVM.Data.JVMVersion (java17)
 import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec
 import Util (runConv, shouldBeRight)
-import Control.Monad.IO.Class
-import JVM.Data.Convert
-import Data.Binary.Write
-import Data.Binary.Put
-import Data.ByteString qualified as BS
 
 spec :: Spec
 spec = describe "test code building" $ do
@@ -108,19 +108,21 @@ spec = describe "test code building" $ do
                        , Raw.AReturn -- #39
                        ]
 
-        let (_, clazz) = runClassBuilder "BuilderTest" java17 $ addMethod $
-                ClassFileMethod
-                    [MPublic, MStatic]
-                    "main"
-                    (MethodDescriptor [ObjectFieldType "java.lang.String"] VoidReturn)
-                    [ Code $
-                        CodeAttributeData
-                            5
-                            2
-                            absInsts
-                            []
-                            []
-                    ]
+        let (_, clazz) =
+                runClassBuilder "BuilderTest" java17 $
+                    addMethod $
+                        ClassFileMethod
+                            [MPublic, MStatic]
+                            "main"
+                            (MethodDescriptor [ObjectFieldType "java.lang.String"] VoidReturn)
+                            [ Code $
+                                CodeAttributeData
+                                    5
+                                    2
+                                    absInsts
+                                    []
+                                    []
+                            ]
         liftIO $ do
             let classFile' = convert clazz
 

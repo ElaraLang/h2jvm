@@ -1,6 +1,7 @@
--- | Converts abstract instructions into raw instructions
--- This includes resolving labels into offsets
--- TODO: this is very inefficient, requiring three passes over the instructions
+{- | Converts abstract instructions into raw instructions
+ This includes resolving labels into offsets
+ TODO: this is very inefficient, requiring three passes over the instructions
+-}
 module JVM.Data.Convert.Instruction (fullyRunCodeConverter, convertInstructions) where
 
 import Control.Monad.Except
