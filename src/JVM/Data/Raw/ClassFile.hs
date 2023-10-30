@@ -13,6 +13,7 @@ import Data.Word
 import JVM.Data.JVMVersion (MajorVersion (..), MinorVersion (getMinorVersion))
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo)
 import JVM.Data.Raw.Instruction (Instruction)
+import JVM.Data.Raw.Types
 
 {-
 ClassFile {
@@ -77,9 +78,38 @@ data Attribute
         , exceptionTable :: Vector ExceptionTableEntry
         , codeAttributes :: Vector AttributeInfo
         }
+    | LineNumberTableAttribute (Vector LineNumberTableEntry)
+    | StackMapTableAttribute (Vector StackMapFrame)
     | ConstantValueAttribute Word16
     | SourceFileAttribute Word16
     | BootstrapMethodsAttribute (Vector BootstrapMethod)
+    deriving (Show)
+
+data LineNumberTableEntry = LineNumberTableEntry
+    { startPc :: U2
+    , lineNumber :: U2
+    }
+    deriving (Show)
+
+{- | The stack map frame types are defined as follows:
+> union stack_map_frame {
+>    same_frame;
+>    same_locals_1_stack_item_frame;
+>    same_locals_1_stack_item_frame_extended;
+>    chop_frame;
+>    same_frame_extended;
+>    append_frame;
+>    full_frame;
+>}
+-}
+data StackMapFrame
+    = SameFrame
+    | -- |
+      -- >       same_locals_1_stack_item_frame {
+      -- >          u1 frame_type = SAME_LOCALS_1_STACK_ITEM; /* 64-127 */
+      -- >          verification_type_info stack[1];
+      -- >      }
+      SameLocals1StackItemFrame Word16
     deriving (Show)
 
 data BootstrapMethod = BootstrapMethod
@@ -133,7 +163,7 @@ instance WriteBinary AttributeInfo where
         putWord32be $ fromIntegral aiLength
         putByteString infoBS
 
--- Puts the attribute data. This must not include length or name, just the actual value
+-- | Puts the attribute data. This must not include length or name, just the actual value
 putAttribute :: Attribute -> Put
 putAttribute (ConstantValueAttribute cvIndex) = putWord16be cvIndex
 putAttribute (CodeAttribute maxStack maxLocals code exceptionTable codeAttributes) = do
@@ -149,6 +179,27 @@ putAttribute (SourceFileAttribute sfIndex) = do
 putAttribute (BootstrapMethodsAttribute bms) = do
     putWord16be $ fromIntegral $ V.length bms
     mapM_ putBootstrapMethod bms
+putAttribute (LineNumberTableAttribute lns) = do
+    putWord16be $ fromIntegral $ V.length lns
+    mapM_ putLineNumberEntry lns
+  where
+    putLineNumberEntry :: LineNumberTableEntry -> Put
+    putLineNumberEntry LineNumberTableEntry{..} = do
+        putWord16be startPc
+        putWord16be lineNumber
+putAttribute (StackMapTableAttribute frames) = do
+    putWord16be $ fromIntegral $ V.length frames
+    mapM_ putStackMapFrame frames
+    where
+        putStackMapFrame :: StackMapFrame -> Put
+        putStackMapFrame SameFrame = putWord8 0
+        putStackMapFrame (SameLocals1StackItemFrame frameType) = do
+            putWord8 64
+            putVerificationTypeInfo frameType
+        
+        putVerificationTypeInfo :: Word16 -> Put
+        putVerificationTypeInfo = putWord16be
+
 
 putBootstrapMethod :: BootstrapMethod -> Put
 putBootstrapMethod BootstrapMethod{..} = do

@@ -32,7 +32,26 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
     convertCodeAttributes = fmap V.fromList . traverse convertCodeAttribute'
 
     convertCodeAttribute' :: Abs.CodeAttribute -> ConvertM Raw.AttributeInfo
-    convertCodeAttribute' = undefined
+    convertCodeAttribute' (LineNumberTable lns) = do
+        lns' <- convertLineNumberTable lns
+        nameIndex <- findIndexOf (CPUTF8Entry "LineNumberTable")
+        pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.LineNumberTableAttribute lns')
+      where
+        convertLineNumberTable :: [Abs.LineNumberTableEntry] -> ConvertM (V.Vector Raw.LineNumberTableEntry)
+        convertLineNumberTable = fmap V.fromList . traverse convertLineNumberTableEntry
+
+        convertLineNumberTableEntry :: Abs.LineNumberTableEntry -> ConvertM Raw.LineNumberTableEntry
+        convertLineNumberTableEntry (Abs.LineNumberTableEntry a b) = pure $ Raw.LineNumberTableEntry a b
+    convertCodeAttribute' (StackMapTable frames) = do
+        frames' <- convertStackMapTable frames
+        nameIndex <- findIndexOf (CPUTF8Entry "StackMapTable")
+        pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.StackMapTableAttribute frames')
+      where
+        convertStackMapTable :: [Abs.StackMapFrame] -> ConvertM (V.Vector Raw.StackMapFrame)
+        convertStackMapTable = fmap V.fromList . traverse convertStackMapFrame
+
+        convertStackMapFrame :: Abs.StackMapFrame -> ConvertM Raw.StackMapFrame
+        convertStackMapFrame Abs.SameFrame = pure Raw.SameFrame
 
 convertMethod :: Abs.ClassFileMethod -> ConvertM Raw.MethodInfo
 convertMethod Abs.ClassFileMethod{..} = do

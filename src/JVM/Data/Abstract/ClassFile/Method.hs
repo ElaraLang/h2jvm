@@ -37,12 +37,17 @@ data ExceptionTableEntry = ExceptionTableEntry
     }
     deriving (Show)
 
-newtype CodeAttribute
+data CodeAttribute
     = LineNumberTable [LineNumberTableEntry]
+    | StackMapTable [StackMapFrame]
+    deriving (Show)
+
+data StackMapFrame
+    = SameFrame
     deriving (Show)
 
 data LineNumberTableEntry = LineNumberTableEntry
-    { lineNumberTableEntryStartPc :: Int
-    , lineNumberTableEntryLineNumber :: Int
+    { lineNumberTableEntryStartPc :: U2
+    , lineNumberTableEntryLineNumber :: U2
     }
     deriving (Show)

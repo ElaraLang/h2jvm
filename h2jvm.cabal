@@ -111,10 +111,8 @@ library
     , binary
     , bytestring
     , containers
-    , free
     , lens           >=5.0
     , mtl
-    , pretty-simple
     , text
     , transformers
     , vector
