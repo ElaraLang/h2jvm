@@ -177,7 +177,6 @@ verificationType_info_ObjectVariableInfo = 7
 verificationType_info_UninitializedVariableInfo :: Word8
 verificationType_info_UninitializedVariableInfo = 8
 
-
 --
 -- Instructions
 --

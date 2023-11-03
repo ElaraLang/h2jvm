@@ -9,8 +9,8 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
-import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 import Data.Data
+import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 
 {- | High-level, type-safe representation of a constant pool entry
  This tries to hide indexes as much as possible, instead just allowing the values to be provided directly.

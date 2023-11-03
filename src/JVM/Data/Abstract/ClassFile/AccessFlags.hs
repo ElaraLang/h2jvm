@@ -1,4 +1,5 @@
 module JVM.Data.Abstract.ClassFile.AccessFlags where
+
 import Data.Data
 
 -- | Access flags for a class

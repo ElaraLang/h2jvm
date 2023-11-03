@@ -1,7 +1,7 @@
 module JVM.Data.Abstract.Descriptor where
 
-import JVM.Data.Abstract.Type (FieldType)
 import Data.Data
+import JVM.Data.Abstract.Type (FieldType)
 
 data MethodDescriptor
     = MethodDescriptor [FieldType] ReturnDescriptor

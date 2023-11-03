@@ -7,6 +7,7 @@ module JVM.Data.Convert where
 
 import Data.IndexedMap qualified as IM
 import Data.Maybe (fromMaybe)
+import Data.TypeMergingList qualified as TML
 import Data.Vector qualified as V
 import JVM.Data.Abstract.ClassFile qualified as Abs
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry, CPUTF8Entry))
@@ -21,7 +22,6 @@ import JVM.Data.JVMVersion (getMajor, getMinor)
 import JVM.Data.Raw.ClassFile (Attribute (BootstrapMethodsAttribute))
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
-import Data.TypeMergingList qualified as TML
 
 jloName :: QualifiedClassName
 jloName = parseQualifiedClassName "java.lang.Object"

@@ -1,9 +1,9 @@
 module JVM.Data.Abstract.Name where
 
+import Data.Data
 import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Data.Text qualified as T
-import Data.Data
 
 {- | A JVM package name
 This is defined as a potentially empty list of identifiers, which would be separated by dots in the source code

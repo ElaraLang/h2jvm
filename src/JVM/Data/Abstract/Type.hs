@@ -1,7 +1,7 @@
 module JVM.Data.Abstract.Type where
 
-import JVM.Data.Abstract.Name (QualifiedClassName)
 import Data.Data
+import JVM.Data.Abstract.Name (QualifiedClassName)
 
 data PrimitiveType
     = Byte
