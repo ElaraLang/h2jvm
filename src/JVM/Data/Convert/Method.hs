@@ -1,9 +1,13 @@
+{-# LANGUAGE LexicalNegation #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module JVM.Data.Convert.Method where
 
 import Control.Applicative (liftA2)
+import Control.Monad (foldM, join)
+import Data.Traversable (mapAccumL)
 import Data.Vector qualified as V
+import Debug.Trace (traceShowM)
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.ClassFile.Method qualified as Abs
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPUTF8Entry))
@@ -13,8 +17,19 @@ import JVM.Data.Convert.Descriptor (convertMethodDescriptor)
 import JVM.Data.Convert.Instruction (CodeConverter, convertInstructions, fullyResolveAbs, fullyRunCodeConverter)
 import JVM.Data.Convert.Monad (ConvertM)
 import JVM.Data.Raw.ClassFile qualified as Raw
+import JVM.Data.Raw.Types
+import GHC.Stack (HasCallStack)
 
-convertMethodAttribute :: Abs.MethodAttribute -> ConvertM Raw.AttributeInfo
+-- >>> foldMWith (\a b -> pure (a + b, a + b)) 0 [1, 2, 3]
+-- (6,[1,3,6])
+foldMWith :: Monad m => (a -> b -> m (a, c)) -> a -> [b] -> m (a, [c])
+foldMWith _ a [] = pure (a, [])
+foldMWith f a (x : xs) = do
+    (a', x') <- f a x
+    (a'', xs') <- foldMWith f a' xs
+    pure (a'', x' : xs')
+
+convertMethodAttribute :: HasCallStack => Abs.MethodAttribute -> ConvertM Raw.AttributeInfo
 convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
     (code', attributes') <- fullyRunCodeConverter $ do
         liftA2 (,) (convertInstructions code) (convertCodeAttributes codeAttributes)
@@ -50,20 +65,23 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
         pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.StackMapTableAttribute frames')
       where
         convertStackMapTable :: [Abs.StackMapFrame] -> CodeConverter (V.Vector Raw.StackMapFrame)
-        convertStackMapTable = fmap V.fromList . traverse convertStackMapFrame
+        convertStackMapTable = fmap (V.fromList . snd) . foldMWith convertStackMapFrame 0
 
-        convertStackMapFrame :: Abs.StackMapFrame -> CodeConverter Raw.StackMapFrame
-        convertStackMapFrame (Abs.SameFrame x) = do
-            label <- fullyResolveAbs x
-            pure $
-                if label <= 63
+        convertStackMapFrame :: U2 -> Abs.StackMapFrame -> CodeConverter (U2, Raw.StackMapFrame)
+        convertStackMapFrame prev (Abs.SameFrame x) = do
+            
+            label <- (- prev) <$> fullyResolveAbs x
+            pure
+                ( label
+                , if label <= 63
                     then Raw.SameFrame (fromIntegral label)
                     else
                         if label <= 32767
                             then Raw.SameFrameExtended label
                             else error "Label too large"
+                )
 
-convertMethod :: Abs.ClassFileMethod -> ConvertM Raw.MethodInfo
+convertMethod :: HasCallStack => Abs.ClassFileMethod -> ConvertM Raw.MethodInfo
 convertMethod Abs.ClassFileMethod{..} = do
     let flags = accessFlagsToWord16 methodAccessFlags
     nameIndex <- findIndexOf (CPUTF8Entry methodName)

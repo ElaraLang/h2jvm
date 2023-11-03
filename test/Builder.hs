@@ -61,7 +61,7 @@ spec = describe "test code building" $ do
         Label #2
         39: areturn
         -}
-        let ((label1, absInsts), attrs, code) = runCodeBuilder' $ do
+        let (((label1, label2), absInsts), attrs, code) = runCodeBuilder' $ do
                 label1 <- newLabel
                 label2 <- newLabel
                 let code =
@@ -87,8 +87,9 @@ spec = describe "test code building" $ do
                         ]
                 emit' code
                 appendStackMapFrame (SameFrame label1)
-                appendStackMapFrame (SameFrame label1)
-                pure (label1, code)
+                appendStackMapFrame (SameFrame label2)
+                pure ((label1, label2), code)
+
         (insts, _) <- runConv code
         insts
             `shouldBe` [ Raw.ALoad0 -- #0
@@ -110,5 +111,27 @@ spec = describe "test code building" $ do
                        , Raw.AReturn -- #39
                        ]
 
-        attrs `shouldBe` [StackMapTable [SameFrame label1, SameFrame label1]]
+        attrs `shouldBe` [StackMapTable [SameFrame label1, SameFrame label2]]
 
+        let (_, clazz) =
+                runClassBuilder "BuilderTest" java17 $
+                    addMethod $
+                        ClassFileMethod
+                            [MPublic, MStatic]
+                            "main"
+                            (MethodDescriptor [ObjectFieldType "java.lang.String"] VoidReturn)
+                            [ Code $
+                                CodeAttributeData
+                                    5
+                                    2
+                                    absInsts
+                                    []
+                                    attrs
+                            ]
+        liftIO $ do
+            let classFile' = convert clazz
+
+            classContents <- shouldBeRight classFile'
+            let bs = runPut (writeBinary classContents)
+
+            BS.writeFile "BuilderTest.class" (BS.toStrict bs)
