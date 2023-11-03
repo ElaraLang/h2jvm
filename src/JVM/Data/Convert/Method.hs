@@ -11,7 +11,7 @@ import Debug.Trace (traceShowM)
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.ClassFile.Method qualified as Abs
-import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPUTF8Entry))
+import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..))
 import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
 import JVM.Data.Convert.ConstantPool
 import JVM.Data.Convert.Descriptor (convertMethodDescriptor)
@@ -85,6 +85,35 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
                 ( label
                 , Raw.ChopFrame x (fromIntegral label)
                 )
+        convertStackMapFrame prev (Abs.SameLocals1StackItemFrame x stack) = do
+            label <- (- 1) . (- prev) <$> fullyResolveAbs stack
+            x' <- convertVerificationTypeInfo x
+            pure
+                ( label
+                , if label <= 63
+                    then Raw.SameLocals1StackItemFrame x' (fromIntegral label)
+                    else
+                        if label <= 32767
+                            then Raw.SameLocals1StackItemFrameExtended x' label
+                            else error "Label too large"
+                )
+
+convertVerificationTypeInfo :: Abs.VerificationTypeInfo -> CodeConverter Raw.VerificationTypeInfo
+convertVerificationTypeInfo Abs.TopVariableInfo =  pure Raw.TopVariableInfo
+convertVerificationTypeInfo Abs.IntegerVariableInfo =pure  Raw.IntegerVariableInfo
+convertVerificationTypeInfo Abs.FloatVariableInfo =pure  Raw.FloatVariableInfo
+convertVerificationTypeInfo Abs.LongVariableInfo = pure Raw.LongVariableInfo
+convertVerificationTypeInfo Abs.DoubleVariableInfo =pure  Raw.DoubleVariableInfo
+convertVerificationTypeInfo Abs.NullVariableInfo = pure Raw.NullVariableInfo
+convertVerificationTypeInfo Abs.UninitializedThisVariableInfo =  pure Raw.UninitializedThisVariableInfo
+convertVerificationTypeInfo (Abs.ObjectVariableInfo x) = do
+    cpIndex <- findIndexOf (CPClassEntry x)
+    pure $ Raw.ObjectVariableInfo (fromIntegral cpIndex)
+convertVerificationTypeInfo (Abs.UninitializedVariableInfo x) =  do
+    label <- fullyResolveAbs x
+    pure $ Raw.UninitializedVariableInfo (fromIntegral label)
+
+
 
 convertMethod :: HasCallStack => Abs.ClassFileMethod -> ConvertM Raw.MethodInfo
 convertMethod Abs.ClassFileMethod{..} = do

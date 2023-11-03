@@ -13,6 +13,7 @@ import Data.Word
 import JVM.Data.JVMVersion (MajorVersion (..), MinorVersion, unwrapMajor, unwrapMinor)
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo)
 import JVM.Data.Raw.Instruction (Instruction)
+import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
 import JVM.Data.Raw.Types
 
 {-
@@ -110,9 +111,22 @@ data StackMapFrame
       -- >          u1 frame_type = SAME_LOCALS_1_STACK_ITEM; /* 64-127 */
       -- >          verification_type_info stack[1];
       -- >      }
-      SameLocals1StackItemFrame Word16
+      SameLocals1StackItemFrame VerificationTypeInfo U1
+    | SameLocals1StackItemFrameExtended VerificationTypeInfo U2
     | SameFrameExtended U2
     | ChopFrame U1 U2
+    deriving (Show)
+
+data VerificationTypeInfo
+    = TopVariableInfo
+    | IntegerVariableInfo
+    | FloatVariableInfo
+    | LongVariableInfo
+    | DoubleVariableInfo
+    | NullVariableInfo
+    | UninitializedThisVariableInfo
+    | ObjectVariableInfo Word16
+    | UninitializedVariableInfo U2
     deriving (Show)
 
 data BootstrapMethod = BootstrapMethod
@@ -199,15 +213,31 @@ putAttribute (StackMapTableAttribute frames) = do
     putStackMapFrame (SameFrameExtended offset) = do
         putWord8 251
         putWord16be offset
-    putStackMapFrame (SameLocals1StackItemFrame frameType) = do
-        putWord8 64
-        putVerificationTypeInfo frameType
+    putStackMapFrame (SameLocals1StackItemFrame info offset) = do
+        putWord8 (64 + offset) -- frame_type = 64 + offset
+        putVerificationTypeInfo info
+    putStackMapFrame (SameLocals1StackItemFrameExtended info offset) = do
+        putWord8 247
+        putWord16be offset
+        putVerificationTypeInfo info
     putStackMapFrame (ChopFrame chop label) = do
         putWord8 (251 - chop) -- chop = 251 - frame_type => frame_type = 251 - chop
         putWord16be label
 
-    putVerificationTypeInfo :: Word16 -> Put
-    putVerificationTypeInfo = putWord16be
+    putVerificationTypeInfo :: VerificationTypeInfo -> Put
+    putVerificationTypeInfo TopVariableInfo = putWord8 MagicNumbers.verificationType_info_TopVariableInfo
+    putVerificationTypeInfo IntegerVariableInfo = putWord8 MagicNumbers.verificationType_info_IntegerVariableInfo
+    putVerificationTypeInfo FloatVariableInfo = putWord8 MagicNumbers.verificationType_info_FloatVariableInfo
+    putVerificationTypeInfo LongVariableInfo = putWord8 MagicNumbers.verificationType_info_LongVariableInfo
+    putVerificationTypeInfo DoubleVariableInfo = putWord8 MagicNumbers.verificationType_info_DoubleVariableInfo
+    putVerificationTypeInfo NullVariableInfo = putWord8 MagicNumbers.verificationType_info_NullVariableInfo
+    putVerificationTypeInfo UninitializedThisVariableInfo = putWord8 MagicNumbers.verificationType_info_UninitializedThisVariableInfo
+    putVerificationTypeInfo (ObjectVariableInfo index) = do
+        putWord8 MagicNumbers.verificationType_info_ObjectVariableInfo
+        putWord16be index
+    putVerificationTypeInfo (UninitializedVariableInfo offset) = do
+        putWord8 MagicNumbers.verificationType_info_UninitializedVariableInfo
+        putWord16be offset
 
 putBootstrapMethod :: BootstrapMethod -> Put
 putBootstrapMethod BootstrapMethod{..} = do

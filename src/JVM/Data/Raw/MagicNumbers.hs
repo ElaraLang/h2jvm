@@ -147,6 +147,38 @@ constant_InvokeDynamic :: Word8
 constant_InvokeDynamic = 18
 
 --
+-- verification_type_info
+--
+
+verificationType_info_TopVariableInfo :: Word8
+verificationType_info_TopVariableInfo = 0
+
+verificationType_info_IntegerVariableInfo :: Word8
+verificationType_info_IntegerVariableInfo = 1
+
+verificationType_info_FloatVariableInfo :: Word8
+verificationType_info_FloatVariableInfo = 2
+
+verificationType_info_DoubleVariableInfo :: Word8
+verificationType_info_DoubleVariableInfo = 3
+
+verificationType_info_LongVariableInfo :: Word8
+verificationType_info_LongVariableInfo = 4
+
+verificationType_info_NullVariableInfo :: Word8
+verificationType_info_NullVariableInfo = 5
+
+verificationType_info_UninitializedThisVariableInfo :: Word8
+verificationType_info_UninitializedThisVariableInfo = 6
+
+verificationType_info_ObjectVariableInfo :: Word8
+verificationType_info_ObjectVariableInfo = 7
+
+verificationType_info_UninitializedVariableInfo :: Word8
+verificationType_info_UninitializedVariableInfo = 8
+
+
+--
 -- Instructions
 --
 

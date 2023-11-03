@@ -56,7 +56,18 @@ data StackMapFrame
     | ChopFrame
         !U1 -- | How many locals to chop
         !Label -- | The label of the next instruction
-    | SameLocals1StackItemFrame !Void
+    | SameLocals1StackItemFrame !VerificationTypeInfo Label
+    deriving (Show, Data, Eq)
+
+data  VerificationTypeInfo = TopVariableInfo
+    | IntegerVariableInfo
+    | FloatVariableInfo
+    | LongVariableInfo
+    | DoubleVariableInfo
+    | NullVariableInfo
+    | UninitializedThisVariableInfo
+    | ObjectVariableInfo !ClassInfoType
+    | UninitializedVariableInfo !Label
     deriving (Show, Data, Eq)
 
 data LineNumberTableEntry = LineNumberTableEntry
