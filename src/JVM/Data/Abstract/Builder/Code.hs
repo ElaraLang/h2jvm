@@ -3,6 +3,8 @@ module JVM.Data.Abstract.Builder.Code (CodeBuilderT (..), unCodeBuilderT, runCod
 import Control.Monad.Identity
 import Control.Monad.State
 import Control.Monad.Writer
+import Data.TypeMergingList (TypeMergingList)
+import Data.TypeMergingList qualified as TML
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Instruction
@@ -21,11 +23,11 @@ type CodeBuilder = CodeBuilderT Identity
 
 data CodeState = CodeState
     { labelSource :: [Label]
-    , attributes :: [CodeAttribute]
+    , attributes :: TypeMergingList CodeAttribute
     }
 
 initialCodeState :: CodeState
-initialCodeState = CodeState{labelSource = MkLabel <$> [0 ..], attributes = []}
+initialCodeState = CodeState{labelSource = MkLabel <$> [0 ..], attributes = mempty}
 
 newLabel :: CodeBuilder Label
 newLabel = do
@@ -45,19 +47,14 @@ emit' = tell
 addCodeAttribute :: CodeAttribute -> CodeBuilder ()
 addCodeAttribute ca = do
     s@CodeState{attributes = attrs} <- get
-    put (s{attributes = ca : attrs})
+    put (s{attributes = attrs `TML.snoc` ca})
     pure ()
 
 appendStackMapFrame :: StackMapFrame -> CodeBuilder ()
-appendStackMapFrame f = modify (\c -> c{attributes = mergeAttributes c.attributes})
-  where
-    mergeAttributes :: [CodeAttribute] -> [CodeAttribute]
-    mergeAttributes [] = [StackMapTable [f]]
-    mergeAttributes (StackMapTable smt : as) = StackMapTable (smt ++ [f]) : mergeAttributes as
-    mergeAttributes (a : as) = a : mergeAttributes as
+appendStackMapFrame f = addCodeAttribute (StackMapTable [f])
 
 rr :: ((a, CodeState), [Instruction]) -> (a, [CodeAttribute], [Instruction])
-rr ((a, s), is) = (a, s.attributes, is)
+rr ((a, s), is) = (a, TML.toList s.attributes, is)
 
 runCodeBuilder :: CodeBuilder a -> ([CodeAttribute], [Instruction])
 runCodeBuilder = (\(_, b, c) -> (b, c)) . runCodeBuilder'

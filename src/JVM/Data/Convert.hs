@@ -21,6 +21,7 @@ import JVM.Data.JVMVersion (getMajor, getMinor)
 import JVM.Data.Raw.ClassFile (Attribute (BootstrapMethodsAttribute))
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
+import Data.TypeMergingList qualified as TML
 
 jloName :: QualifiedClassName
 jloName = parseQualifiedClassName "java.lang.Object"
@@ -41,7 +42,7 @@ convert Abs.ClassFile{..} = do
         superIndex <- findIndexOf (CPClassEntry $ ClassInfoType (fromMaybe jloName superClass))
         let flags = accessFlagsToWord16 accessFlags
         interfaces' <- traverse (findIndexOf . CPClassEntry . ClassInfoType) interfaces
-        attributes' <- convertClassAttributes attributes
+        attributes' <- convertClassAttributes (TML.toList attributes)
         fields' <- traverse convertField fields
         methods' <- traverse convertMethod methods
 

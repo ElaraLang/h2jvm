@@ -17,5 +17,7 @@ could be written as follows, using 'JVM.Data.Abstract.Builder.Code.CodeBuilder':
 -}
 module JVM.Data.Abstract.Builder.Label where
 
+import Data.Data
+
 newtype Label = MkLabel Int
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Data)

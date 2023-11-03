@@ -3,11 +3,12 @@ module JVM.Data.Abstract.Name where
 import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Data.Text qualified as T
+import Data.Data
 
 {- | A JVM package name
 This is defined as a potentially empty list of identifiers, which would be separated by dots in the source code
 -}
-newtype PackageName = PackageName [Text] deriving (Show, Eq, Ord)
+newtype PackageName = PackageName [Text] deriving (Show, Eq, Ord, Data)
 
 {- | Parse a 'PackageName' from a 'Text'
 
@@ -23,13 +24,13 @@ parsePackageName t = case T.splitOn "." t of
     xs -> PackageName xs
 
 -- | A JVM class name
-newtype ClassName = ClassName Text deriving (Show, Eq, Ord)
+newtype ClassName = ClassName Text deriving (Show, Eq, Ord, Data)
 
 -- | Parse a 'ClassName' from a 'Text'
 parseClassName :: Text -> ClassName
 parseClassName = ClassName
 
-data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Show, Eq, Ord)
+data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Show, Eq, Ord, Data)
 
 instance IsString QualifiedClassName where
     fromString = parseQualifiedClassName . T.pack

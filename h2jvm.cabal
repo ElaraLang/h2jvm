@@ -58,10 +58,10 @@ common warnings
 
 common extensions
   default-extensions:
-    OverloadedStrings
-    TypeFamilies
     NoFieldSelectors
     OverloadedRecordDot
+    OverloadedStrings
+    TypeFamilies
 
 library
   import:           warnings, extensions
@@ -71,6 +71,7 @@ library
   exposed-modules:
     Data.Binary.Write
     Data.IndexedMap
+    Data.TypeMergingList
     JVM.Data.Abstract.Builder
     JVM.Data.Abstract.Builder.Code
     JVM.Data.Abstract.Builder.Label
@@ -109,11 +110,11 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:
-    , base           >=4.17.1.0
+    , base          >=4.17.1.0
     , binary
     , bytestring
     , containers
-    , lens           >=5.0
+    , lens          >=5.0
     , mtl
     , text
     , transformers

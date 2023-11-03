@@ -3,7 +3,9 @@
 -- | High level representation of a class file
 module JVM.Data.Abstract.ClassFile where
 
+import Data.Data
 import Data.Text (Text)
+import Data.TypeMergingList (DataMergeable (merge), TypeMergingList, errorDifferentConstructors)
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
 import JVM.Data.Abstract.ClassFile.Field (ClassFileField)
 import JVM.Data.Abstract.ClassFile.Method (ClassFileMethod)
@@ -19,7 +21,7 @@ data ClassFile = ClassFile
     , interfaces :: [QualifiedClassName]
     , fields :: [ClassFileField]
     , methods :: [ClassFileMethod]
-    , attributes :: [ClassFileAttribute]
+    , attributes :: TypeMergingList ClassFileAttribute
     }
     deriving (Show)
 
@@ -34,7 +36,20 @@ data ClassFileAttribute
     | RuntimeVisibleAnnotations
     | RuntimeInvisibleAnnotations
     | BootstrapMethods [BootstrapMethod]
-    deriving (Show, Eq)
+    deriving (Show, Eq, Data)
+
+instance DataMergeable ClassFileAttribute where
+    merge (InnerClasses a) (InnerClasses b) = InnerClasses (a <> b)
+    merge EnclosingMethod EnclosingMethod = EnclosingMethod
+    merge Synthetic Synthetic = Synthetic
+    merge Signature Signature = Signature
+    merge (SourceFile a) (SourceFile b) = SourceFile (a <> b)
+    merge SourceDebugExtension SourceDebugExtension = SourceDebugExtension
+    merge Deprecated Deprecated = Deprecated
+    merge RuntimeVisibleAnnotations RuntimeVisibleAnnotations = RuntimeVisibleAnnotations
+    merge RuntimeInvisibleAnnotations RuntimeInvisibleAnnotations = RuntimeInvisibleAnnotations
+    merge (BootstrapMethods a) (BootstrapMethods b) = BootstrapMethods (a <> b)
+    merge a b = errorDifferentConstructors a b
 
 data InnerClassInfo = InnerClassInfo
     { innerClassInfo :: QualifiedClassName
@@ -42,4 +57,4 @@ data InnerClassInfo = InnerClassInfo
     , innerName :: Text
     , accessFlags :: [ClassAccessFlag]
     }
-    deriving (Show, Eq)
+    deriving (Show, Eq, Data)

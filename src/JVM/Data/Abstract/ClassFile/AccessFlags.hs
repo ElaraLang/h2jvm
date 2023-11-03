@@ -1,4 +1,5 @@
 module JVM.Data.Abstract.ClassFile.AccessFlags where
+import Data.Data
 
 -- | Access flags for a class
 data ClassAccessFlag
@@ -10,7 +11,7 @@ data ClassAccessFlag
     | Synthetic
     | Annotation
     | Enum
-    deriving (Show, Eq)
+    deriving (Show, Eq, Data)
 
 data FieldAccessFlag
     = FPublic
@@ -22,7 +23,7 @@ data FieldAccessFlag
     | FTransient
     | FSynthetic
     | FEnum
-    deriving (Show)
+    deriving (Show, Data)
 
 data MethodAccessFlag
     = MPublic
@@ -37,4 +38,4 @@ data MethodAccessFlag
     | MAbstract
     | MStrict
     | MSynthetic
-    deriving (Show)
+    deriving (Show, Data)

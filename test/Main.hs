@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedLists #-}
 module Main where
 
 import Builder qualified (spec)
@@ -71,7 +72,6 @@ main = do
                 [SourceFile "out.java"]
 
     let classFile' = convert classFile
-    pPrintOpt NoCheckColorTty defaultOutputOptionsDarkBg classFile'
     classContents <- shouldBeRight classFile'
     let bs = runPut (writeBinary classContents)
     BS.writeFile "out.class" (BS.toStrict bs)

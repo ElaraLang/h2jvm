@@ -10,6 +10,7 @@ import Data.Text (Text)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
+import Data.Data
 
 {- | High-level, type-safe representation of a constant pool entry
  This tries to hide indexes as much as possible, instead just allowing the values to be provided directly.
@@ -42,7 +43,7 @@ data ConstantPoolEntry
     deriving (Show, Eq, Ord)
 
 data FieldRef = FieldRef ClassInfoType Text FieldType
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Data)
 
 data MethodRef
     = MethodRef
@@ -52,11 +53,11 @@ data MethodRef
         -- ^ The name of the method
         MethodDescriptor
         -- ^ The descriptor of the method
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Data)
 
 data BootstrapMethod
     = BootstrapMethod MethodHandleEntry [BootstrapArgument]
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Data)
 
 data BootstrapArgument
     = BMClassArg ClassInfoType
@@ -64,7 +65,7 @@ data BootstrapArgument
     | BMIntArg Int
     | BMMethodArg MethodDescriptor
     | BMMethodHandleArg MethodHandleEntry
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Data)
 
 bmArgToCPEntry :: BootstrapArgument -> ConstantPoolEntry
 bmArgToCPEntry (BMClassArg c) = CPClassEntry c
@@ -83,4 +84,4 @@ data MethodHandleEntry
     | MHInvokeStatic MethodRef
     | MHInvokeSpecial MethodRef
     | MHInvokeInterface MethodRef
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Data)

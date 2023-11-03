@@ -26,7 +26,7 @@ spec = describe "test code building" $ do
         Label #1
         4: return
         -}
-        let (attr, code) = runCodeBuilder $ do
+        let (_, code) = runCodeBuilder $ do
                 label <- newLabel
                 emit ALoad0
                 emit (IfEq label)
@@ -61,7 +61,7 @@ spec = describe "test code building" $ do
         Label #2
         39: areturn
         -}
-        let (absInsts, attrs, code) = runCodeBuilder' $ do
+        let ((label1, absInsts), attrs, code) = runCodeBuilder' $ do
                 label1 <- newLabel
                 label2 <- newLabel
                 let code =
@@ -86,7 +86,9 @@ spec = describe "test code building" $ do
                         , AReturn
                         ]
                 emit' code
-                pure code
+                appendStackMapFrame (SameFrame label1)
+                appendStackMapFrame (SameFrame label1)
+                pure (label1, code)
         (insts, _) <- runConv code
         insts
             `shouldBe` [ Raw.ALoad0 -- #0
@@ -108,25 +110,5 @@ spec = describe "test code building" $ do
                        , Raw.AReturn -- #39
                        ]
 
-        let (_, clazz) =
-                runClassBuilder "BuilderTest" java17 $
-                    addMethod $
-                        ClassFileMethod
-                            [MPublic, MStatic]
-                            "main"
-                            (MethodDescriptor [ObjectFieldType "java.lang.String"] VoidReturn)
-                            [ Code $
-                                CodeAttributeData
-                                    5
-                                    2
-                                    absInsts
-                                    []
-                                    []
-                            ]
-        liftIO $ do
-            let classFile' = convert clazz
+        attrs `shouldBe` [StackMapTable [SameFrame label1, SameFrame label1]]
 
-            classContents <- shouldBeRight classFile'
-            let bs = runPut (writeBinary classContents)
-
-            BS.writeFile "BuilderTest.class" (BS.toStrict bs)

@@ -6,6 +6,7 @@ module JVM.Data.Abstract.Builder where
 
 import Control.Monad.State
 import Data.Functor.Identity
+import Data.TypeMergingList qualified as TML
 import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute (BootstrapMethods), methods)
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
 import JVM.Data.Abstract.ClassFile.Field
@@ -50,15 +51,10 @@ buildAndAddMethod :: Monad m => ClassBuilderT m ClassFileMethod -> ClassBuilderT
 buildAndAddMethod m = m >>= addMethod
 
 addAttribute :: Monad m => ClassFileAttribute -> ClassBuilderT m ()
-addAttribute a = modify (\c -> c{attributes = a : c.attributes})
+addAttribute a = modify (\c -> c{attributes = c.attributes `TML.snoc` a})
 
 addBootstrapMethod :: Monad m => BootstrapMethod -> ClassBuilderT m ()
-addBootstrapMethod b = modify (\c -> c{attributes = mergeAttributes (c.attributes)})
-  where
-    mergeAttributes :: [ClassFileAttribute] -> [ClassFileAttribute]
-    mergeAttributes [] = [BootstrapMethods [b]]
-    mergeAttributes (BootstrapMethods bs : as) = BootstrapMethods (b : bs) : mergeAttributes as
-    mergeAttributes (a : as) = a : mergeAttributes as
+addBootstrapMethod b = addAttribute (BootstrapMethods [b])
 
 dummyClass :: QualifiedClassName -> JVMVersion -> ClassFile
 dummyClass name version =
@@ -70,7 +66,7 @@ dummyClass name version =
         , interfaces = []
         , fields = []
         , methods = []
-        , attributes = []
+        , attributes = mempty
         }
 
 runClassBuilderT :: Monad m => QualifiedClassName -> JVMVersion -> ClassBuilderT m a -> m (a, ClassFile)

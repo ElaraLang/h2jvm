@@ -4,11 +4,13 @@ import Data.Text (Text)
 import JVM.Data.Abstract.ClassFile.AccessFlags (MethodAccessFlag)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
+import Data.Data
+import Data.TypeMergingList (DataMergeable (merge), errorDifferentConstructors)
+import Data.Void
+import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)
 import JVM.Data.Raw.Types (U2)
-import JVM.Data.Abstract.Builder.Label
-import Data.Void
 
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
@@ -42,15 +44,20 @@ data ExceptionTableEntry = ExceptionTableEntry
 data CodeAttribute
     = LineNumberTable [LineNumberTableEntry]
     | StackMapTable [StackMapFrame]
-    deriving (Show)
+    deriving (Show,Eq, Data)
+
+instance DataMergeable CodeAttribute where
+    merge (LineNumberTable a) (LineNumberTable b) = LineNumberTable (a <> b)
+    merge (StackMapTable a) (StackMapTable b) = StackMapTable (a <> b)
+    merge x y = errorDifferentConstructors x y
 
 data StackMapFrame
     = SameFrame Label
     | SameLocals1StackItemFrame !Void
-    deriving (Show)
+    deriving (Show,Data,Eq)
 
 data LineNumberTableEntry = LineNumberTableEntry
     { lineNumberTableEntryStartPc :: U2
     , lineNumberTableEntryLineNumber :: U2
     }
-    deriving (Show)
+    deriving (Show, Data,Eq)
