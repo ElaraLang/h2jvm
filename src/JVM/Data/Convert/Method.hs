@@ -79,6 +79,12 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
                             then Raw.SameFrameExtended label
                             else error "Label too large"
                 )
+        convertStackMapFrame prev (Abs.ChopFrame x stack) = do
+            label <- (- 1) . (- prev) <$> fullyResolveAbs stack
+            pure
+                ( label
+                , Raw.ChopFrame x (fromIntegral label)
+                )
 
 convertMethod :: HasCallStack => Abs.ClassFileMethod -> ConvertM Raw.MethodInfo
 convertMethod Abs.ClassFileMethod{..} = do

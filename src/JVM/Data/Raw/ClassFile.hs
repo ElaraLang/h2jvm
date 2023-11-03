@@ -112,6 +112,7 @@ data StackMapFrame
       -- >      }
       SameLocals1StackItemFrame Word16
     | SameFrameExtended U2
+    | ChopFrame U1 U2
     deriving (Show)
 
 data BootstrapMethod = BootstrapMethod
@@ -195,9 +196,15 @@ putAttribute (StackMapTableAttribute frames) = do
   where
     putStackMapFrame :: StackMapFrame -> Put
     putStackMapFrame (SameFrame offset) = putWord8 offset
+    putStackMapFrame (SameFrameExtended offset) = do
+        putWord8 251
+        putWord16be offset
     putStackMapFrame (SameLocals1StackItemFrame frameType) = do
         putWord8 64
         putVerificationTypeInfo frameType
+    putStackMapFrame (ChopFrame chop label) = do
+        putWord8 (251 - chop) -- chop = 251 - frame_type => frame_type = 251 - chop
+        putWord16be label
 
     putVerificationTypeInfo :: Word16 -> Put
     putVerificationTypeInfo = putWord16be

@@ -10,7 +10,7 @@ import Data.Void
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)
-import JVM.Data.Raw.Types (U2)
+import JVM.Data.Raw.Types (U2, U1)
 
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
@@ -44,7 +44,7 @@ data ExceptionTableEntry = ExceptionTableEntry
 data CodeAttribute
     = LineNumberTable [LineNumberTableEntry]
     | StackMapTable [StackMapFrame]
-    deriving (Show,Eq, Data)
+    deriving (Show, Eq, Data)
 
 instance DataMergeable CodeAttribute where
     merge (LineNumberTable a) (LineNumberTable b) = LineNumberTable (a <> b)
@@ -53,11 +53,14 @@ instance DataMergeable CodeAttribute where
 
 data StackMapFrame
     = SameFrame Label
+    | ChopFrame
+        !U1 -- | How many locals to chop
+        !Label -- | The label of the next instruction
     | SameLocals1StackItemFrame !Void
-    deriving (Show,Data,Eq)
+    deriving (Show, Data, Eq)
 
 data LineNumberTableEntry = LineNumberTableEntry
     { lineNumberTableEntryStartPc :: U2
     , lineNumberTableEntryLineNumber :: U2
     }
-    deriving (Show, Data,Eq)
+    deriving (Show, Data, Eq)
