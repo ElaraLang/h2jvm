@@ -1,8 +1,10 @@
+{-# LANGUAGE LexicalNegation #-}
+
 {- | Converts abstract instructions into raw instructions
  This includes resolving labels into offsets
  TODO: this is very inefficient, requiring three passes over the instructions
 -}
-module JVM.Data.Convert.Instruction (fullyRunCodeConverter, convertInstructions) where
+module JVM.Data.Convert.Instruction (CodeConverter, fullyRunCodeConverter, convertInstructions, fullyResolveAbs) where
 
 import Control.Monad.Except
 import Control.Monad.State
@@ -127,26 +129,37 @@ modifyM f = StateT $ \s -> do
 -- | Turns labels into offsets where possible
 resolveLabel :: OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> CodeConverter (OffsetInstruction (Abs.Instruction' MaybeResolvedLabel))
 resolveLabel (OffsetInstruction instOffset inst) =
-    let resolveLabel' :: MaybeResolvedLabel -> CodeConverter MaybeResolvedLabel
-        resolveLabel' r@(ResolvedLabel _) = pure r
-        resolveLabel' (UnresolvedLabel l) = do
-            offset <- gets (Map.lookup l . (.labelOffsets))
-            case offset of
-                Just o -> pure (ResolvedLabel o)
-                Nothing -> pure (UnresolvedLabel l)
-     in OffsetInstruction instOffset <$> case inst of
-            Abs.IfEq l -> Abs.IfEq <$> resolveLabel' l
-            Abs.IfNe l -> Abs.IfNe <$> resolveLabel' l
-            Abs.IfLt l -> Abs.IfLt <$> resolveLabel' l
-            Abs.IfGe l -> Abs.IfGe <$> resolveLabel' l
-            Abs.IfGt l -> Abs.IfGt <$> resolveLabel' l
-            Abs.IfLe l -> Abs.IfLe <$> resolveLabel' l
-            Abs.Goto l -> Abs.Goto <$> resolveLabel' l
-            _ -> pure inst
+    OffsetInstruction instOffset <$> case inst of
+        Abs.IfEq l -> Abs.IfEq <$> resolveLabelAbs l
+        Abs.IfNe l -> Abs.IfNe <$> resolveLabelAbs l
+        Abs.IfLt l -> Abs.IfLt <$> resolveLabelAbs l
+        Abs.IfGe l -> Abs.IfGe <$> resolveLabelAbs l
+        Abs.IfGt l -> Abs.IfGt <$> resolveLabelAbs l
+        Abs.IfLe l -> Abs.IfLe <$> resolveLabelAbs l
+        Abs.Goto l -> Abs.Goto <$> resolveLabelAbs l
+        _ -> pure inst
+
+fullyResolveAbs :: Label -> CodeConverter Word16
+fullyResolveAbs l = do
+    x <- resolveLabelAbs (UnresolvedLabel l)
+    mustBeResolvedAbs x
+
+-- | Attempt to resolve a label to an __absolute__ offset
+resolveLabelAbs :: MaybeResolvedLabel -> CodeConverter MaybeResolvedLabel
+resolveLabelAbs r@(ResolvedLabel _) = pure r
+resolveLabelAbs (UnresolvedLabel l) = do
+    offset <- gets (Map.lookup l . (.labelOffsets))
+    case offset of
+        Just o -> pure (ResolvedLabel o)
+        Nothing -> pure (UnresolvedLabel l)
+
+-- | Attempt to resolve a label to an __absolute__ offset, throwing an error if it cannot be resolved
+mustBeResolvedAbs :: MaybeResolvedLabel -> CodeConverter Word16
+mustBeResolvedAbs (ResolvedLabel i) = pure i
+mustBeResolvedAbs (UnresolvedLabel l) = throwError (UnmarkedLabel l)
 
 mustBeResolved :: Word16 -> MaybeResolvedLabel -> CodeConverter Word16
-mustBeResolved relativeTo (ResolvedLabel i) = pure (i - relativeTo)
-mustBeResolved _ (UnresolvedLabel l) = throwError (UnmarkedLabel l)
+mustBeResolved instOffset = fmap (- instOffset) . mustBeResolvedAbs
 
 convertInstruction :: OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> CodeConverter (Maybe Raw.Instruction)
 convertInstruction (OffsetInstruction _ (Abs.Label _)) = pure Nothing

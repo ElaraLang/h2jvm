@@ -103,13 +103,15 @@ data LineNumberTableEntry = LineNumberTableEntry
 >}
 -}
 data StackMapFrame
-    = SameFrame
+    = -- | 0-63
+      SameFrame U1
     | -- |
       -- >       same_locals_1_stack_item_frame {
       -- >          u1 frame_type = SAME_LOCALS_1_STACK_ITEM; /* 64-127 */
       -- >          verification_type_info stack[1];
       -- >      }
       SameLocals1StackItemFrame Word16
+    | SameFrameExtended U2
     deriving (Show)
 
 data BootstrapMethod = BootstrapMethod
@@ -192,7 +194,7 @@ putAttribute (StackMapTableAttribute frames) = do
     mapM_ putStackMapFrame frames
   where
     putStackMapFrame :: StackMapFrame -> Put
-    putStackMapFrame SameFrame = putWord8 0
+    putStackMapFrame (SameFrame offset) = putWord8 offset
     putStackMapFrame (SameLocals1StackItemFrame frameType) = do
         putWord8 64
         putVerificationTypeInfo frameType

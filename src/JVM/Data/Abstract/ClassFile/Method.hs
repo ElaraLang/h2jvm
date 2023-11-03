@@ -7,6 +7,8 @@ import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)
 import JVM.Data.Raw.Types (U2)
+import JVM.Data.Abstract.Builder.Label
+import Data.Void
 
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
@@ -43,7 +45,8 @@ data CodeAttribute
     deriving (Show)
 
 data StackMapFrame
-    = SameFrame
+    = SameFrame Label
+    | SameLocals1StackItemFrame !Void
     deriving (Show)
 
 data LineNumberTableEntry = LineNumberTableEntry
