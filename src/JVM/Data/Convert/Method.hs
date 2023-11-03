@@ -8,6 +8,7 @@ import Control.Monad (foldM, join)
 import Data.Traversable (mapAccumL)
 import Data.Vector qualified as V
 import Debug.Trace (traceShowM)
+import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.ClassFile.Method qualified as Abs
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPUTF8Entry))
@@ -18,7 +19,6 @@ import JVM.Data.Convert.Instruction (CodeConverter, convertInstructions, fullyRe
 import JVM.Data.Convert.Monad (ConvertM)
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.Types
-import GHC.Stack (HasCallStack)
 
 -- >>> foldMWith (\a b -> pure (a + b, a + b)) 0 [1, 2, 3]
 -- (6,[1,3,6])
@@ -65,12 +65,11 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
         pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.StackMapTableAttribute frames')
       where
         convertStackMapTable :: [Abs.StackMapFrame] -> CodeConverter (V.Vector Raw.StackMapFrame)
-        convertStackMapTable = fmap (V.fromList . snd) . foldMWith convertStackMapFrame 0
+        convertStackMapTable = fmap (V.fromList . snd) . foldMWith convertStackMapFrame 1
 
         convertStackMapFrame :: U2 -> Abs.StackMapFrame -> CodeConverter (U2, Raw.StackMapFrame)
         convertStackMapFrame prev (Abs.SameFrame x) = do
-            
-            label <- (- prev) <$> fullyResolveAbs x
+            label <- (- 1) . (- prev) <$> fullyResolveAbs x
             pure
                 ( label
                 , if label <= 63
