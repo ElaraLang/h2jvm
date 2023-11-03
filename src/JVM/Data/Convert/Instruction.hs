@@ -20,7 +20,7 @@ import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 import Data.Word (Word16)
 import JVM.Data.Convert.Monad (CodeConverterError (..), ConvertM)
 
-newtype CodeConverter a = CodeConverter ((StateT ConvertState (ConstantPoolT (Except CodeConverterError))) a)
+newtype CodeConverter a = CodeConverter (StateT ConvertState (ConstantPoolT (Except CodeConverterError)) a)
     deriving (Functor, Applicative, Monad, MonadState ConvertState)
 
 unCodeConverter :: CodeConverter a -> StateT ConvertState (ConstantPoolT (Except CodeConverterError)) a

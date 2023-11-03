@@ -4,10 +4,10 @@ import Control.Monad.Identity
 import Control.Monad.State
 import Control.Monad.Writer
 import JVM.Data.Abstract.Builder.Label
-import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.ClassFile.Method
+import JVM.Data.Abstract.Instruction
 
-newtype CodeBuilderT m a = CodeBuilder ( StateT CodeState (WriterT [Instruction] m) a)
+newtype CodeBuilderT m a = CodeBuilder (StateT CodeState (WriterT [Instruction] m) a)
     deriving (Functor, Applicative, Monad, MonadState CodeState, MonadWriter [Instruction])
 
 unCodeBuilderT :: CodeBuilderT m a -> StateT CodeState (WriterT [Instruction] m) a
@@ -24,7 +24,7 @@ data CodeState = CodeState
     }
 
 initialCodeState :: CodeState
-initialCodeState = CodeState{labelSource = MkLabel <$> [0 ..], attributes =[]}
+initialCodeState = CodeState{labelSource = MkLabel <$> [0 ..], attributes = []}
 
 newLabel :: CodeBuilder Label
 newLabel = do
@@ -47,14 +47,17 @@ addCodeAttribute ca = do
     put (s{attributes = ca : attrs})
     pure undefined
 
-runCodeBuilder :: CodeBuilder a -> [Instruction]
-runCodeBuilder = execWriter . flip evalStateT initialCodeState . unCodeBuilderT
+rr :: ((a, CodeState), [Instruction]) -> (a, [CodeAttribute], [Instruction])
+rr ((a, s), is) = (a, s.attributes, is)
 
-runCodeBuilderT :: Monad m => CodeBuilderT m a -> m (a, [Instruction])
-runCodeBuilderT = runWriterT . flip evalStateT initialCodeState . unCodeBuilderT
+runCodeBuilder :: CodeBuilder a -> ([CodeAttribute], [Instruction])
+runCodeBuilder = (\(_, b, c) -> (b, c)) . runCodeBuilder'
 
-runCodeBuilder' :: CodeBuilder a -> (a, [Instruction])
-runCodeBuilder' = runWriter . flip evalStateT initialCodeState . unCodeBuilderT
+runCodeBuilderT :: Monad m => CodeBuilderT m a -> m (a, [CodeAttribute], [Instruction])
+runCodeBuilderT = fmap rr . runWriterT . flip runStateT initialCodeState . unCodeBuilderT
 
-runCodeBuilderT' :: Monad m => CodeBuilderT m a -> m (a, [Instruction])
-runCodeBuilderT' = runWriterT . flip evalStateT initialCodeState . unCodeBuilderT
+runCodeBuilder' :: CodeBuilder a -> (a, [CodeAttribute], [Instruction])
+runCodeBuilder' = rr . runWriter . flip runStateT initialCodeState . unCodeBuilderT
+
+runCodeBuilderT' :: Monad m => CodeBuilderT m a -> m (a, [CodeAttribute], [Instruction])
+runCodeBuilderT' = fmap rr . runWriterT . flip runStateT initialCodeState . unCodeBuilderT

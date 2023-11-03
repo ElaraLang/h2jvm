@@ -26,7 +26,7 @@ spec = describe "test code building" $ do
         Label #1
         4: return
         -}
-        let code = runCodeBuilder $ do
+        let (attr, code) = runCodeBuilder $ do
                 label <- newLabel
                 emit ALoad0
                 emit (IfEq label)
@@ -61,7 +61,7 @@ spec = describe "test code building" $ do
         Label #2
         39: areturn
         -}
-        let (absInsts, code) = runCodeBuilder' $ do
+        let (absInsts, attrs, code) = runCodeBuilder' $ do
                 label1 <- newLabel
                 label2 <- newLabel
                 let code =
