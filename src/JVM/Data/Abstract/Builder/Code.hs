@@ -1,4 +1,4 @@
-module JVM.Data.Abstract.Builder.Code (CodeBuilderT (..), unCodeBuilderT, runCodeBuilderT, runCodeBuilderT', CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder', addCodeAttribute) where
+module JVM.Data.Abstract.Builder.Code (CodeBuilderT (..), unCodeBuilderT, runCodeBuilderT, runCodeBuilderT', CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder', addCodeAttribute, appendStackMapFrame) where
 
 import Control.Monad.Identity
 import Control.Monad.State
@@ -41,11 +41,19 @@ emit i = tell [i]
 emit' :: [Instruction] -> CodeBuilder ()
 emit' = tell
 
-addCodeAttribute :: CodeAttribute -> CodeBuilder a
+addCodeAttribute :: CodeAttribute -> CodeBuilder ()
 addCodeAttribute ca = do
     s@CodeState{attributes = attrs} <- get
     put (s{attributes = ca : attrs})
-    pure undefined
+    pure ()
+
+appendStackMapFrame :: StackMapFrame -> CodeBuilder ()
+appendStackMapFrame f = modify (\c -> c{attributes = mergeAttributes c.attributes})
+  where
+    mergeAttributes :: [CodeAttribute] -> [CodeAttribute]
+    mergeAttributes [] = []
+    mergeAttributes (StackMapTable smt : as) = StackMapTable (smt ++ [f]) : mergeAttributes as
+    mergeAttributes (a : as) = a : mergeAttributes as
 
 rr :: ((a, CodeState), [Instruction]) -> (a, [CodeAttribute], [Instruction])
 rr ((a, s), is) = (a, s.attributes, is)
