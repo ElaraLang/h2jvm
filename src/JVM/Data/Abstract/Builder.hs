@@ -56,7 +56,7 @@ addBootstrapMethod :: Monad m => BootstrapMethod -> ClassBuilderT m ()
 addBootstrapMethod b = modify (\c -> c{attributes = mergeAttributes (c.attributes)})
   where
     mergeAttributes :: [ClassFileAttribute] -> [ClassFileAttribute]
-    mergeAttributes [] = []
+    mergeAttributes [] = [BootstrapMethods [b]]
     mergeAttributes (BootstrapMethods bs : as) = BootstrapMethods (b : bs) : mergeAttributes as
     mergeAttributes (a : as) = a : mergeAttributes as
 

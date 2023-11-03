@@ -6,6 +6,7 @@ import Control.Monad.Writer
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Instruction
+import JVM.Data.Raw.ClassFile (Attribute (CodeAttribute))
 
 newtype CodeBuilderT m a = CodeBuilder (StateT CodeState (WriterT [Instruction] m) a)
     deriving (Functor, Applicative, Monad, MonadState CodeState, MonadWriter [Instruction])
@@ -51,7 +52,7 @@ appendStackMapFrame :: StackMapFrame -> CodeBuilder ()
 appendStackMapFrame f = modify (\c -> c{attributes = mergeAttributes c.attributes})
   where
     mergeAttributes :: [CodeAttribute] -> [CodeAttribute]
-    mergeAttributes [] = []
+    mergeAttributes [] = [StackMapTable [f]]
     mergeAttributes (StackMapTable smt : as) = StackMapTable (smt ++ [f]) : mergeAttributes as
     mergeAttributes (a : as) = a : mergeAttributes as
 
