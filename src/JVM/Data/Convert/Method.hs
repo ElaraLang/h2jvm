@@ -65,7 +65,7 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
         pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.StackMapTableAttribute frames')
       where
         convertStackMapTable :: [Abs.StackMapFrame] -> CodeConverter (V.Vector Raw.StackMapFrame)
-        convertStackMapTable = fmap (V.fromList . snd) . foldMWith convertStackMapFrame 1
+        convertStackMapTable = fmap (V.fromList . snd) . foldMWith convertStackMapFrame -1
 
         convertStackMapFrame :: U2 -> Abs.StackMapFrame -> CodeConverter (U2, Raw.StackMapFrame)
         convertStackMapFrame prev (Abs.SameFrame x) = do
