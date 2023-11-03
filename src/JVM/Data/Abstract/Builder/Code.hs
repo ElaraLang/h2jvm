@@ -1,4 +1,4 @@
-module JVM.Data.Abstract.Builder.Code (CodeBuilderT (..), runCodeBuilderT, runCodeBuilderT', CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder', addCodeAttribute) where
+module JVM.Data.Abstract.Builder.Code (CodeBuilderT (..), unCodeBuilderT, runCodeBuilderT, runCodeBuilderT', CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder', addCodeAttribute) where
 
 import Control.Monad.Identity
 import Control.Monad.State
