@@ -18,23 +18,25 @@ import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
 import Data.Word (Word16)
-import Debug.Trace (traceM)
 import JVM.Data.Convert.Monad (CodeConverterError (..), ConvertM)
 
-newtype CodeConverter a = CodeConverter {runCodeConverter :: (StateT ConvertState (ConstantPoolT (Except CodeConverterError))) a}
+newtype CodeConverter a = CodeConverter ((StateT ConvertState (ConstantPoolT (Except CodeConverterError))) a)
     deriving (Functor, Applicative, Monad, MonadState ConvertState)
+
+unCodeConverter :: CodeConverter a -> StateT ConvertState (ConstantPoolT (Except CodeConverterError)) a
+unCodeConverter (CodeConverter m) = m
 
 instance MonadConstantPool CodeConverter where
     findIndexOf = CodeConverter . lift . findIndexOf
 
 fullyRunCodeConverter :: CodeConverter a -> ConvertM a
 fullyRunCodeConverter xs = do
-    (a, _) <- runStateT (runCodeConverter xs) (ConvertState 0 Map.empty)
+    (a, _) <- runStateT (unCodeConverter xs) (ConvertState 0 Map.empty)
     pure a
 
 instance MonadError CodeConverterError CodeConverter where
     throwError = CodeConverter . lift . throwError
-    catchError (CodeConverter m) f = CodeConverter (catchError m (runCodeConverter . f))
+    catchError (CodeConverter m) f = CodeConverter (catchError m (unCodeConverter . f))
 
 data ConvertState = ConvertState
     { currentOffset :: Word16
@@ -100,21 +102,21 @@ insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
     incOffset :: Abs.Instruction -> CodeConverter ()
     incOffset (Label _) = pure () -- Label instructions have no representation in the bytecode, so they don't affect the offset
     incOffset inst = do
-        offset <- gets currentOffset
+        offset <- gets (.currentOffset)
         modify (\s -> s{currentOffset = offset + instructionSize inst})
 
     insertLabel :: Abs.Instruction -> CodeConverter (OffsetInstruction Abs.Instruction)
     insertLabel (Label l) = do
-        currentOffset <- gets currentOffset
+        currentOffset <- gets (.currentOffset)
 
         CodeConverter $ modifyM $ \s -> do
-            case Map.lookup l (labelOffsets s) of
+            case Map.lookup l s.labelOffsets of
                 Just _ -> throwError (DuplicateLabel l currentOffset)
                 Nothing -> do
-                    pure (s{labelOffsets = Map.insert l currentOffset (labelOffsets s)})
+                    pure (s{labelOffsets = Map.insert l currentOffset s.labelOffsets})
         pure (OffsetInstruction (error "Label offset should not be evaluated") (Label l))
     insertLabel x = do
-        offset <- gets currentOffset
+        offset <- gets (.currentOffset)
         pure (OffsetInstruction (offset - instructionSize x) x)
 
 modifyM :: (Monad m) => (s -> m s) -> StateT s m ()
@@ -128,7 +130,7 @@ resolveLabel (OffsetInstruction instOffset inst) =
     let resolveLabel' :: MaybeResolvedLabel -> CodeConverter MaybeResolvedLabel
         resolveLabel' r@(ResolvedLabel _) = pure r
         resolveLabel' (UnresolvedLabel l) = do
-            offset <- gets (Map.lookup l . labelOffsets)
+            offset <- gets (Map.lookup l . (.labelOffsets))
             case offset of
                 Just o -> pure (ResolvedLabel o)
                 Nothing -> pure (UnresolvedLabel l)

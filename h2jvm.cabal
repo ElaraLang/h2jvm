@@ -60,6 +60,8 @@ common extensions
   default-extensions:
     OverloadedStrings
     TypeFamilies
+    NoFieldSelectors
+    OverloadedRecordDot
 
 library
   import:           warnings, extensions

@@ -14,13 +14,16 @@ import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion
 
-newtype ClassBuilderT m a = ClassBuilderT {unClassBuilderT :: StateT ClassFile m a}
+newtype ClassBuilderT m a = ClassBuilderT (StateT ClassFile m a)
     deriving newtype (Functor, Applicative, Monad, MonadState ClassFile, MonadTrans)
+
+unClassBuilderT :: ClassBuilderT m a -> StateT ClassFile m a
+unClassBuilderT (ClassBuilderT m) = m
 
 type ClassBuilder = ClassBuilderT Identity
 
 addAccessFlag :: Monad m => ClassAccessFlag -> ClassBuilderT m ()
-addAccessFlag flag = modify (\c -> c{accessFlags = flag : accessFlags c})
+addAccessFlag flag = modify (\c -> c{accessFlags = flag : c.accessFlags})
 
 setName :: Monad m => QualifiedClassName -> ClassBuilderT m ()
 setName n = modify (\c -> c{name = n})
@@ -32,25 +35,25 @@ setSuperClass :: Monad m => QualifiedClassName -> ClassBuilderT m ()
 setSuperClass s = modify (\c -> c{superClass = Just s})
 
 addInterface :: Monad m => QualifiedClassName -> ClassBuilderT m ()
-addInterface i = modify (\c -> c{interfaces = i : interfaces c})
+addInterface i = modify (\c -> c{interfaces = i : c.interfaces})
 
 addField :: Monad m => ClassFileField -> ClassBuilderT m ()
-addField f = modify (\c -> c{fields = f : fields c})
+addField f = modify (\c -> c{fields = f : c.fields})
 
 buildAndAddField :: Monad m => ClassBuilderT m ClassFileField -> ClassBuilderT m ()
 buildAndAddField f = f >>= addField
 
 addMethod :: Monad m => ClassFileMethod -> ClassBuilderT m ()
-addMethod m = modify (\c -> c{methods = m : methods c})
+addMethod m = modify (\c -> c{methods = m : c.methods})
 
 buildAndAddMethod :: Monad m => ClassBuilderT m ClassFileMethod -> ClassBuilderT m ()
 buildAndAddMethod m = m >>= addMethod
 
 addAttribute :: Monad m => ClassFileAttribute -> ClassBuilderT m ()
-addAttribute a = modify (\c -> c{attributes = a : attributes c})
+addAttribute a = modify (\c -> c{attributes = a : c.attributes})
 
 addBootstrapMethod :: Monad m => BootstrapMethod -> ClassBuilderT m ()
-addBootstrapMethod b = modify (\c -> c{attributes = mergeAttributes (attributes c)})
+addBootstrapMethod b = modify (\c -> c{attributes = mergeAttributes (c.attributes)})
   where
     mergeAttributes :: [ClassFileAttribute] -> [ClassFileAttribute]
     mergeAttributes [] = []

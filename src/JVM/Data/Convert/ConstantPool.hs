@@ -24,7 +24,7 @@ lookupOrInsertM :: Monad m => ConstantPoolInfo -> ConstantPoolT m Int
 lookupOrInsertM = IM.lookupOrInsertMOver _constantPool
 
 _constantPool :: Lens' ConstantPoolState (IndexedMap ConstantPoolInfo)
-_constantPool = lens constantPool (\s x -> s{constantPool = x})
+_constantPool = lens (.constantPool) (\s x -> s{constantPool = x})
 
 transformEntry :: Monad m => ConstantPoolEntry -> ConstantPoolT m Int
 transformEntry (CPUTF8Entry text) = lookupOrInsertM (UTF8Info $ encodeUtf8 text)
@@ -105,7 +105,7 @@ convertBootstrapMethod (BootstrapMethod mhEntry args) = do
     mhIndex <- findIndexOf (CPMethodHandleEntry mhEntry)
     bsArgs <- traverse (findIndexOf . bmArgToCPEntry) args
     let bootstrapMethod = Raw.BootstrapMethod (fromIntegral mhIndex) (V.fromList bsArgs)
-    IM.lookupOrInsertMOver (lens bootstrapMethods (\s x -> s{bootstrapMethods = x})) bootstrapMethod
+    IM.lookupOrInsertMOver (lens (.bootstrapMethods) (\s x -> s{bootstrapMethods = x})) bootstrapMethod
 
 data ConstantPoolState = ConstantPoolState
     { constantPool :: IndexedMap ConstantPoolInfo

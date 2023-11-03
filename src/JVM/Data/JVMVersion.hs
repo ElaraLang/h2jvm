@@ -6,9 +6,15 @@ import Data.Binary (Word16)
 -- | A JVM Version Number
 newtype JVMVersion = JVMVersion Word16 deriving (Eq, Ord, Show)
 
-newtype MajorVersion = MajorVersion {getMajorVersion :: Word16} deriving (Eq, Ord, Num, Show)
+newtype MajorVersion = MajorVersion Word16 deriving (Eq, Ord, Num, Show)
 
-newtype MinorVersion = MinorVersion {getMinorVersion :: Word16} deriving (Eq, Ord, Num, Show)
+newtype MinorVersion = MinorVersion Word16 deriving (Eq, Ord, Num, Show)
+
+unwrapMajor :: MajorVersion -> Word16
+unwrapMajor (MajorVersion v) = v
+
+unwrapMinor :: MinorVersion -> Word16
+unwrapMinor (MinorVersion v) = v
 
 getMajor :: JVMVersion -> MajorVersion
 getMajor (JVMVersion v) = MajorVersion v

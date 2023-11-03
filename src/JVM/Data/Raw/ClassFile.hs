@@ -10,7 +10,7 @@ import Data.ByteString qualified as B
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Data.Word
-import JVM.Data.JVMVersion (MajorVersion (..), MinorVersion (getMinorVersion))
+import JVM.Data.JVMVersion (MajorVersion (..), MinorVersion, unwrapMajor, unwrapMinor)
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo)
 import JVM.Data.Raw.Instruction (Instruction)
 import JVM.Data.Raw.Types
@@ -190,16 +190,15 @@ putAttribute (LineNumberTableAttribute lns) = do
 putAttribute (StackMapTableAttribute frames) = do
     putWord16be $ fromIntegral $ V.length frames
     mapM_ putStackMapFrame frames
-    where
-        putStackMapFrame :: StackMapFrame -> Put
-        putStackMapFrame SameFrame = putWord8 0
-        putStackMapFrame (SameLocals1StackItemFrame frameType) = do
-            putWord8 64
-            putVerificationTypeInfo frameType
-        
-        putVerificationTypeInfo :: Word16 -> Put
-        putVerificationTypeInfo = putWord16be
+  where
+    putStackMapFrame :: StackMapFrame -> Put
+    putStackMapFrame SameFrame = putWord8 0
+    putStackMapFrame (SameLocals1StackItemFrame frameType) = do
+        putWord8 64
+        putVerificationTypeInfo frameType
 
+    putVerificationTypeInfo :: Word16 -> Put
+    putVerificationTypeInfo = putWord16be
 
 putBootstrapMethod :: BootstrapMethod -> Put
 putBootstrapMethod BootstrapMethod{..} = do
@@ -230,8 +229,8 @@ instance WriteBinary MethodInfo where
 instance WriteBinary ClassFile where
     writeBinary ClassFile{..} = do
         putWord32be magic
-        putWord16be (getMinorVersion minorVersion)
-        putWord16be (getMajorVersion majorVersion)
+        putWord16be (unwrapMinor minorVersion)
+        putWord16be (unwrapMajor majorVersion)
         putConstantPool constantPool
         putWord16be accessFlags
         putWord16be thisClass
