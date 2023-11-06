@@ -4,10 +4,7 @@
 module JVM.Data.Convert.Method where
 
 import Control.Applicative (liftA2)
-import Control.Monad (foldM, join)
-import Data.Traversable (mapAccumL)
 import Data.Vector qualified as V
-import Debug.Trace (traceShowM)
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.ClassFile.Method qualified as Abs

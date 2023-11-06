@@ -84,6 +84,7 @@ library
     JVM.Data.Abstract.Instruction
     JVM.Data.Abstract.Name
     JVM.Data.Abstract.Type
+    JVM.Data.Analyse.Instruction
     JVM.Data.Convert
     JVM.Data.Convert.AccessFlag
     JVM.Data.Convert.ConstantPool

@@ -20,7 +20,14 @@ data FieldType
     | ArrayFieldType FieldType
     deriving (Show, Eq, Ord, Data)
 
+
+fieldTypeToClassInfoType :: FieldType -> ClassInfoType
+fieldTypeToClassInfoType (PrimitiveFieldType p) = PrimitiveClassInfoType p
+fieldTypeToClassInfoType (ObjectFieldType c) = ClassInfoType c
+fieldTypeToClassInfoType (ArrayFieldType f) = ArrayClassInfoType (fieldTypeToClassInfoType f)
+
 data ClassInfoType
     = ClassInfoType QualifiedClassName
+    | PrimitiveClassInfoType PrimitiveType
     | ArrayClassInfoType ClassInfoType
     deriving (Show, Eq, Ord, Data)

@@ -66,7 +66,6 @@ instructionSize (Abs.AStore 2) = 1
 instructionSize (Abs.AStore 3) = 1
 instructionSize (Abs.AStore _) = 2
 instructionSize Abs.AReturn = 1
-instructionSize Abs.AThrow = 1
 instructionSize Abs.AConstNull = 1
 instructionSize (Abs.IfEq _) = 3
 instructionSize (Abs.IfNe _) = 3
@@ -175,7 +174,7 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.AStore 2) = pure Raw.AStore2
     convertInstruction (Abs.AStore 3) = pure Raw.AStore3
     convertInstruction (Abs.AStore idx) = pure (Raw.AStore idx)
-    convertInstruction Abs.AThrow = pure Raw.AThrow
+
     convertInstruction Abs.AConstNull = pure Raw.AConstNull
     convertInstruction (Abs.InvokeStatic c n m) = do
         idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))

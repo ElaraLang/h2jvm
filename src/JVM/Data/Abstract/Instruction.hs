@@ -20,7 +20,6 @@ data Instruction' label
     = ALoad U1
     | AStore U1
     | AReturn
-    | AThrow
     | AConstNull
     | IfEq label
     | IfNe label
@@ -40,6 +39,17 @@ data Instruction' label
     | CheckCast ClassInfoType
     | Return
     deriving (Show, Eq, Ord, Functor)
+
+jumpTarget :: Instruction' label -> Maybe label
+jumpTarget (IfEq l) = Just l
+jumpTarget (IfNe l) = Just l
+jumpTarget (IfLt l) = Just l
+jumpTarget (IfGe l) = Just l
+jumpTarget (IfGt l) = Just l
+jumpTarget (IfLe l) = Just l
+jumpTarget (Goto l) = Just l
+jumpTarget _ = Nothing
+
 
 data LDCEntry
     = LDCInt Int

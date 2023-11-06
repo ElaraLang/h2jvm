@@ -3,7 +3,7 @@ module JVM.Data.Convert.Monad where
 import Control.Monad.Except
 import Data.Word (Word16)
 import JVM.Data.Abstract.Builder.Label
-import JVM.Data.Convert.ConstantPool (ConstantPoolState, ConstantPoolT, runConstantPoolM, runConstantPoolT)
+import JVM.Data.Convert.ConstantPool (ConstantPoolState, ConstantPoolT, runConstantPoolT)
 
 type ConvertM = ConstantPoolT (Except CodeConverterError)
 

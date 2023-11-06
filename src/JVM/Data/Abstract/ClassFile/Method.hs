@@ -57,6 +57,8 @@ data StackMapFrame
         !U1 -- | How many locals to chop
         !Label -- | The label of the next instruction
     | SameLocals1StackItemFrame !VerificationTypeInfo Label
+    | AppendFrame ![VerificationTypeInfo] !Label
+    | FullFrame ![VerificationTypeInfo] ![VerificationTypeInfo] !Label
     deriving (Show, Data, Eq)
 
 data  VerificationTypeInfo = TopVariableInfo
