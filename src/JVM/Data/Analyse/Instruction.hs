@@ -1,4 +1,5 @@
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE OverloadedLists #-}
 
 -- | Analyses lists of instructions, inserting StackMapTable attributes where needed & resolving labels.
 module JVM.Data.Analyse.Instruction where
@@ -10,11 +11,13 @@ import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), methodParam)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType (ArrayClassInfoType, ClassInfoType), FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
+import Data.List.NonEmpty (NonEmpty (..))
+import Data.List.NonEmpty qualified as NE
 
 -- | Details how the stack changes between two instructions
 data StackDiff
     = -- | Pushes the given types onto the stack
-      StackPush [FieldType]
+      StackPush (NonEmpty FieldType)
     | -- | Pops the given number of types from the stack
       StackPop Int
     | StackSame
@@ -25,8 +28,8 @@ instance Semigroup StackDiff where
     x <> StackSame = x
     StackPush ts <> StackPush ts' = StackPush (ts <> ts')
     StackPop n <> StackPop n' = StackPop (n + n')
-    StackPush ts <> StackPop n = StackPush (drop n ts)
-    StackPop n <> StackPush ts = StackPush (drop n ts)
+    StackPush ts <> StackPop n = maybe StackSame StackPush (NE.nonEmpty $ NE.drop n ts)
+    StackPop n <> StackPush ts = maybe StackSame StackPush (NE.nonEmpty $ NE.drop n ts)
 
 instance Monoid StackDiff where
     mempty = StackSame
@@ -36,7 +39,7 @@ type Stack = [FieldType]
 -- | Details how the local variables change between two instructions
 data LocalsDiff
     = -- | Pushes the given types onto the locals
-      LocalsPush [FieldType]
+      LocalsPush (NonEmpty FieldType)
     | -- | Pops the given number of types from the locals
       LocalsPop Int
     | LocalsSame
@@ -47,8 +50,8 @@ instance Semigroup LocalsDiff where
     x <> LocalsSame = x
     LocalsPush ts <> LocalsPush ts' = LocalsPush (ts <> ts')
     LocalsPop n <> LocalsPop n' = LocalsPop (n + n')
-    LocalsPush ts <> LocalsPop n = LocalsPush (drop n ts)
-    LocalsPop n <> LocalsPush ts = LocalsPush (drop n ts)
+    LocalsPush ts <> LocalsPop n = maybe LocalsSame LocalsPush (NE.nonEmpty $ NE.drop n ts)
+    LocalsPop n <> LocalsPush ts = maybe LocalsSame LocalsPush (NE.nonEmpty $ NE.drop n ts)
 
 instance Monoid LocalsDiff where
     mempty = LocalsSame
@@ -61,12 +64,12 @@ class Apply diff a | diff -> a where
     applyMany diffs x = foldr apply x diffs
 
 instance Apply StackDiff Stack where
-    apply (StackPush ts) s = ts ++ s
+    apply (StackPush ts) s = NE.toList ts ++ s
     apply (StackPop n) s = drop n s
     apply StackSame s = s
 
 instance Apply LocalsDiff Locals where
-    apply (LocalsPush ts) s = ts ++ s
+    apply (LocalsPush ts) s = NE.toList ts ++ s
     apply (LocalsPop n) s = drop n s
     apply LocalsSame s = s
 
@@ -107,7 +110,7 @@ analyseStackMapTable :: MethodDescriptor -> [Instruction] -> [(StackDiff, Locals
 analyseStackMapTable desc = go ([], [])
   where
     go :: (Stack, Locals) -> [Instruction] -> [(StackDiff, LocalsDiff)]
-    go x [] = []
+    go _ [] = []
     go (stack, locals) (i : is) =
         case analyseStackChange (stack, locals) desc i of
             Nothing -> go (stack, locals) is
@@ -137,10 +140,10 @@ calculateStackMapFrames desc code =
 
 calculateStackMapFrame :: Label -> (StackDiff, LocalsDiff) -> StackMapFrame
 calculateStackMapFrame target (StackSame, LocalsSame) = SameFrame target
-calculateStackMapFrame target (StackSame, LocalsPush xs) = AppendFrame (fieldTypeToVerificationType <$> xs) target
+calculateStackMapFrame target (StackSame, LocalsPush xs) = AppendFrame (NE.toList $ fieldTypeToVerificationType <$> xs) target
 calculateStackMapFrame target (StackSame, LocalsPop n) = ChopFrame (fromIntegral n) target
-calculateStackMapFrame target (StackPush xs, LocalsSame) = SameLocals1StackItemFrame (fieldTypeToVerificationType (last xs)) target
-calculateStackMapFrame target (StackPush xs, LocalsPush ys) = FullFrame (fieldTypeToVerificationType <$> xs) (fieldTypeToVerificationType <$> ys) target
+calculateStackMapFrame target (StackPush xs, LocalsSame) = SameLocals1StackItemFrame (fieldTypeToVerificationType (NE.last xs)) target
+calculateStackMapFrame target (StackPush xs, LocalsPush ys) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> xs) (NE.toList $ fieldTypeToVerificationType <$> ys) target
 calculateStackMapFrame _ (x, y) = error ("Not implemented: " ++ show (x, y))
 
 fieldTypeToVerificationType :: FieldType -> VerificationTypeInfo
