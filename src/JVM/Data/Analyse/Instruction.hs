@@ -76,7 +76,7 @@ instance Apply LocalsDiff Locals where
 analyseStackChange :: (Stack, Locals) -> MethodDescriptor -> Instruction -> Maybe (StackDiff, LocalsDiff)
 analyseStackChange _ desc (ALoad idx) = do
     idx' <- desc `methodParam` fromIntegral idx
-    pure (StackPush [idx'], LocalsPush [idx'])
+    pure (StackPush [idx'], LocalsSame)
 analyseStackChange (stack : _, locals) _ (AStore idx) = pure (StackPop 1, if length locals < fromIntegral idx then LocalsPush [stack] else LocalsSame)
 analyseStackChange ([], _) _ (AStore _) = error "AStore with empty stack"
 analyseStackChange _ _ AReturn = pure (StackPop 1, LocalsSame)

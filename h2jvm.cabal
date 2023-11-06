@@ -159,3 +159,5 @@ test-suite h2jvm-test
     , bytestring
     , h2jvm
     , hspec
+    , hedgehog
+    , hspec-hedgehog
