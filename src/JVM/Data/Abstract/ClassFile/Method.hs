@@ -6,7 +6,6 @@ import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
 import Data.Data
 import Data.TypeMergingList (DataMergeable (merge), errorDifferentConstructors)
-import Data.Void
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)

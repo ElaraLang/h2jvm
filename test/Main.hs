@@ -16,12 +16,7 @@ import JVM.Data.Abstract.Name
 import JVM.Data.Abstract.Type
 import JVM.Data.Convert
 import JVM.Data.JVMVersion
-import Test.Hspec (Spec, describe, hspec)
-import Text.Pretty.Simple (
-    CheckColorTty (NoCheckColorTty),
-    defaultOutputOptionsDarkBg,
-    pPrintOpt,
- )
+import Test.Hspec (Spec, hspec)
 import Util (shouldBeRight)
 
 spec :: Spec

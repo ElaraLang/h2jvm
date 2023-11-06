@@ -115,6 +115,8 @@ data StackMapFrame
     | SameLocals1StackItemFrameExtended VerificationTypeInfo U2
     | SameFrameExtended U2
     | ChopFrame U1 U2
+    | AppendFrame (Vector VerificationTypeInfo) U2
+    | FullFrame (Vector VerificationTypeInfo) (Vector VerificationTypeInfo) U2
     deriving (Show)
 
 data VerificationTypeInfo
@@ -223,6 +225,17 @@ putAttribute (StackMapTableAttribute frames) = do
     putStackMapFrame (ChopFrame chop label) = do
         putWord8 (251 - chop) -- chop = 251 - frame_type => frame_type = 251 - chop
         putWord16be label
+    putStackMapFrame (AppendFrame infos offset) = do
+        putWord8 (251 + fromIntegral (V.length infos)) -- frame_type = 251 + number_of_locals
+        putWord16be offset
+        mapM_ putVerificationTypeInfo infos
+    putStackMapFrame (FullFrame locals stack offset) = do
+        putWord8 255
+        putWord16be offset
+        putWord16be (fromIntegral $ V.length locals)
+        mapM_ putVerificationTypeInfo locals
+        putWord16be (fromIntegral $ V.length stack)
+        mapM_ putVerificationTypeInfo stack
 
     putVerificationTypeInfo :: VerificationTypeInfo -> Put
     putVerificationTypeInfo TopVariableInfo = putWord8 MagicNumbers.verificationType_info_TopVariableInfo

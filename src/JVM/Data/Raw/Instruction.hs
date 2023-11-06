@@ -386,7 +386,7 @@ putInstruction = \case
     LLoad3 -> putWord8 MagicNumbers.instruction_lLoad3
     LMul -> putWord8 MagicNumbers.instruction_lMul
     LNeg -> putWord8 MagicNumbers.instruction_lNeg
-    LookupSwitch defaultOffset npairs -> undefined -- TODO: figure this out
+    LookupSwitch {} -> undefined -- TODO: figure this out
     LOr -> putWord8 MagicNumbers.instruction_lOr
     LRem -> putWord8 MagicNumbers.instruction_lRem
     LReturn -> putWord8 MagicNumbers.instruction_lReturn
@@ -416,7 +416,7 @@ putInstruction = \case
     SAStore -> putWord8 MagicNumbers.instruction_sAStore
     SIPush value -> putWord8 MagicNumbers.instruction_sIPush *> putWord16be value
     Swap -> putWord8 MagicNumbers.instruction_swap
-    TableSwitch defaultOffset low high offsets -> undefined -- TODO: figure this out
+    TableSwitch{} -> undefined -- TODO: figure this out
     Wide opcode index -> putWord8 MagicNumbers.instruction_wide *> putWord8 opcode *> putWord16be index
 
 instance WriteBinary Instruction where

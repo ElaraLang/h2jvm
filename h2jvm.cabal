@@ -54,7 +54,7 @@ extra-doc-files: CHANGELOG.md
 -- extra-source-files:
 
 common warnings
-  ghc-options: -Wall -Wunused-packages
+  ghc-options: -Wall -Wunused-packages -Wno-name-shadowing
 
 common extensions
   default-extensions:
@@ -118,7 +118,6 @@ library
     , lens          >=5.0
     , mtl
     , text
-    , transformers
     , vector
 
   -- Directories containing source files.
@@ -160,5 +159,3 @@ test-suite h2jvm-test
     , bytestring
     , h2jvm
     , hspec
-    , pretty-simple
-    , vector

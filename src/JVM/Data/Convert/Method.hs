@@ -94,6 +94,25 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
                             then Raw.SameLocals1StackItemFrameExtended x' label
                             else error "Label too large"
                 )
+        convertStackMapFrame prev (Abs.AppendFrame x stack) = do
+            label <- (- 1) . (- prev) <$> fullyResolveAbs stack
+            x' <- traverse convertVerificationTypeInfo x
+            pure
+                ( label
+                , if label <= 32767
+                    then Raw.AppendFrame (V.fromList x') label
+                    else error "Label too large"
+                )
+        convertStackMapFrame prev (Abs.FullFrame x y stack) = do
+            label <- (- 1) . (- prev) <$> fullyResolveAbs stack
+            x' <- traverse convertVerificationTypeInfo x
+            y' <- traverse convertVerificationTypeInfo y
+            pure
+                ( label
+                , if label <= 32767
+                    then Raw.FullFrame (V.fromList x') (V.fromList y') label
+                    else error "Label too large"
+                )
 
 convertVerificationTypeInfo :: Abs.VerificationTypeInfo -> CodeConverter Raw.VerificationTypeInfo
 convertVerificationTypeInfo Abs.TopVariableInfo = pure Raw.TopVariableInfo

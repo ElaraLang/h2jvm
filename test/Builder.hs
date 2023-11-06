@@ -28,7 +28,7 @@ spec = describe "test code building" $ do
         -}
         let (_, code) = runCodeBuilder $ do
                 label <- newLabel
-                emit ALoad0
+                emit $ ALoad 0
                 emit (IfEq label)
                 emit (Label label)
                 emit Return
@@ -65,7 +65,7 @@ spec = describe "test code building" $ do
                 label1 <- newLabel
                 label2 <- newLabel
                 let code =
-                        [ ALoad0
+                        [ ALoad 0
                         , LDC (LDCInt 1)
                         , InvokeStatic (ClassInfoType "java.lang.Integer") "valueOf" (MethodDescriptor [PrimitiveFieldType JVM.Int] (TypeReturn (ObjectFieldType "java.lang.Integer")))
                         , InvokeStatic (ClassInfoType "Prelude") "eq" (MethodDescriptor [ObjectFieldType "java.lang.Object", ObjectFieldType "java.lang.Object"] (TypeReturn (ObjectFieldType "java.lang.Boolean")))
@@ -75,8 +75,8 @@ spec = describe "test code building" $ do
                         , InvokeStatic (ClassInfoType "java.lang.Integer") "valueOf" (MethodDescriptor [PrimitiveFieldType JVM.Int] (TypeReturn (ObjectFieldType "java.lang.Integer")))
                         , Goto label2
                         , Label label1
-                        , ALoad0
-                        , ALoad0
+                        , ALoad 0
+                        , ALoad 0
                         , LDC (LDCInt 1)
                         , InvokeStatic (ClassInfoType "java.lang.Integer") "valueOf" (MethodDescriptor [PrimitiveFieldType JVM.Int] (TypeReturn (ObjectFieldType "java.lang.Integer")))
                         , InvokeStatic (ClassInfoType "Prelude") "minus" (MethodDescriptor [ObjectFieldType "java.lang.Integer", ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer")))

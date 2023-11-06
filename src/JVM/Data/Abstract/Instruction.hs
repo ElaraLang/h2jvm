@@ -64,3 +64,4 @@ ldcEntryToFieldType (LDCFloat _) = PrimitiveFieldType Float
 ldcEntryToFieldType (LDCString _) = ObjectFieldType "java/lang/String"
 ldcEntryToFieldType (LDCClass (ClassInfoType x)) = ObjectFieldType x
 ldcEntryToFieldType (LDCClass (ArrayClassInfoType x)) = ArrayFieldType $ ldcEntryToFieldType $ LDCClass x
+ldcEntryToFieldType (LDCClass (PrimitiveClassInfoType x)) = PrimitiveFieldType x
