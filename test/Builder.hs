@@ -11,6 +11,7 @@ import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type as JVM
+import JVM.Data.Analyse.Instruction (calculateStackMapFrames)
 import JVM.Data.Convert
 import JVM.Data.JVMVersion (java17)
 import JVM.Data.Raw.Instruction qualified as Raw
@@ -112,6 +113,12 @@ spec = describe "test code building" $ do
                        ]
 
         attrs `shouldBe` [StackMapTable [SameFrame label1, SameFrame label2]]
+
+        let frames = calculateStackMapFrames (MethodDescriptor [ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))) code
+        frames
+            `shouldBe` [ SameFrame label1
+                       , SameLocals1StackItemFrame (ObjectVariableInfo (ClassInfoType "java.lang.Integer")) label2
+                       ]
 
         let (_, clazz) =
                 runClassBuilder "BuilderTest" java17 $
