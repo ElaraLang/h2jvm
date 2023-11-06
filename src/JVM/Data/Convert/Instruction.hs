@@ -55,15 +55,15 @@ countArguments (MethodDescriptor args _) = 1 + sum (map countArgument args)
 
 -- | The size of an instruction in bytes, used for calculating jump offsets
 instructionSize :: Abs.Instruction -> Word16
-instructionSize Abs.ALoad0 = 1
-instructionSize Abs.ALoad1 = 1
-instructionSize Abs.ALoad2 = 1
-instructionSize Abs.ALoad3 = 1
+instructionSize (Abs.ALoad 0) = 1
+instructionSize (Abs.ALoad 1) = 1
+instructionSize (Abs.ALoad 2) = 1
+instructionSize (Abs.ALoad 3) = 1
 instructionSize (Abs.ALoad _) = 2
-instructionSize Abs.AStore0 = 1
-instructionSize Abs.AStore1 = 1
-instructionSize Abs.AStore2 = 1
-instructionSize Abs.AStore3 = 1
+instructionSize (Abs.AStore 0) = 1
+instructionSize (Abs.AStore 1) = 1
+instructionSize (Abs.AStore 2) = 1
+instructionSize (Abs.AStore 3) = 1
 instructionSize (Abs.AStore _) = 2
 instructionSize Abs.AReturn = 1
 instructionSize Abs.AThrow = 1
@@ -165,19 +165,11 @@ convertInstruction :: OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) ->
 convertInstruction (OffsetInstruction _ (Abs.Label _)) = pure Nothing
 convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstruction o
   where
-    convertInstruction Abs.ALoad0 = pure Raw.ALoad0
-    convertInstruction Abs.ALoad1 = pure Raw.ALoad1
-    convertInstruction Abs.ALoad2 = pure Raw.ALoad2
-    convertInstruction Abs.ALoad3 = pure Raw.ALoad3
     convertInstruction (Abs.ALoad 0) = pure Raw.ALoad0
     convertInstruction (Abs.ALoad 1) = pure Raw.ALoad1
     convertInstruction (Abs.ALoad 2) = pure Raw.ALoad2
     convertInstruction (Abs.ALoad 3) = pure Raw.ALoad3
     convertInstruction (Abs.ALoad idx) = pure (Raw.ALoad idx)
-    convertInstruction Abs.AStore0 = pure Raw.AStore0
-    convertInstruction Abs.AStore1 = pure Raw.AStore1
-    convertInstruction Abs.AStore2 = pure Raw.AStore2
-    convertInstruction Abs.AStore3 = pure Raw.AStore3
     convertInstruction (Abs.AStore 0) = pure Raw.AStore0
     convertInstruction (Abs.AStore 1) = pure Raw.AStore1
     convertInstruction (Abs.AStore 2) = pure Raw.AStore2

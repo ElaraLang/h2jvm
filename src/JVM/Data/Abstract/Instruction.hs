@@ -10,22 +10,14 @@ import Data.Text (Text)
 import JVM.Data.Abstract.Builder.Label (Label)
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor
-import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
+import JVM.Data.Abstract.Type
 import JVM.Data.Raw.Types
 
 type Reference = Int
 
 type Instruction = Instruction' Label
 data Instruction' label
-    = ALoad0
-    | ALoad1
-    | ALoad2
-    | ALoad3
-    | ALoad U1
-    | AStore0
-    | AStore1
-    | AStore2
-    | AStore3
+    = ALoad U1
     | AStore U1
     | AReturn
     | AThrow
@@ -55,3 +47,10 @@ data LDCEntry
     | LDCString Text
     | LDCClass ClassInfoType
     deriving (Show, Eq, Ord)
+
+ldcEntryToFieldType :: LDCEntry -> FieldType
+ldcEntryToFieldType (LDCInt _) = PrimitiveFieldType Int
+ldcEntryToFieldType (LDCFloat _) = PrimitiveFieldType Float
+ldcEntryToFieldType (LDCString _) = ObjectFieldType "java/lang/String"
+ldcEntryToFieldType (LDCClass (ClassInfoType x)) = ObjectFieldType x
+ldcEntryToFieldType (LDCClass (ArrayClassInfoType x)) = ArrayFieldType $ ldcEntryToFieldType $ LDCClass x
