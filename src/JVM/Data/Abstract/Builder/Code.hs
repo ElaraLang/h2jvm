@@ -42,9 +42,7 @@ emit i = emit' [i]
 
 emit' :: Monad m => [Instruction] -> CodeBuilderT m ()
 emit' is = do
-    s@CodeState{code = code} <- get
-    put (s{code = is ++ code})
-    pure ()
+    modify (\s -> s{code = reverse is <> s.code})
 
 addCodeAttribute :: Monad m => CodeAttribute -> CodeBuilderT m ()
 addCodeAttribute ca = do
