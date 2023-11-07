@@ -84,6 +84,7 @@ instructionSize (Abs.GetField{}) = 3
 instructionSize (Abs.GetStatic{}) = 3
 instructionSize (Abs.CheckCast _) = 3
 instructionSize Abs.Return = 1
+instructionSize Abs.Dup = 1
 instructionSize (Abs.Goto _) = 3
 
 convertInstructions :: [Abs.Instruction] -> CodeConverter [Raw.Instruction]
@@ -175,7 +176,6 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.AStore 2) = pure Raw.AStore2
     convertInstruction (Abs.AStore 3) = pure Raw.AStore3
     convertInstruction (Abs.AStore idx) = pure (Raw.AStore idx)
-
     convertInstruction Abs.AConstNull = pure Raw.AConstNull
     convertInstruction (Abs.InvokeStatic c n m) = do
         idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))
@@ -210,6 +210,7 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
         pure (Raw.GetStatic idx)
     convertInstruction Abs.AReturn = pure Raw.AReturn
     convertInstruction Abs.Return = pure Raw.Return
+    convertInstruction Abs.Dup = pure Raw.Dup
     convertInstruction (Abs.CheckCast t) = do
         idx <- findIndexOf (CPClassEntry t)
         pure (Raw.CheckCast idx)

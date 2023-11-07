@@ -21,6 +21,7 @@ data Instruction' label
     | AStore U1
     | AReturn
     | AConstNull
+    | Dup
     | IfEq label
     | IfNe label
     | IfLt label
