@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedLists #-}
 
 -- | Analyses lists of instructions, inserting StackMapTable attributes where needed & resolving labels.
-module JVM.Data.Analyse.Instruction (analyseStackChange, calculateStackMapFrames, insertStackMapTable) where
+module JVM.Data.Analyse.Instruction (analyseStackChange, calculateStackMapFrames, insertStackMapTable, findJumps, findJumpDiff) where
 
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.List.NonEmpty qualified as NE
@@ -154,7 +154,7 @@ calculateStackMapFrame _ target (StackSame, LocalsPush xs) = AppendFrame (NE.toL
 calculateStackMapFrame _ target (StackSame, LocalsPop n) = ChopFrame (fromIntegral n) target
 calculateStackMapFrame _ target (StackPush xs, LocalsSame) = SameLocals1StackItemFrame (fieldTypeToVerificationType (NE.last xs)) target
 calculateStackMapFrame _ target (StackPush xs, LocalsPush ys) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> xs) (NE.toList $ fieldTypeToVerificationType <$> ys) target
-calculateStackMapFrame (stack, locals) _ (x, y) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> NE.fromList stack) (NE.toList $ fieldTypeToVerificationType <$> NE.fromList locals) (Label 0)
+calculateStackMapFrame (stack, locals) target (x, y) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> NE.fromList stack) (NE.toList $ fieldTypeToVerificationType <$> NE.fromList locals) target
 
 fieldTypeToVerificationType :: FieldType -> VerificationTypeInfo
 fieldTypeToVerificationType (ObjectFieldType x) = ObjectVariableInfo (ClassInfoType x)

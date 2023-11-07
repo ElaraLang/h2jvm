@@ -1,6 +1,5 @@
 module Builder where
 
-import Control.Monad.IO.Class
 import Data.Binary.Put
 import Data.Binary.Write
 import Data.ByteString qualified as BS
@@ -12,14 +11,13 @@ import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type as JVM
-import JVM.Data.Analyse.Instruction (calculateStackMapFrames, findJumps, findJumpDiff)
+import JVM.Data.Analyse.Instruction (calculateStackMapFrames)
 import JVM.Data.Convert
 import JVM.Data.JVMVersion (java17)
 import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec
 import Test.Hspec.Hedgehog
 import Util (runConv, shouldBeRight)
-import Hedgehog.Internal.Show (showPretty)
 
 spec :: Spec
 spec = describe "test code building" $ do
@@ -119,12 +117,11 @@ spec = describe "test code building" $ do
             hedgehog $ do
                 let desc = MethodDescriptor [ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))
                     frames = calculateStackMapFrames desc code
-        
+
                 frames
                     === [ SameFrame label1
                         , SameLocals1StackItemFrame (ObjectVariableInfo (ClassInfoType "java.lang.Integer")) label2
                         ]
-                
 
         it "Writes to a file without issue" $ do
             let (_, clazz) =
