@@ -154,7 +154,7 @@ calculateStackMapFrame _ target (StackSame, LocalsPush xs) = AppendFrame (NE.toL
 calculateStackMapFrame _ target (StackSame, LocalsPop n) = ChopFrame (fromIntegral n) target
 calculateStackMapFrame _ target (StackPush xs, LocalsSame) = SameLocals1StackItemFrame (fieldTypeToVerificationType (NE.last xs)) target
 calculateStackMapFrame _ target (StackPush xs, LocalsPush ys) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> xs) (NE.toList $ fieldTypeToVerificationType <$> ys) target
-calculateStackMapFrame (stack, locals) target (x, y) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> NE.fromList stack) (NE.toList $ fieldTypeToVerificationType <$> NE.fromList locals) target
+calculateStackMapFrame (stack, locals) target _ = FullFrame (fieldTypeToVerificationType <$> stack) (fieldTypeToVerificationType <$> locals) target
 
 fieldTypeToVerificationType :: FieldType -> VerificationTypeInfo
 fieldTypeToVerificationType (ObjectFieldType x) = ObjectVariableInfo (ClassInfoType x)
