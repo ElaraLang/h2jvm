@@ -15,10 +15,13 @@ import JVM.Data.Raw.ConstantPool qualified as Raw
 import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec hiding (shouldContain)
 import Util (runConv, shouldBeJust, shouldContain)
+import Test.Hspec.Hedgehog
+
+
 
 spec :: Spec
 spec = describe "test conversions" $ do
-    it "Converts a simple invokestatic instruction properly" $ do
+    it "Converts a simple invokestatic instruction properly" $ hedgehog $ do
         ([inst], ConstantPoolState constants bms) <-
             runConv
                 [ InvokeStatic
@@ -30,19 +33,19 @@ spec = describe "test conversions" $ do
         constants `shouldContain` Raw.UTF8Info "charAt"
         constants `shouldContain` Raw.UTF8Info "(I)C"
 
-        bms `shouldBe` []
+        bms === []
 
         indexOfMethodRef <- findCPIndex (\case MethodRefInfo _ _ -> True; _ -> False) constants
-        inst `shouldBe` Raw.InvokeStatic (fromIntegral indexOfMethodRef)
+        inst === Raw.InvokeStatic (fromIntegral indexOfMethodRef)
 
-    it "Converts a simple ldc instruction properly" $ do
+    it "Converts a simple ldc instruction properly" $ hedgehog $ do
         ([inst], ConstantPoolState constants bms) <- runConv [LDC $ LDCString "hello"]
         constants `shouldContain` Raw.UTF8Info "hello"
-        bms `shouldBe` []
+        bms === []
         indexOfInteger <- findCPIndex (\case StringInfo _ -> True; _ -> False) constants
-        inst `shouldBe` Raw.LDC (fromIntegral indexOfInteger)
+        inst === Raw.LDC (fromIntegral indexOfInteger)
 
-    it "Converts a simple indy instruction properly" $ do
+    it "Converts a simple indy instruction properly" $ hedgehog $ do
         ([inst], ConstantPoolState constants bms) <-
             runConv
                 [ InvokeDynamic
@@ -66,8 +69,8 @@ spec = describe "test conversions" $ do
         indexOfIndy <- findCPIndex (\case InvokeDynamicInfo _ _ -> True; _ -> False) constants
         strArgIndex <- findCPIndex (\case StringInfo _ -> True; _ -> False) constants
 
-        bms `shouldBe` IM.singleton (Raw.BootstrapMethod (fromIntegral indexOfMethodHandle) [fromIntegral strArgIndex])
-        inst `shouldBe` Raw.InvokeDynamic (fromIntegral indexOfIndy)
+        bms === IM.singleton (Raw.BootstrapMethod (fromIntegral indexOfMethodHandle) [fromIntegral strArgIndex])
+        inst === Raw.InvokeDynamic (fromIntegral indexOfIndy)
 
-findCPIndex :: (a -> Bool) -> IM.IndexedMap a -> IO Int
+findCPIndex :: MonadTest m => (a -> Bool) -> IM.IndexedMap a -> m Int
 findCPIndex pred cp = shouldBeJust $ IM.lookupIndexWhere pred cp
