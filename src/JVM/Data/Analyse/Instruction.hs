@@ -23,13 +23,19 @@ data StackDiff
     | StackSame
     deriving (Show, Eq, Ord)
 
+stackPop :: Int -> StackDiff
+stackPop 0 = StackSame
+stackPop n | n < 0 = error "stackPop: negative"
+stackPop n = StackPop n
+
 instance Semigroup StackDiff where
     StackSame <> x = x
     x <> StackSame = x
     StackPush ts <> StackPush ts' = StackPush (ts <> ts')
-    StackPop n <> StackPop n' = StackPop (n + n')
+    StackPop n <> StackPop n' = stackPop (n + n')
     StackPush ts <> StackPop n = maybe StackSame StackPush (NE.nonEmpty $ NE.drop n ts)
     StackPop n <> StackPush ts = maybe StackSame StackPush (NE.nonEmpty $ NE.drop n ts)
+
 
 instance Monoid StackDiff where
     mempty = StackSame
@@ -45,13 +51,19 @@ data LocalsDiff
     | LocalsSame
     deriving (Show, Eq, Ord)
 
+localsPop :: Int -> LocalsDiff
+localsPop 0 = LocalsSame
+localsPop n | n < 0 = error "localsPop: negative"
+localsPop n = LocalsPop n
+
 instance Semigroup LocalsDiff where
     LocalsSame <> x = x
     x <> LocalsSame = x
     LocalsPush ts <> LocalsPush ts' = LocalsPush (ts <> ts')
-    LocalsPop n <> LocalsPop n' = LocalsPop (n + n')
+    LocalsPop n <> LocalsPop n' = localsPop (n + n')
     LocalsPush ts <> LocalsPop n = maybe LocalsSame LocalsPush (NE.nonEmpty $ NE.drop n ts)
     LocalsPop n <> LocalsPush ts = maybe LocalsSame LocalsPush (NE.nonEmpty $ NE.drop n ts)
+
 
 instance Monoid LocalsDiff where
     mempty = LocalsSame
@@ -77,10 +89,10 @@ analyseStackChange :: (Stack, Locals) -> MethodDescriptor -> Instruction -> Mayb
 analyseStackChange _ desc (ALoad idx) = do
     idx' <- desc `methodParam` fromIntegral idx
     pure (StackPush [idx'], LocalsSame)
-analyseStackChange (stack : _, locals) _ (AStore idx) = pure (StackPop 1, if length locals < fromIntegral idx then LocalsPush [stack] else LocalsSame)
+analyseStackChange (stack : _, locals) _ (AStore idx) = pure (stackPop 1, if length locals < fromIntegral idx then LocalsPush [stack] else LocalsSame)
 analyseStackChange ([], _) _ (AStore _) = error "AStore with empty stack"
-analyseStackChange _ _ AReturn = pure (StackPop 1, LocalsSame)
-analyseStackChange _ _ Return = pure (StackPop 1, LocalsSame)
+analyseStackChange _ _ AReturn = pure (stackPop 1, LocalsSame)
+analyseStackChange _ _ Return = pure (stackPop 1, LocalsSame)
 analyseStackChange _ _ (LDC x) = pure (StackPush [ldcEntryToFieldType x], LocalsSame)
 analyseStackChange _ _ AConstNull = pure (StackPush [ObjectFieldType "java/lang/Object"], LocalsSame)
 analyseStackChange _ _ (Goto _) = pure (StackSame, LocalsSame)
