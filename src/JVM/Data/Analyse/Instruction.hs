@@ -109,6 +109,7 @@ analyseStackChange _ _ (InvokeDynamic _ _ (MethodDescriptor args _)) = do
 analyseStackChange _ _ (InvokeInterface _ _ (MethodDescriptor args _)) = do
     pure (stackPop (length args), LocalsSame)
 analyseStackChange _ _ (PutStatic{}) = pure (StackPop 1, LocalsSame)
+analyseStackChange _ _ (GetField _ _ ft) = pure (StackPush [ft], LocalsSame)
 analyseStackChange _ _ (GetStatic _ _ ft) = pure (StackPush [ft], LocalsSame)
 analyseStackChange _ _ (CheckCast _) = pure (StackSame, LocalsSame)
 analyseStackChange _ _ (Label _) = pure (StackSame, LocalsSame)

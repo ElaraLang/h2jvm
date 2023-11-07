@@ -34,6 +34,7 @@ data Instruction' label
     | Label label
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
+    | GetField ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType
     | Goto label
     | CheckCast ClassInfoType

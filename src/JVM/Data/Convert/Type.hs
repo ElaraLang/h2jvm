@@ -27,3 +27,4 @@ classInfoTypeDescriptor :: Abs.ClassInfoType -> Text
 classInfoTypeDescriptor = \case
     Abs.ClassInfoType name -> toInternalName name
     Abs.ArrayClassInfoType classInfoType -> "[" <> classInfoTypeDescriptor classInfoType
+    Abs.PrimitiveClassInfoType base -> baseTypeDescriptor base

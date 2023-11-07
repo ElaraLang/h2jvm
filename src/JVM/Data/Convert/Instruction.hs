@@ -80,6 +80,7 @@ instructionSize (Abs.InvokeDynamic{}) = 5
 instructionSize (Abs.Label _) = 0
 instructionSize (Abs.LDC _) = 2
 instructionSize (Abs.PutStatic{}) = 3
+instructionSize (Abs.GetField{}) = 3
 instructionSize (Abs.GetStatic{}) = 3
 instructionSize (Abs.CheckCast _) = 3
 instructionSize Abs.Return = 1
@@ -201,6 +202,9 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.PutStatic c n t) = do
         idx <- findIndexOf (CPFieldRefEntry (FieldRef c n t))
         pure (Raw.PutStatic idx)
+    convertInstruction (Abs.GetField c n t) = do
+        idx <- findIndexOf (CPFieldRefEntry (FieldRef c n t))
+        pure (Raw.GetField idx)
     convertInstruction (Abs.GetStatic c n t) = do
         idx <- findIndexOf (CPFieldRefEntry (FieldRef c n t))
         pure (Raw.GetStatic idx)

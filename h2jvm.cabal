@@ -66,6 +66,9 @@ common extensions
 library
   import:           warnings, extensions
 
+  ghc-options:
+    -Werror=incomplete-patterns
+
   -- Modules exported by the library.
   -- cabal-fmt: expand src
   exposed-modules:
