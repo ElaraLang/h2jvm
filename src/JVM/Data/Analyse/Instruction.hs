@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedLists #-}
 
 -- | Analyses lists of instructions, inserting StackMapTable attributes where needed & resolving labels.
-module JVM.Data.Analyse.Instruction where
+module JVM.Data.Analyse.Instruction (analyseStackChange, calculateStackMapFrames, insertStackMapTable) where
 
 import Data.Maybe (mapMaybe)
 import JVM.Data.Abstract.Builder.Code
@@ -103,13 +103,13 @@ analyseStackChange _ _ (IfGe _) = pure (StackPop 1, LocalsSame)
 analyseStackChange _ _ (IfGt _) = pure (StackPop 1, LocalsSame)
 analyseStackChange _ _ (IfLe _) = pure (StackPop 1, LocalsSame)
 analyseStackChange _ _ (InvokeStatic _ _ (MethodDescriptor args _)) = do
-    pure (StackPop (length args - 1), LocalsSame)
+    pure (stackPop (length args - 1), LocalsSame)
 analyseStackChange _ _ (InvokeVirtual _ _ (MethodDescriptor args _)) = do
-    pure (StackPop (length args), LocalsSame)
+    pure (stackPop (length args), LocalsSame)
 analyseStackChange _ _ (InvokeDynamic _ _ (MethodDescriptor args _)) = do
-    pure (StackPop (length args), LocalsSame)
+    pure (stackPop (length args), LocalsSame)
 analyseStackChange _ _ (InvokeInterface _ _ (MethodDescriptor args _)) = do
-    pure (StackPop (length args), LocalsSame)
+    pure (stackPop (length args), LocalsSame)
 analyseStackChange _ _ (PutStatic{}) = pure (StackPop 1, LocalsSame)
 analyseStackChange _ _ (GetStatic _ _ ft) = pure (StackPush [ft], LocalsSame)
 analyseStackChange _ _ (CheckCast _) = pure (StackSame, LocalsSame)
