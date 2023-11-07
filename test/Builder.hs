@@ -236,15 +236,15 @@ complex2 = describe "Should handle another complex example correctly" $ do
                 , Raw.AReturn -- #37
                 ]
 
-    -- it "Calculates the stack map frames correctly" $ do
-    --     hedgehog $ do
-    --         let desc = MethodDescriptor [ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))
-    --             frames = calculateStackMapFrames desc code
+    it "Calculates the stack map frames correctly" $ do
+        hedgehog $ do
+            let desc = MethodDescriptor [ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))
+                frames = calculateStackMapFrames desc code
 
-    --         frames
-    --             === [ SameFrame label1
-    --                 , SameLocals1StackItemFrame (ObjectVariableInfo (ClassInfoType "java.lang.Integer")) label2
-    --                 ]
+            frames
+                === [ SameFrame label1
+                    , SameLocals1StackItemFrame (ObjectVariableInfo (ClassInfoType "java.lang.Integer")) label2
+                    ]
 
     it "Writes to a file without issue" $ hedgehog $ do
         let (_, clazz) =
