@@ -4,6 +4,8 @@
 -- | Analyses lists of instructions, inserting StackMapTable attributes where needed & resolving labels.
 module JVM.Data.Analyse.Instruction (analyseStackChange, calculateStackMapFrames, insertStackMapTable) where
 
+import Data.List.NonEmpty (NonEmpty (..))
+import Data.List.NonEmpty qualified as NE
 import Data.Maybe (mapMaybe)
 import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.Builder.Label
@@ -11,8 +13,6 @@ import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), methodParam)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType (ArrayClassInfoType, ClassInfoType), FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
-import Data.List.NonEmpty (NonEmpty (..))
-import Data.List.NonEmpty qualified as NE
 
 -- | Details how the stack changes between two instructions
 data StackDiff
@@ -35,7 +35,6 @@ instance Semigroup StackDiff where
     StackPop n <> StackPop n' = stackPop (n + n')
     StackPush ts <> StackPop n = maybe StackSame StackPush (NE.nonEmpty $ NE.drop n ts)
     StackPop n <> StackPush ts = maybe StackSame StackPush (NE.nonEmpty $ NE.drop n ts)
-
 
 instance Monoid StackDiff where
     mempty = StackSame
@@ -63,7 +62,6 @@ instance Semigroup LocalsDiff where
     LocalsPop n <> LocalsPop n' = localsPop (n + n')
     LocalsPush ts <> LocalsPop n = maybe LocalsSame LocalsPush (NE.nonEmpty $ NE.drop n ts)
     LocalsPop n <> LocalsPush ts = maybe LocalsSame LocalsPush (NE.nonEmpty $ NE.drop n ts)
-
 
 instance Monoid LocalsDiff where
     mempty = LocalsSame
@@ -118,17 +116,17 @@ analyseStackChange _ _ (Label _) = pure (StackSame, LocalsSame)
 -- analyseStackChange _ _ other = error ("Not implemented: " ++ show other)
 
 -- | Analyses a list of instructions, returning the stack and locals at each point.
-analyseStackMapTable :: MethodDescriptor -> [Instruction] -> [(StackDiff, LocalsDiff)]
+analyseStackMapTable :: MethodDescriptor -> [Instruction] -> (Stack, Locals, [(StackDiff, LocalsDiff)])
 analyseStackMapTable desc = go ([], [])
   where
-    go :: (Stack, Locals) -> [Instruction] -> [(StackDiff, LocalsDiff)]
-    go _ [] = []
+    go :: (Stack, Locals) -> [Instruction] -> (Stack, Locals, [(StackDiff, LocalsDiff)])
+    go (x, l) [] = (x, l, [])
     go (stack, locals) (i : is) =
         case analyseStackChange (stack, locals) desc i of
             Nothing -> go (stack, locals) is
             Just (stackDiff, localsDiff) ->
-                let diffs = go (apply stackDiff stack, apply localsDiff locals) is
-                 in ((stackDiff, localsDiff) : diffs)
+                let (s, l, diffs) = go (apply stackDiff stack, apply localsDiff locals) is
+                 in (s, l, (stackDiff, localsDiff) : diffs)
 
 -- | Inserts a StackMapTable entry into the CodeBuilder
 insertStackMapTable :: Monad m => MethodDescriptor -> CodeBuilderT m ()
@@ -146,17 +144,17 @@ calculateStackMapFrames desc code =
     let
         jumps = findJumps code
         jumpDiffs = fmap (findJumpDiff desc code) jumps
-        frames = zipWith calculateStackMapFrame (snd <$> jumps) jumpDiffs
+        frames = zipWith (\a (s, l, d) -> calculateStackMapFrame (s, l) a d) (snd <$> jumps) jumpDiffs
      in
         frames
 
-calculateStackMapFrame :: Label -> (StackDiff, LocalsDiff) -> StackMapFrame
-calculateStackMapFrame target (StackSame, LocalsSame) = SameFrame target
-calculateStackMapFrame target (StackSame, LocalsPush xs) = AppendFrame (NE.toList $ fieldTypeToVerificationType <$> xs) target
-calculateStackMapFrame target (StackSame, LocalsPop n) = ChopFrame (fromIntegral n) target
-calculateStackMapFrame target (StackPush xs, LocalsSame) = SameLocals1StackItemFrame (fieldTypeToVerificationType (NE.last xs)) target
-calculateStackMapFrame target (StackPush xs, LocalsPush ys) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> xs) (NE.toList $ fieldTypeToVerificationType <$> ys) target
-calculateStackMapFrame _ (x, y) = error ("Not implemented: " ++ show (x, y))
+calculateStackMapFrame :: (Stack, Locals) -> Label -> (StackDiff, LocalsDiff) -> StackMapFrame
+calculateStackMapFrame _ target (StackSame, LocalsSame) = SameFrame target
+calculateStackMapFrame _ target (StackSame, LocalsPush xs) = AppendFrame (NE.toList $ fieldTypeToVerificationType <$> xs) target
+calculateStackMapFrame _ target (StackSame, LocalsPop n) = ChopFrame (fromIntegral n) target
+calculateStackMapFrame _ target (StackPush xs, LocalsSame) = SameLocals1StackItemFrame (fieldTypeToVerificationType (NE.last xs)) target
+calculateStackMapFrame _ target (StackPush xs, LocalsPush ys) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> xs) (NE.toList $ fieldTypeToVerificationType <$> ys) target
+calculateStackMapFrame (stack, locals) _ (x, y) = FullFrame (NE.toList $ fieldTypeToVerificationType <$> NE.fromList stack) (NE.toList $ fieldTypeToVerificationType <$> NE.fromList locals) (Label 0)
 
 fieldTypeToVerificationType :: FieldType -> VerificationTypeInfo
 fieldTypeToVerificationType (ObjectFieldType x) = ObjectVariableInfo (ClassInfoType x)
@@ -170,11 +168,11 @@ fieldTypeToVerificationType (PrimitiveFieldType Long) = LongVariableInfo
 fieldTypeToVerificationType (PrimitiveFieldType Short) = IntegerVariableInfo
 fieldTypeToVerificationType (PrimitiveFieldType Boolean) = IntegerVariableInfo
 
-findJumpDiff :: MethodDescriptor -> [Instruction] -> (Integer, Label) -> (StackDiff, LocalsDiff)
+findJumpDiff :: MethodDescriptor -> [Instruction] -> (Integer, Label) -> (Stack, Locals, (StackDiff, LocalsDiff))
 findJumpDiff desc code (jump, label) =
     let slice = takeWhile (/= Label label) (drop (fromIntegral jump) code)
-        diffs = analyseStackMapTable desc slice
-     in mconcat diffs
+        (stack, locals, diffs) = analyseStackMapTable desc slice
+     in (stack, locals, mconcat diffs)
 
 {- | Finds all the instructions in which a jump occurs and the instruction to which it jumps.
 For example, given input @[.., IfEq l, .., Label l, x, ..]@ this will return @[(n,  l)]@ where @n@ is the index of the @IfEq l@ instruction.
