@@ -2,17 +2,22 @@
 {-# LANGUAGE OverloadedLists #-}
 
 -- | Analyses lists of instructions, inserting StackMapTable attributes where needed & resolving labels.
-module JVM.Data.Analyse.Instruction (analyseStackChange, calculateStackMapFrames, insertStackMapTable, findJumps, findJumpDiff) where
+module JVM.Data.Analyse.Instruction (normaliseStackDiff, Apply (..), StackDiff (..), stackPush, stackPop, localsPop, stackPopAndPush, LocalsDiff (..), analyseStackChange, calculateStackMapFrames, analyseStackMapTable, insertStackMapTable, findJumps) where
 
+import Control.Applicative (liftA2)
+import Data.List (foldl', genericLength)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.List.NonEmpty qualified as NE
-import Data.Maybe (mapMaybe)
+import Data.List.Split (splitWhen)
+import Data.Maybe (isJust, mapMaybe, maybeToList)
+import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
-import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), methodParam)
+import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), methodParams, returnDescriptorType)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType (ArrayClassInfoType, ClassInfoType), FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
+import JVM.Data.Pretty
 
 -- | Details how the stack changes between two instructions
 data StackDiff
@@ -20,21 +25,65 @@ data StackDiff
       StackPush (NonEmpty FieldType)
     | -- | Pops the given number of types from the stack
       StackPop Int
-    | StackSame
+    | -- | Pops the given number of types from the stack, then pushes the given types.
+      -- This has some specific (and somewhat weird) semantics that means it must prevent "optimisation".
+      -- For example, suppose we wrote @StackPopAndPush 1 [someFieldType]@. You might think this could be optimised to @StackSame@, but no!
+      -- The popping refers to the *previous* (imaginary) stack, not the current one. So if the previous stack was @[someOtherFieldType]@, it should become @[someFieldType]@. Optimising to @StackSame@ would mean it remains @[someOtherFieldType]@.
+      StackPopAndPush Int (NonEmpty FieldType)
+    | -- | The stack is unchanged
+      StackSame
     deriving (Show, Eq, Ord)
 
-stackPop :: Int -> StackDiff
-stackPop 0 = StackSame
+instance Pretty StackDiff where
+    pretty StackSame = "same"
+    pretty (StackPush ts) = "push " <> pretty ts
+    pretty (StackPopAndPush n ts) = "pop " <> pretty n <> " then push " <> pretty ts
+    pretty (StackPop n) = "pop " <> pretty n
+
+stackPop :: HasCallStack => Int -> StackDiff
 stackPop n | n < 0 = error "stackPop: negative"
+stackPop 0 = StackSame
 stackPop n = StackPop n
+
+stackPush :: [FieldType] -> StackDiff
+stackPush [] = StackSame
+stackPush ts = StackPush (NE.fromList ts)
+
+stackPopAndPush :: HasCallStack => Int -> [FieldType] -> StackDiff
+stackPopAndPush n _ | n < 0 = error "stackPopAndPush: negative"
+stackPopAndPush 0 ts = stackPush ts
+stackPopAndPush n [] = stackPop n
+stackPopAndPush n ts =
+    -- We don't perform any optimisations here, see the docs for StackPopAndPush constructor
+    StackPopAndPush n (NE.fromList ts)
+
+-- | "Normalises" a stack diff. All this really does is turns 'StackPopAndPush' into 'StackPop' and 'StackPush' where possible, undoing the special semantics of 'StackPopAndPush'.
+normaliseStackDiff :: StackDiff -> StackDiff
+normaliseStackDiff (StackPopAndPush n ts) = case n `compare` length ts of
+    LT -> stackPush (NE.drop n ts)
+    EQ -> StackSame
+    GT -> stackPop (n - length ts)
+normaliseStackDiff x = x
 
 instance Semigroup StackDiff where
     StackSame <> x = x
     x <> StackSame = x
     StackPush ts <> StackPush ts' = StackPush (ts <> ts')
     StackPop n <> StackPop n' = stackPop (n + n')
-    StackPush ts <> StackPop n = maybe StackSame StackPush (NE.nonEmpty $ NE.drop n ts)
-    StackPop n <> StackPush ts = maybe StackSame StackPush (NE.nonEmpty $ NE.drop n ts)
+    -- \^^ trivial cases
+    StackPush ts <> StackPop n = case n `compare` length ts of
+        LT -> stackPush (NE.drop n ts)
+        EQ -> StackSame
+        GT -> stackPop (n - length ts)
+    StackPop n <> StackPush ts = case n `compare` length ts of
+        LT -> stackPush (NE.drop n ts)
+        EQ -> StackSame
+        GT -> stackPop (n - length ts)
+    StackPop n <> StackPopAndPush n' ts = stackPopAndPush (n + n') (NE.toList ts)
+    StackPopAndPush n ts <> StackPop n' = (stackPop n <> StackPush ts) <> stackPop n'
+    StackPopAndPush n ts <> StackPopAndPush n' ts' = stackPop n <> StackPush ts <> StackPopAndPush n' ts'
+    StackPush ts <> StackPopAndPush n ts' = (stackPush (NE.toList ts) <> stackPop n) <> StackPush ts'
+    StackPopAndPush n ts <> StackPush ts' = (stackPop n <> StackPush ts) <> StackPush ts'
 
 instance Monoid StackDiff where
     mempty = StackSame
@@ -49,6 +98,11 @@ data LocalsDiff
       LocalsPop Int
     | LocalsSame
     deriving (Show, Eq, Ord)
+
+instance Pretty LocalsDiff where
+    pretty LocalsSame = "same"
+    pretty (LocalsPush ts) = "push " <> pretty ts
+    pretty (LocalsPop n) = "pop " <> pretty n
 
 localsPop :: Int -> LocalsDiff
 localsPop 0 = LocalsSame
@@ -71,24 +125,45 @@ type Locals = [FieldType]
 class Apply diff a | diff -> a where
     apply :: diff -> a -> a
     applyMany :: [diff] -> a -> a
-    applyMany diffs x = foldr apply x diffs
+    applyMany diffs x = foldl' (flip apply) x diffs
+
+instance Apply (Maybe StackDiff) Stack where
+    apply (Just diff) = apply diff
+    apply Nothing = id
+
+instance Apply (Maybe LocalsDiff) Locals where
+    apply (Just diff) = apply diff
+    apply Nothing = id
 
 instance Apply StackDiff Stack where
     apply (StackPush ts) s = NE.toList ts ++ s
     apply (StackPop n) s = drop n s
     apply StackSame s = s
+    apply (StackPopAndPush n ts) s = applyMany [stackPop n, StackPush ts] s
 
 instance Apply LocalsDiff Locals where
-    apply (LocalsPush ts) s = NE.toList ts ++ s
+    apply (LocalsPush ts) s = s ++ NE.toList ts
     apply (LocalsPop n) s = drop n s
     apply LocalsSame s = s
 
-analyseStackChange :: (Stack, Locals) -> MethodDescriptor -> Instruction -> Maybe (StackDiff, LocalsDiff)
-analyseStackChange _ desc (ALoad idx) = do
-    idx' <- desc `methodParam` fromIntegral idx
-    pure (StackPush [idx'], LocalsSame)
-analyseStackChange (stack : _, locals) _ (AStore idx) = pure (stackPop 1, if length locals < fromIntegral idx then LocalsPush [stack] else LocalsSame)
-analyseStackChange ([], _) _ (AStore _) = error "AStore with empty stack"
+analyseStackChange :: HasCallStack => (Stack, Locals) -> MethodDescriptor -> Instruction -> Maybe (StackDiff, LocalsDiff)
+analyseStackChange (_, locals) desc (ALoad idx) = do
+    let (!!?) :: [a] -> Int -> Maybe a
+        _ !!? n | n < 0 = Nothing
+        [] !!? _ = Nothing
+        (x : _) !!? 0 = Just x
+        (_ : xs) !!? n = xs !!? (n - 1)
+
+    idx' <- locals !!? fromIntegral idx
+    pure (stackPush [idx'], LocalsSame)
+analyseStackChange (stack : _, locals) desc (AStore idx) =
+    pure
+        ( stackPop 1
+        , if idx >= genericLength (methodParams desc) && length locals <= fromIntegral idx
+            then LocalsPush [stack]
+            else LocalsSame
+        )
+analyseStackChange ([], _) _ (AStore x) = error ("AStore with empty stack: " <> show x)
 analyseStackChange _ _ AReturn = pure (stackPop 1, LocalsSame)
 analyseStackChange _ _ Return = pure (stackPop 1, LocalsSame)
 analyseStackChange _ _ (LDC x) = pure (StackPush [ldcEntryToFieldType x], LocalsSame)
@@ -102,34 +177,28 @@ analyseStackChange _ _ (IfLt _) = pure (StackPop 1, LocalsSame)
 analyseStackChange _ _ (IfGe _) = pure (StackPop 1, LocalsSame)
 analyseStackChange _ _ (IfGt _) = pure (StackPop 1, LocalsSame)
 analyseStackChange _ _ (IfLe _) = pure (StackPop 1, LocalsSame)
-analyseStackChange _ _ (InvokeStatic _ _ (MethodDescriptor args _)) = do
-    pure (stackPop (length args - 1), LocalsSame)
-analyseStackChange _ _ (InvokeVirtual _ _ (MethodDescriptor args _)) = do
-    pure (stackPop (length args), LocalsSame)
-analyseStackChange _ _ (InvokeDynamic _ _ (MethodDescriptor args _)) = do
-    pure (stackPop (length args), LocalsSame)
-analyseStackChange _ _ (InvokeInterface _ _ (MethodDescriptor args _)) = do
-    pure (stackPop (length args), LocalsSame)
+analyseStackChange _ _ (InvokeStatic _ _ (MethodDescriptor args ret)) = pure (stackPopAndPush (length args) (maybeToList $ returnDescriptorType ret), LocalsSame)
+analyseStackChange _ _ (InvokeVirtual _ _ (MethodDescriptor args ret)) = pure (stackPopAndPush (length args + 1) (maybeToList $ returnDescriptorType ret), LocalsSame)
+analyseStackChange _ _ (InvokeDynamic _ _ (MethodDescriptor args ret)) = pure (stackPopAndPush (length args - 1) (maybeToList $ returnDescriptorType ret), LocalsSame)
+analyseStackChange _ _ (InvokeInterface _ _ (MethodDescriptor args ret)) = pure (stackPopAndPush (length args - 1) (maybeToList $ returnDescriptorType ret), LocalsSame)
 analyseStackChange _ _ (PutStatic{}) = pure (StackPop 1, LocalsSame)
-analyseStackChange _ _ (GetField _ _ ft) = pure (StackPush [ft], LocalsSame)
+analyseStackChange _ _ f@(GetField _ _ ft) = pure (stackPopAndPush 1 [ft], LocalsSame)
 analyseStackChange _ _ (GetStatic _ _ ft) = pure (StackPush [ft], LocalsSame)
 analyseStackChange _ _ (CheckCast _) = pure (StackSame, LocalsSame)
-analyseStackChange _ _ (Label _) = pure (StackSame, LocalsSame)
-
--- analyseStackChange _ _ other = error ("Not implemented: " ++ show other)
+analyseStackChange _ _ (Label _) = Nothing
 
 -- | Analyses a list of instructions, returning the stack and locals at each point.
-analyseStackMapTable :: MethodDescriptor -> [Instruction] -> (Stack, Locals, [(StackDiff, LocalsDiff)])
-analyseStackMapTable desc = go ([], [])
+analyseStackMapTable :: HasCallStack => MethodDescriptor -> [Instruction] -> (Stack, Locals, [Maybe (StackDiff, LocalsDiff)])
+analyseStackMapTable desc = go ([], methodParams desc)
   where
-    go :: (Stack, Locals) -> [Instruction] -> (Stack, Locals, [(StackDiff, LocalsDiff)])
+    go :: HasCallStack => (Stack, Locals) -> [Instruction] -> (Stack, Locals, [Maybe (StackDiff, LocalsDiff)])
     go (x, l) [] = (x, l, [])
     go (stack, locals) (i : is) =
         case analyseStackChange (stack, locals) desc i of
-            Nothing -> go (stack, locals) is
+            Nothing -> let (s, l, xs) = go (stack, locals) is in (s, l, Nothing : xs)
             Just (stackDiff, localsDiff) ->
                 let (s, l, diffs) = go (apply stackDiff stack, apply localsDiff locals) is
-                 in (s, l, (stackDiff, localsDiff) : diffs)
+                 in (s, l, Just (stackDiff, localsDiff) : diffs)
 
 -- | Inserts a StackMapTable entry into the CodeBuilder
 insertStackMapTable :: Monad m => MethodDescriptor -> CodeBuilderT m ()
@@ -145,11 +214,46 @@ insertStackMapTable desc = do
 calculateStackMapFrames :: MethodDescriptor -> [Instruction] -> [StackMapFrame]
 calculateStackMapFrames desc code =
     let
-        jumps = findJumps code
-        jumpDiffs = fmap (findJumpDiff desc code) jumps
-        frames = zipWith (\a (s, l, d) -> calculateStackMapFrame (s, l) a d) (snd <$> jumps) jumpDiffs
+        (_, _, frameDiffs) = analyseStackMapTable desc code
+
+        isLabel (Label x) = Just x
+        isLabel _ = Nothing
+
+        labels = mapMaybe isLabel code
+        jumps = fmap mconcat (fmap snd <$> splitWhen (isJust . isLabel . fst) (zip code frameDiffs))
+
+        -- jumps = [[ALoad 1], []]
+        jumpsAndLabels = zip (Nothing : (Just <$> reverse labels)) jumps
+        x =
+            foldl'
+                ( flip $ \(label, res) (acc, stack, locals) ->
+                    let
+                        stack' = apply (fmap fst res) stack
+                        locals' = apply (fmap snd res) locals
+                     in
+                        case liftA2 (,) label res of
+                            Just (label', res') ->
+                                ( calculateStackMapFrame (stack', locals') label' res' : acc
+                                , stack'
+                                , locals'
+                                )
+                            _ -> (acc, stack', locals')
+                )
+                ([], [], methodParams desc)
+                jumpsAndLabels
      in
-        frames
+        (\(a, _, _) -> a) x
+
+-- calculateFrame :: MethodDescriptor -> (StackDiff, LocalsDiff) -> [Instruction] -> [(Label, StackDiff, LocalsDiff)]
+-- calculateFrame desc prev code = go prev code []
+--   where
+--     go :: (StackDiff, LocalsDiff) -> [Instruction] -> [Instruction] -> [(Label, StackDiff, LocalsDiff)]
+--     go _ [] _ = [] -- if we run out of instructions before seeing another label, there's no need for a frame
+--     go prev ((Label label) : xs) acc = do
+--         let (newStack, newLocals, diffs) = analyseStackMapTable desc acc
+--             newDiffs@(newDiffs1, newDiffs2) = (prev <> mconcat diffs)
+--          in (label, newDiffs1, newDiffs2) : go newDiffs xs []
+--     go prev (x : xs) acc = go prev xs (acc ++ [x])
 
 calculateStackMapFrame :: (Stack, Locals) -> Label -> (StackDiff, LocalsDiff) -> StackMapFrame
 calculateStackMapFrame _ target (StackSame, LocalsSame) = SameFrame target
@@ -171,11 +275,16 @@ fieldTypeToVerificationType (PrimitiveFieldType Long) = LongVariableInfo
 fieldTypeToVerificationType (PrimitiveFieldType Short) = IntegerVariableInfo
 fieldTypeToVerificationType (PrimitiveFieldType Boolean) = IntegerVariableInfo
 
-findJumpDiff :: MethodDescriptor -> [Instruction] -> (Integer, Label) -> (Stack, Locals, (StackDiff, LocalsDiff))
-findJumpDiff desc code (jump, label) =
-    let slice = takeWhile (/= Label label) (drop (fromIntegral jump) code)
-        (stack, locals, diffs) = analyseStackMapTable desc slice
-     in (stack, locals, mconcat diffs)
+{- | Finds the difference between the stack and locals at the given jump source and jump target.
+@findJumpDiff desc code (jumpSourceIdx, label)@ takes all the instructions between @jumpSourceIdx@ and @label@ in @code@
+and analyses their stack & locals changes, returning the stack and locals at @jumpSourceIdx@ and the diffs between @jumpSourceIdx@ and @label@.
+-}
+
+-- findJumpDiff :: MethodDescriptor -> [Instruction] -> (Integer, Label) -> (Stack, Locals, (StackDiff, LocalsDiff))
+-- findJumpDiff desc code (jump, label) =
+--     let slice = takeWhile (/= Label label) (drop (fromIntegral jump) code)
+--         (stack, locals, diffs) = analyseStackMapTable desc slice
+--      in (stack, locals, mconcat diffs)
 
 {- | Finds all the instructions in which a jump occurs and the instruction to which it jumps.
 For example, given input @[.., IfEq l, .., Label l, x, ..]@ this will return @[(n,  l)]@ where @n@ is the index of the @IfEq l@ instruction.

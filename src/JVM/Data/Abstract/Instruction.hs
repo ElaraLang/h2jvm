@@ -12,6 +12,7 @@ import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Type
 import JVM.Data.Raw.Types
+import JVM.Data.Pretty
 
 type Reference = Int
 
@@ -42,6 +43,34 @@ data Instruction' label
     | Return
     deriving (Show, Eq, Ord, Functor)
 
+instance (Pretty label) => Pretty (Instruction' label) where
+    pretty (ALoad x) = "aload" <+> pretty x
+    pretty (AStore x) = "astore" <+> pretty x
+    pretty AReturn = "areturn"
+    pretty AConstNull = "aconst_null"
+    pretty Dup = "dup"
+    pretty (IfEq l) = "ifeq" <+> pretty l
+    pretty (IfNe l) = "ifne" <+> pretty l
+    pretty (IfLt l) = "iflt" <+> pretty l
+    pretty (IfGe l) = "ifge" <+> pretty l
+    pretty (IfGt l) = "ifgt" <+> pretty l
+    pretty (IfLe l) = "ifle" <+> pretty l
+    pretty (InvokeStatic c n d) = "invokestatic" <+> pretty c <> "." <> pretty n <> pretty d
+    pretty (InvokeInterface c n d) = "invokeinterface" <+> pretty c <> "." <> pretty n <> pretty d
+    pretty (InvokeVirtual c n d) = "invokevirtual" <+> pretty c <> "." <> pretty n <> pretty d
+    pretty (InvokeDynamic b n d) = "invokedynamic" <+> pretty b <> "." <> pretty n <> pretty d
+    pretty (Label l) = ":" <>pretty l
+    pretty (LDC x) = "ldc" <+> pretty x
+    pretty (PutStatic c n t) = "putstatic" <+> pretty c <> "." <> pretty n <+> pretty t
+    pretty (GetField c n t) = "getfield" <+> pretty c <> "." <> pretty n <+> pretty t
+    pretty (GetStatic c n t) = "getstatic" <+> pretty c <> "." <> pretty n <+> pretty t
+    pretty (Goto l) = "goto" <+> pretty l
+    pretty (CheckCast c) = "checkcast" <+> pretty c
+    pretty Return = "return"
+
+
+
+
 jumpTarget :: Instruction' label -> Maybe label
 jumpTarget (IfEq l) = Just l
 jumpTarget (IfNe l) = Just l
@@ -52,13 +81,18 @@ jumpTarget (IfLe l) = Just l
 jumpTarget (Goto l) = Just l
 jumpTarget _ = Nothing
 
-
 data LDCEntry
     = LDCInt Int
     | LDCFloat Float
     | LDCString Text
     | LDCClass ClassInfoType
     deriving (Show, Eq, Ord)
+
+instance Pretty LDCEntry where
+    pretty (LDCInt x) = pretty x
+    pretty (LDCFloat x) = pretty x
+    pretty (LDCString x) = pretty x
+    pretty (LDCClass x) = pretty x
 
 ldcEntryToFieldType :: LDCEntry -> FieldType
 ldcEntryToFieldType (LDCInt _) = PrimitiveFieldType Int

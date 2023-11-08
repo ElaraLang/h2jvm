@@ -18,6 +18,10 @@ could be written as follows, using 'JVM.Data.Abstract.Builder.Code.CodeBuilder':
 module JVM.Data.Abstract.Builder.Label where
 
 import Data.Data
+import JVM.Data.Pretty
 
 newtype Label = MkLabel Int
     deriving (Show, Eq, Ord, Data)
+
+instance Pretty Label where
+    pretty (MkLabel i) = "label_" <> pretty i

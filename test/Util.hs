@@ -11,11 +11,12 @@ import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec (HasCallStack)
 
 runConv :: MonadTest m => [Abs.Instruction] -> m ([Raw.Instruction], ConstantPoolState)
-runConv = withFrozenCallStack $ 
-    shouldBeRight
-        . runConvertM
-        . fullyRunCodeConverter
-        . convertInstructions
+runConv =
+    withFrozenCallStack $
+        shouldBeRight
+            . runConvertM
+            . fullyRunCodeConverter
+            . convertInstructions
 
 shouldBeJust :: MonadTest m => HasCallStack => Maybe a -> m a
 shouldBeJust (Just a) = pure a
@@ -26,4 +27,4 @@ shouldBeRight (Right b) = pure b
 shouldBeRight (Left a) = withFrozenCallStack $ failWith Nothing ("Expected Right, got Left " ++ show a)
 
 shouldContain :: (HasCallStack, MonadTest m, Eq a, Show a, Foldable t, Show (t a)) => t a -> a -> m ()
-shouldContain t a = withFrozenCallStack $  diff a elem t
+shouldContain t a = withFrozenCallStack $ diff a elem t

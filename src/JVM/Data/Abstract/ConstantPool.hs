@@ -10,6 +10,7 @@ import Data.Text (Text)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
 import Data.Data
+import JVM.Data.Pretty
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 
 {- | High-level, type-safe representation of a constant pool entry
@@ -45,6 +46,10 @@ data ConstantPoolEntry
 data FieldRef = FieldRef ClassInfoType Text FieldType
     deriving (Show, Eq, Ord, Data)
 
+instance Pretty FieldRef where
+    pretty (FieldRef c n t) = pretty c <> "." <> pretty n <> ":" <> pretty t
+
+
 data MethodRef
     = MethodRef
         ClassInfoType
@@ -55,9 +60,16 @@ data MethodRef
         -- ^ The descriptor of the method
     deriving (Show, Eq, Ord, Data)
 
+instance Pretty MethodRef where
+    pretty (MethodRef c n d) = pretty c <> "." <> pretty n <> pretty d
+
 data BootstrapMethod
     = BootstrapMethod MethodHandleEntry [BootstrapArgument]
     deriving (Show, Eq, Ord, Data)
+
+instance Pretty BootstrapMethod where
+    pretty (BootstrapMethod mh args) = pretty mh <+> hsep (map pretty args)
+
 
 data BootstrapArgument
     = BMClassArg ClassInfoType
@@ -66,6 +78,13 @@ data BootstrapArgument
     | BMMethodArg MethodDescriptor
     | BMMethodHandleArg MethodHandleEntry
     deriving (Show, Eq, Ord, Data)
+
+instance Pretty BootstrapArgument where
+    pretty (BMClassArg c) = pretty c
+    pretty (BMStringArg s) = pretty s
+    pretty (BMIntArg i) = pretty i
+    pretty (BMMethodArg m) = pretty m
+    pretty (BMMethodHandleArg m) = pretty m
 
 bmArgToCPEntry :: BootstrapArgument -> ConstantPoolEntry
 bmArgToCPEntry (BMClassArg c) = CPClassEntry c
@@ -85,3 +104,14 @@ data MethodHandleEntry
     | MHInvokeSpecial MethodRef
     | MHInvokeInterface MethodRef
     deriving (Show, Eq, Ord, Data)
+
+instance Pretty MethodHandleEntry where
+    pretty (MHGetField f) = "getField" <+> pretty f
+    pretty (MHGetStatic f) = "getStatic" <+> pretty f
+    pretty (MHPutField f) = "putField" <+> pretty f
+    pretty (MHPutStatic f) = "putStatic" <+> pretty f
+    pretty (MHInvokeVirtual m) = "invokeVirtual" <+> pretty m
+    pretty (MHNewInvokeSpecial m) = "newInvokeSpecial" <+> pretty m
+    pretty (MHInvokeStatic m) = "invokeStatic" <+> pretty m
+    pretty (MHInvokeSpecial m) = "invokeSpecial" <+> pretty m
+    pretty (MHInvokeInterface m) = "invokeInterface" <+> pretty m

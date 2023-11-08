@@ -14,10 +14,8 @@ import JVM.Data.Raw.ConstantPool (ConstantPoolInfo (..))
 import JVM.Data.Raw.ConstantPool qualified as Raw
 import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec hiding (shouldContain)
-import Util (runConv, shouldBeJust, shouldContain)
 import Test.Hspec.Hedgehog
-
-
+import Util (runConv, shouldBeJust, shouldContain)
 
 spec :: Spec
 spec = describe "test conversions" $ do

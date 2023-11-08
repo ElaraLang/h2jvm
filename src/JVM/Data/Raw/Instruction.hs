@@ -386,7 +386,7 @@ putInstruction = \case
     LLoad3 -> putWord8 MagicNumbers.instruction_lLoad3
     LMul -> putWord8 MagicNumbers.instruction_lMul
     LNeg -> putWord8 MagicNumbers.instruction_lNeg
-    LookupSwitch {} -> undefined -- TODO: figure this out
+    LookupSwitch{} -> undefined -- TODO: figure this out
     LOr -> putWord8 MagicNumbers.instruction_lOr
     LRem -> putWord8 MagicNumbers.instruction_lRem
     LReturn -> putWord8 MagicNumbers.instruction_lReturn

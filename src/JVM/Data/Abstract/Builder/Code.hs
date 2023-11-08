@@ -60,10 +60,10 @@ rr :: (a, CodeState) -> (a, [CodeAttribute], [Instruction])
 rr (a, s) =
     ( a
     , TML.toList s.attributes
-    , reverse s.code -- snoc list
+    , reverse s.code
     )
 
-
+-- snoc list
 
 runCodeBuilder :: CodeBuilder a -> ([CodeAttribute], [Instruction])
 runCodeBuilder = (\(_, b, c) -> (b, c)) . runCodeBuilder'

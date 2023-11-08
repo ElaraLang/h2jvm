@@ -65,9 +65,7 @@ common extensions
 
 library
   import:           warnings, extensions
-
-  ghc-options:
-    -Werror=incomplete-patterns
+  ghc-options:      -Werror=incomplete-patterns
 
   -- Modules exported by the library.
   -- cabal-fmt: expand src
@@ -99,6 +97,7 @@ library
     JVM.Data.Convert.Numbers
     JVM.Data.Convert.Type
     JVM.Data.JVMVersion
+    JVM.Data.Pretty
     JVM.Data.Raw.AccessFlags
     JVM.Data.Raw.ClassFile
     JVM.Data.Raw.ConstantPool
@@ -114,12 +113,14 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:
-    , base          >=4.17.1.0
+    , base           >=4.17.1.0
     , binary
     , bytestring
     , containers
-    , lens          >=5.0
+    , lens           >=5.0
     , mtl
+    , prettyprinter
+    , split
     , text
     , vector
 
@@ -157,10 +158,10 @@ test-suite h2jvm-test
 
   -- Test dependencies.
   build-depends:
-    , base           ^>=4.17.1.0
+    , base            ^>=4.17.1.0
     , binary
     , bytestring
     , h2jvm
+    , hedgehog        ^>=1.4
     , hspec
-    , hedgehog
     , hspec-hedgehog
