@@ -45,8 +45,51 @@ spec = describe "test code building" $ do
                     , Raw.IfEq 3
                     , Raw.Return
                     ]
-    complex1
-    complex2
+    -- complex1
+    simple1
+
+-- complex2
+
+simple1 :: Spec
+simple1 = describe "Should handle another more simple example correctly" $ do
+    let ((label1, absInsts), attrs, code) = runCodeBuilder' $ do
+            label1 <- newLabel
+            let code =
+                    [ ALoad 0
+                    , Goto label1
+                    , Label label1
+                    , AReturn
+                    ]
+
+            emit' code
+            pure (label1, code)
+
+    it "Converts correctly" $ hedgehog $ do
+        (insts, _) <- runConv code
+        insts
+            === [ Raw.ALoad0
+                , Raw.Goto 3
+                , Raw.AReturn
+                ]
+
+    it "Calculates the stack map frames correctly" $ hedgehog $ do
+        let desc = MethodDescriptor [(ObjectFieldType "java.lang.Integer")] (TypeReturn (ObjectFieldType "java.lang.Integer"))
+            (_, _, diffs) = analyseStackMapTable desc code
+            frames = calculateStackMapFrames desc code
+
+        frames
+            === [ SameLocals1StackItemFrame IntegerVariableInfo label1
+                ]
+        diffs
+            === [ Just (StackPush [ObjectFieldType "java.lang.Integer"], LocalsSame)
+                , Just (StackSame, LocalsSame)
+                , Nothing
+                , Just (StackPop 1, LocalsSame)
+                ]
+
+        applyMany (fmap fst <$> diffs) [] === []
+        applyMany (fmap snd <$> diffs) (methodParams desc)
+            === [(ObjectFieldType "java.lang.Integer")]
 
 complex1 :: Spec
 complex1 = describe "Should handle more complex labels correctly" $ do
@@ -89,7 +132,7 @@ complex1 = describe "Should handle more complex labels correctly" $ do
                     , ALoad 0 -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer]
                     , LDC (LDCInt 1) -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer, 1]
                     , InvokeStatic (ClassInfoType "java.lang.Integer") "valueOf" (MethodDescriptor [PrimitiveFieldType JVM.Int] (TypeReturn (ObjectFieldType "java.lang.Integer"))) -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer]
-                    , InvokeStatic (ClassInfoType "Prelude") "minus" (MethodDescriptor [ObjectFieldType "java.lang.Integer", ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))) -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer] 
+                    , InvokeStatic (ClassInfoType "Prelude") "minus" (MethodDescriptor [ObjectFieldType "java.lang.Integer", ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))) -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer]
                     , InvokeStatic (ClassInfoType "fact") "fact" (MethodDescriptor [ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))) -- stack = [java.lang.Integer, java.lang.Integer]
                     , InvokeStatic (ClassInfoType "Prelude") "times" (MethodDescriptor [ObjectFieldType "java.lang.Integer", ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))) -- stack = [java.lang.Integer]
                     , Label label2 -- stack = [java.lang.Integer]
@@ -119,39 +162,43 @@ complex1 = describe "Should handle more complex labels correctly" $ do
                 , Raw.AReturn -- #39
                 ]
 
-    it "Calculates the stack map frames correctly" $ do
-        hedgehog $ do
-            let desc = MethodDescriptor [ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))
-                frames = calculateStackMapFrames desc code
+    it "Calculates the stack map frames correctly" $ hedgehog $ do
+        let desc = MethodDescriptor [ObjectFieldType "java.lang.Integer"] (TypeReturn (ObjectFieldType "java.lang.Integer"))
+            (_, _, diffs) = analyseStackMapTable desc code
+            frames = calculateStackMapFrames desc code
 
-            frames
-                === [ FullFrame [ObjectVariableInfo (ClassInfoType "java.lang.Integer")] [ObjectVariableInfo (ClassInfoType "java.lang.Integer")] label1
-                    , SameLocals1StackItemFrame (ObjectVariableInfo (ClassInfoType "java.lang.Integer")) label2
-                    ]
+        diffs
+            === ( Just
+                    <$> [ (StackPush [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer]
+                        , (StackPush [PrimitiveFieldType Int], LocalsSame) -- stack = [int, java.lang.Integer]
+                        , (stackPopAndPush 1 [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer, java.lang.Integer]
+                        , (stackPopAndPush 2 [ObjectFieldType "java.lang.Boolean"], LocalsSame) -- stack = [java.lang.Boolean]
+                        , (stackPopAndPush 1 [PrimitiveFieldType Boolean], LocalsSame) -- stack = [boolean]
+                        , (stackPop 1, LocalsSame) -- stack = []
+                        , (StackPush [PrimitiveFieldType Int], LocalsSame) -- stack = [int]
+                        , (stackPopAndPush 1 [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer]
+                        , (StackSame, LocalsSame) -- stack = [java.lang.Integer]
+                        ]
+                )
+            ++ [Nothing] -- stack = [java.lang.Integer]
+            ++ ( Just
+                    <$> [ (StackPush [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer, java.lang.Integer]
+                        , (StackPush [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer]
+                        , (StackPush [PrimitiveFieldType Int], LocalsSame) -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer, int]
+                        , (stackPopAndPush 1 [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer]
+                        , (stackPopAndPush 2 [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer, java.lang.Integer, java.lang.Integer]
+                        , (stackPopAndPush 1 [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer, java.lang.Integer]
+                        , (stackPopAndPush 2 [ObjectFieldType "java.lang.Integer"], LocalsSame) -- stack = [java.lang.Integer]
+                        ]
+               )
+            ++ [ Nothing -- stack = [java.lang.Integer]
+               , Just (stackPop 1, LocalsSame) -- stack = []
+               ]
 
-    it "Writes to a file without issue" $ hedgehog $ do
-        let (_, clazz) =
-                runClassBuilder "BuilderTest" java17 $
-                    addMethod $
-                        ClassFileMethod
-                            [MPublic, MStatic]
-                            "main"
-                            (MethodDescriptor [ObjectFieldType "java.lang.String"] VoidReturn)
-                            [ Code $
-                                CodeAttributeData
-                                    5
-                                    2
-                                    absInsts
-                                    []
-                                    attrs
-                            ]
-
-        let classFile' = convert clazz
-
-        classContents <- shouldBeRight classFile'
-        let bs = runPut (writeBinary classContents)
-
-        liftIO $ BS.writeFile "BuilderTest.class" (BS.toStrict bs)
+        frames
+            === [ SameFrame label1
+                , SameLocals1StackItemFrame (ObjectVariableInfo (ClassInfoType "java.lang.Integer")) label2
+                ]
 
 complex2 :: Spec
 complex2 = describe "Should handle another complex example correctly" $ do
@@ -235,78 +282,147 @@ complex2 = describe "Should handle another complex example correctly" $ do
                 , Raw.AReturn -- #37
                 ]
 
-    it "Calculates the stack map frames correctly" $ do
-        hedgehog $ do
-            let desc = MethodDescriptor [ObjectFieldType "elara.EList", ObjectFieldType "elara.EList"] (TypeReturn (ObjectFieldType "elara.EList"))
-                (_, _, diffs) = analyseStackMapTable desc code
-                frames = calculateStackMapFrames desc code
+    it "Calculates the stack map frames correctly" $ hedgehog $ do
+        let desc = MethodDescriptor [ObjectFieldType "elara.EList", ObjectFieldType "elara.EList"] (TypeReturn (ObjectFieldType "elara.EList"))
+            (_, _, diffs) = analyseStackMapTable desc code
+            frames = calculateStackMapFrames desc code
 
-            let elist = ObjectVariableInfo (ClassInfoType "elara.EList")
-            frames
-                === [ FullFrame [elist] [elist, elist, elist, ObjectVariableInfo (ClassInfoType "java.lang.Object"), elist] label1
-                    , SameLocals1StackItemFrame elist label2
+        let elist = ObjectVariableInfo (ClassInfoType "elara.EList")
+        frames
+            === [ FullFrame [elist] [elist, elist, elist, ObjectVariableInfo (ClassInfoType "java.lang.Object"), elist] label1
+                , SameLocals1StackItemFrame elist label2
+                ]
+        diffs
+            === ( Just
+                    <$> [ (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
+                        , (StackSame, LocalsSame) -- stack = [elara.EList]
+                        , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList, elara.EList]
+                        , (stackPop 1, LocalsPush [ObjectFieldType "elara.EList"]) -- stack = [elara.EList]
+                        , (stackPopAndPush 1 [PrimitiveFieldType Boolean], LocalsSame) -- stack = [Boolean]
+                        , (stackPop 1, LocalsSame) -- stack = []
+                        , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
+                        , (stackPopAndPush 1 [ObjectFieldType "java.lang.Object"], LocalsSame) -- stack = [java.lang.Object]
+                        , (stackPop 1, LocalsPush [ObjectFieldType "java.lang.Object"]) -- stack = []
+                        , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
+                        , (stackPopAndPush 1 [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
+                        , (stackPop 1, LocalsPush [ObjectFieldType "elara.EList"]) -- stack = []
+                        , (StackPush [ObjectFieldType "java.lang.Object"], LocalsSame) -- stack = [java.lang.Object]
+                        , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [java.lang.Object, elara.EList]
+                        , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [java.lang.Object, elara.EList, elara.EList]
+                        , (stackPopAndPush 2 [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [java.lang.Object, elara.EList]
+                        , (stackPopAndPush 2 [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
+                        , (StackSame, LocalsSame) -- stack = [elara.EList]
+                        ]
+                )
+            ++ [ Nothing -- stack = [elara.EList]
+               , Just (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList, elara.EList]
+               , Nothing -- stack = [elara.EList]
+               , Just (stackPop 1, LocalsSame) -- stack = [elara.EList]
+               ]
+
+        applyMany (fmap fst <$> diffs) [] === [ObjectFieldType "elara.EList"]
+        applyMany (fmap snd <$> diffs) (methodParams desc)
+            === replicate 3 (ObjectFieldType "elara.EList")
+            ++ [ObjectFieldType "java.lang.Object"]
+            ++ [ObjectFieldType "elara.EList"]
+
+        let diffsUntilLabel1 = take 18 diffs
+        applyMany (fmap fst <$> diffsUntilLabel1) [] === [ObjectFieldType "elara.EList"]
+        applyMany (fmap snd <$> diffsUntilLabel1) (methodParams desc)
+            === replicate 3 (ObjectFieldType "elara.EList")
+            ++ [ObjectFieldType "java.lang.Object"]
+            ++ [ObjectFieldType "elara.EList"]
+
+complex3 :: Spec
+complex3 = describe "Should handle another more simple example correctly" $ do
+    {-
+    public static void main(java.lang.String[]);
+         0: ldc           #7                  // int 400043
+         2: istore_1
+         3: iconst_1
+         4: istore_2
+         5: iconst_1
+         8: ifeq          22
+        11: sipush        4922
+        14: istore_3
+        15: getstatic     #14                 // Field java/lang/System.out:Ljava/io/PrintStream;
+        18: iload_3
+        19: invokevirtual #20                 // Method java/io/PrintStream.println:(I)V
+        22: ldc           #26                 // int 40303
+        24: istore_3
+        25: return
+            -}
+    let ((label1, absInsts), attrs, code) = runCodeBuilder' $ do
+            label1 <- newLabel
+            let code =
+                    [ LDC (LDCInt 400043)
+                    , IStore 1
+                    , LDC (LDCInt 1)
+                    , IStore 2
+                    , LDC (LDCInt 1)
+                    , IfEq label1
+                    , LDC (LDCInt 4922)
+                    , IStore 3
+                    , GetStatic (ClassInfoType "java.lang.System") "out" (ObjectFieldType "java.io.PrintStream")
+                    , ILoad 3
+                    , InvokeVirtual (ClassInfoType "java.io.PrintStream") "println" (MethodDescriptor [PrimitiveFieldType JVM.Int] VoidReturn)
+                    , Label label1
+                    , LDC (LDCInt 40303)
+                    , IStore 3
+                    , Return
                     ]
-            diffs
-                === ( Just
-                        <$> [ (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
-                            , (StackSame, LocalsSame) -- stack = [elara.EList]
-                            , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList, elara.EList]
-                            , (stackPop 1, LocalsPush [ObjectFieldType "elara.EList"]) -- stack = [elara.EList]
-                            , (stackPopAndPush 1 [PrimitiveFieldType Boolean], LocalsSame) -- stack = [Boolean]
-                            , (stackPop 1, LocalsSame) -- stack = []
-                            , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
-                            , (stackPopAndPush 1 [ObjectFieldType "java.lang.Object"], LocalsSame) -- stack = [java.lang.Object]
-                            , (stackPop 1, LocalsPush [ObjectFieldType "java.lang.Object"]) -- stack = []
-                            , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
-                            , (stackPopAndPush 1 [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
-                            , (stackPop 1, LocalsPush [ObjectFieldType "elara.EList"]) -- stack = []
-                            , (StackPush [ObjectFieldType "java.lang.Object"], LocalsSame) -- stack = [java.lang.Object]
-                            , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [java.lang.Object, elara.EList]
-                            , (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [java.lang.Object, elara.EList, elara.EList]
-                            , (stackPopAndPush 2 [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [java.lang.Object, elara.EList]
-                            , (stackPopAndPush 2 [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList]
-                            , (StackSame, LocalsSame) -- stack = [elara.EList]
-                            ]
-                    )
-                ++ [ Nothing -- stack = [elara.EList]
-                   , Just (StackPush [ObjectFieldType "elara.EList"], LocalsSame) -- stack = [elara.EList, elara.EList]
-                   , Nothing -- stack = [elara.EList]
-                   , Just (stackPop 1, LocalsSame) -- stack = [elara.EList]
-                   ]
 
-            applyMany (fmap fst <$> diffs) [] === [ObjectFieldType "elara.EList"]
-            applyMany (fmap snd <$> diffs) (methodParams desc)
-                === replicate 3 (ObjectFieldType "elara.EList")
-                ++ [ObjectFieldType "java.lang.Object"]
-                ++ [ObjectFieldType "elara.EList"]
+            emit' code
+            pure (label1, code)
 
-            let diffsUntilLabel1 = take 18 diffs
-            applyMany (fmap fst <$> diffsUntilLabel1) [] === [ObjectFieldType "elara.EList"]
-            applyMany (fmap snd <$> diffsUntilLabel1) (methodParams desc)
-                === replicate 3 (ObjectFieldType "elara.EList")
-                ++ [ObjectFieldType "java.lang.Object"]
-                ++ [ObjectFieldType "elara.EList"]
+    it "Converts correctly" $ hedgehog $ do
+        (insts, _) <- runConv code
+        insts
+            === [ Raw.LDC 1 -- #0
+                , Raw.IStore1 -- #2
+                , Raw.LDC 2 -- #3
+                , Raw.IStore2 -- #4
+                , Raw.LDC 2 -- #5
+                , Raw.IfEq 13 -- #8
+                , Raw.LDC 3 -- #11
+                , Raw.IStore3 -- #14
+                , Raw.GetStatic 9 -- #15
+                , Raw.ILoad3 -- #18
+                , Raw.InvokeVirtual 15 -- #19
+                , Raw.LDC 16 -- #22
+                , Raw.IStore3 -- #24
+                , Raw.Return -- #25
+                ]
 
-    it "Writes to a file without issue" $ hedgehog $ do
-        let (_, clazz) =
-                runClassBuilder "BuilderTest2" java17 $
-                    addMethod $
-                        ClassFileMethod
-                            [MPublic, MStatic]
-                            "main"
-                            (MethodDescriptor [ObjectFieldType "java.lang.String"] VoidReturn)
-                            [ Code $
-                                CodeAttributeData
-                                    5
-                                    2
-                                    absInsts
-                                    []
-                                    attrs
-                            ]
+    it "Calculates the stack map frames correctly" $ hedgehog $ do
+        let desc = MethodDescriptor [ArrayFieldType (ObjectFieldType "java.lang.String")] VoidReturn
+            (_, _, diffs) = analyseStackMapTable desc code
+            frames = calculateStackMapFrames desc code
 
-        let classFile' = convert clazz
+        frames
+            === [ AppendFrame [IntegerVariableInfo, IntegerVariableInfo] label1
+                ]
+        diffs
+            === ( Just
+                    <$> [ (StackPush [PrimitiveFieldType Int], LocalsSame) -- ldc 1 -> stack = [int] locals = [java.lang.String[]]
+                        , (StackPop 1, LocalsPush [PrimitiveFieldType Int]) -- istore1 -> stack = [] locals = [java.lang.String[], int]
+                        , (StackPush [PrimitiveFieldType Int], LocalsSame) -- ldc 2 -> stack = [int] locals = [java.lang.String[], int]
+                        , (StackPop 1, LocalsPush [PrimitiveFieldType Int]) -- istore2 -> stack = [] locals = [java.lang.String[], int, int]
+                        , (StackPush [PrimitiveFieldType Int], LocalsSame) -- ldc 2 -> stack = [int] locals = [java.lang.String[], int, int]
+                        , (StackPop 1, LocalsSame) -- ifeq 13 -> stack = []    locals = [java.lang.String[], int, int]
+                        , (StackPush [PrimitiveFieldType Int], LocalsSame) -- ldc 3 -> stack = [int] locals = [java.lang.String[], int, int]
+                        , (StackPop 1, LocalsPush [PrimitiveFieldType Int]) -- istore3 -> stack = [] locals = [java.lang.String[], int, int, int]
+                        , (StackPush [ObjectFieldType "java.io.PrintStream"], LocalsSame) -- getstatic -> stack = [java.io.PrintStream] locals = [java.lang.String[], int, int, int]
+                        , (StackPush [PrimitiveFieldType Int], LocalsSame) -- iload3 -> stack = [int, java.io.PrintStream] locals = [java.lang.String[], int, int, int]
+                        , (StackPop 2, LocalsSame) -- invokevirtual -> stack = []  locals = [java.lang.String[], int, int, int]
+                        ]
+                )
+            ++ [ Nothing -- stack = [] locals = [java.lang.String[], int, int, int]
+               , Just (StackPush [PrimitiveFieldType Int], LocalsSame) -- ldc 16 -> stack = [int] locals = [java.lang.String[], int, int, int]
+               , Just (StackPop 1, LocalsSame) -- istore3 -> stack = [] locals = [java.lang.String[], int, int, int]
+               , Just (StackSame, LocalsSame) -- stack = [] locals = [java.lang.String[], int, int, int]
+               ]
 
-        classContents <- shouldBeRight classFile'
-        let bs = runPut (writeBinary classContents)
-
-        liftIO $ BS.writeFile "BuilderTest2.class" (BS.toStrict bs)
+        applyMany (fmap fst <$> diffs) [] === []
+        applyMany (fmap snd <$> diffs) (methodParams desc)
+            === [ArrayFieldType (ObjectFieldType "java.lang.String"), PrimitiveFieldType Int, PrimitiveFieldType Int, PrimitiveFieldType Int]

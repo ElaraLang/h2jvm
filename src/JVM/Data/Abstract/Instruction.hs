@@ -11,8 +11,8 @@ import JVM.Data.Abstract.Builder.Label (Label)
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Type
-import JVM.Data.Raw.Types
 import JVM.Data.Pretty
+import JVM.Data.Raw.Types
 
 type Reference = Int
 
@@ -33,6 +33,8 @@ data Instruction' label
     | InvokeInterface ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | InvokeDynamic BootstrapMethod Text MethodDescriptor
+    | ILoad U1
+    | IStore U1
     | Label label
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType
@@ -59,7 +61,9 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty (InvokeInterface c n d) = "invokeinterface" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (InvokeVirtual c n d) = "invokevirtual" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (InvokeDynamic b n d) = "invokedynamic" <+> pretty b <> "." <> pretty n <> pretty d
-    pretty (Label l) = ":" <>pretty l
+    pretty (ILoad x) = "iload" <+> pretty x
+    pretty (IStore x) = "istore" <+> pretty x
+    pretty (Label l) = ":" <> pretty l
     pretty (LDC x) = "ldc" <+> pretty x
     pretty (PutStatic c n t) = "putstatic" <+> pretty c <> "." <> pretty n <+> pretty t
     pretty (GetField c n t) = "getfield" <+> pretty c <> "." <> pretty n <+> pretty t
@@ -67,9 +71,6 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty (Goto l) = "goto" <+> pretty l
     pretty (CheckCast c) = "checkcast" <+> pretty c
     pretty Return = "return"
-
-
-
 
 jumpTarget :: Instruction' label -> Maybe label
 jumpTarget (IfEq l) = Just l

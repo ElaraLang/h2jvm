@@ -4,7 +4,7 @@
 -- | Analyses lists of instructions, inserting StackMapTable attributes where needed & resolving labels.
 module JVM.Data.Analyse.Instruction (normaliseStackDiff, Apply (..), StackDiff (..), stackPush, stackPop, localsPop, stackPopAndPush, LocalsDiff (..), analyseStackChange, calculateStackMapFrames, analyseStackMapTable, insertStackMapTable, findJumps) where
 
-import Control.Applicative (liftA2)
+import Control.Applicative (Alternative ((<|>)), liftA2)
 import Data.List (foldl', genericLength)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.List.NonEmpty qualified as NE
@@ -14,10 +14,11 @@ import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
-import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), methodParams, returnDescriptorType)
+import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), methodParam, methodParams, returnDescriptorType)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType (ArrayClassInfoType, ClassInfoType), FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
 import JVM.Data.Pretty
+import JVM.Data.Raw.Types
 
 -- | Details how the stack changes between two instructions
 data StackDiff
@@ -146,26 +147,41 @@ instance Apply LocalsDiff Locals where
     apply (LocalsPop n) s = drop n s
     apply LocalsSame s = s
 
-analyseStackChange :: HasCallStack => (Stack, Locals) -> MethodDescriptor -> Instruction -> Maybe (StackDiff, LocalsDiff)
-analyseStackChange (_, locals) desc (ALoad idx) = do
-    let (!!?) :: [a] -> Int -> Maybe a
+xstoreChange :: HasCallStack => (Stack, Locals) -> MethodDescriptor -> U1 -> Maybe FieldType -> Maybe (StackDiff, LocalsDiff)
+xstoreChange ([], _) _ _ _ = error "xstoreChange: empty stack"
+xstoreChange (stack, locals) desc idx expected =
+    pure
+        ( stackPop 1
+        , if idx >= genericLength (methodParams desc) && (length locals - length (methodParams desc)) <= fromIntegral idx
+            then
+                let head' = head stack
+                 in LocalsPush $ case expected of
+                        Just x | x == head' -> [head']
+                        Just x -> error ("xstoreChange: expected " <> show x <> " but got " <> show head')
+                        _ -> [head']
+            else LocalsSame
+        )
+
+xLoadChange :: HasCallStack => (Stack, Locals) -> MethodDescriptor -> U1 -> Maybe FieldType -> Maybe (StackDiff, LocalsDiff)
+xLoadChange (_, locals) desc idx expected = do
+    let
         _ !!? n | n < 0 = Nothing
         [] !!? _ = Nothing
         (x : _) !!? 0 = Just x
         (_ : xs) !!? n = xs !!? (n - 1)
 
-    idx' <- locals !!? fromIntegral idx
-    pure (stackPush [idx'], LocalsSame)
-analyseStackChange (stack : _, locals) desc (AStore idx) =
-    pure
-        ( stackPop 1
-        , if idx >= genericLength (methodParams desc) && length locals <= fromIntegral idx
-            then LocalsPush [stack]
-            else LocalsSame
-        )
-analyseStackChange ([], _) _ (AStore x) = error ("AStore with empty stack: " <> show x)
+    idx' <- desc `methodParam` fromIntegral idx <|> locals !!? (fromIntegral idx - length (methodParams desc))
+    case expected of
+        Just x | x /= idx' -> error ("xLoadChange: expected " <> show x <> " but got " <> show idx')
+        _ -> pure (stackPush [idx'], LocalsSame)
+
+analyseStackChange :: HasCallStack => (Stack, Locals) -> MethodDescriptor -> Instruction -> Maybe (StackDiff, LocalsDiff)
+analyseStackChange sl desc (ALoad idx) = xLoadChange sl desc idx Nothing
+analyseStackChange sl desc (AStore idx) = xstoreChange sl desc idx Nothing
+analyseStackChange sl desc (ILoad idx) = xLoadChange sl desc idx (Just (PrimitiveFieldType Int))
+analyseStackChange sl desc (IStore idx) = xstoreChange sl desc idx (Just (PrimitiveFieldType Int))
 analyseStackChange _ _ AReturn = pure (stackPop 1, LocalsSame)
-analyseStackChange _ _ Return = pure (stackPop 1, LocalsSame)
+analyseStackChange _ _ Return = pure (StackSame, LocalsSame) -- return void
 analyseStackChange _ _ (LDC x) = pure (StackPush [ldcEntryToFieldType x], LocalsSame)
 analyseStackChange _ _ AConstNull = pure (StackPush [ObjectFieldType "java/lang/Object"], LocalsSame)
 analyseStackChange _ _ (Goto _) = pure (StackSame, LocalsSame)
@@ -189,7 +205,7 @@ analyseStackChange _ _ (Label _) = Nothing
 
 -- | Analyses a list of instructions, returning the stack and locals at each point.
 analyseStackMapTable :: HasCallStack => MethodDescriptor -> [Instruction] -> (Stack, Locals, [Maybe (StackDiff, LocalsDiff)])
-analyseStackMapTable desc = go ([], methodParams desc)
+analyseStackMapTable desc = go ([], [])
   where
     go :: HasCallStack => (Stack, Locals) -> [Instruction] -> (Stack, Locals, [Maybe (StackDiff, LocalsDiff)])
     go (x, l) [] = (x, l, [])
@@ -239,7 +255,7 @@ calculateStackMapFrames desc code =
                                 )
                             _ -> (acc, stack', locals')
                 )
-                ([], [], methodParams desc)
+                ([], [],  methodParams desc)
                 jumpsAndLabels
      in
         (\(a, _, _) -> a) x
