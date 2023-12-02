@@ -4,6 +4,7 @@
 module JVM.Data.Convert.Method where
 
 import Control.Applicative (liftA2)
+import Data.TypeMergingList qualified as TML
 import Data.Vector qualified as V
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.ClassFile.Method
@@ -16,7 +17,6 @@ import JVM.Data.Convert.Instruction (CodeConverter, convertInstructions, fullyRe
 import JVM.Data.Convert.Monad (ConvertM)
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.Types
-import Data.TypeMergingList qualified as TML
 
 -- >>> foldMWith (\a b -> pure (a + b, a + b)) 0 [1, 2, 3]
 -- (6,[1,3,6])

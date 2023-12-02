@@ -8,5 +8,4 @@ H2JVM does its processing in a pipeline:
 2. This class is analysed using code in the `JVM.Data.HLAnalyse` modules - calculating jump offsets, etc.
    This stage may also do some optimisations, such as removing dead code.
 3. The class is converted to a low level format (`JVM.Data.Raw`) using the `JVM.Data.Convert` module
-4. The low level class is analysed using code in the `JVM.Data.LLAnalyse` modules - adding stack map frames, calculating stack sizes, etc.
-5. The low level format is converted to a `ByteString` using the `JVM.Data.Raw` modules, which can be written to a file. or used in a JVM.
+4. The low level format is converted to a `ByteString` using the `JVM.Data.Raw` modules, which can be written to a file. or used in a JVM.

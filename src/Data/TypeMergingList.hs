@@ -22,10 +22,10 @@ import Control.Lens ((^?))
 import Data.Data
 import Data.Generics.Sum.Constructors
 import Data.List (foldl')
-import GHC.Generics (Generic)
-import GHC.IsList qualified as L
 import Data.Vector (Vector)
 import Data.Vector qualified as V
+import GHC.Generics (Generic)
+import GHC.IsList qualified as L
 
 newtype TypeMergingList a = TypeMergingList [a]
     deriving (Eq, Ord, Show)
@@ -83,7 +83,6 @@ instance (DataMergeable a) => L.IsList (TypeMergingList a) where
     type Item (TypeMergingList a) = a
     fromList = fromList
     toList = toList
-
 
 instance Foldable TypeMergingList where
     foldMap f (TypeMergingList xs) = foldMap f xs

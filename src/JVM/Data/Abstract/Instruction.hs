@@ -7,6 +7,7 @@
 module JVM.Data.Abstract.Instruction where
 
 import Data.Text (Text)
+import GHC.Generics (Generic)
 import JVM.Data.Abstract.Builder.Label (Label)
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor
@@ -43,7 +44,7 @@ data Instruction' label
     | Goto label
     | CheckCast ClassInfoType
     | Return
-    deriving (Show, Eq, Ord, Functor)
+    deriving (Show, Eq, Ord, Functor, Generic)
 
 instance (Pretty label) => Pretty (Instruction' label) where
     pretty (ALoad x) = "aload" <+> pretty x
