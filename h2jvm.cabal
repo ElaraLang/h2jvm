@@ -118,6 +118,7 @@ library
     , bytestring
     , containers
     , lens           >=5.0
+    , generic-lens
     , mtl
     , prettyprinter
     , split

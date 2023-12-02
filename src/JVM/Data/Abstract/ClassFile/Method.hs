@@ -5,23 +5,24 @@ import JVM.Data.Abstract.ClassFile.AccessFlags (MethodAccessFlag)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
 import Data.Data
-import Data.TypeMergingList (DataMergeable (merge), errorDifferentConstructors)
+import Data.TypeMergingList (DataMergeable (merge), errorDifferentConstructors, TypeMergingList)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)
 import JVM.Data.Raw.Types (U2, U1)
+import GHC.Generics (Generic)
 
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
     , methodName :: Text
     , methodDescriptor :: MethodDescriptor
-    , methodAttributes :: [MethodAttribute]
+    , methodAttributes :: TypeMergingList MethodAttribute
     }
     deriving (Show)
 
 data MethodAttribute
     = Code !CodeAttributeData
-    deriving (Show)
+    deriving (Show, Generic)
 
 data CodeAttributeData = CodeAttributeData
     { maxStack :: U2

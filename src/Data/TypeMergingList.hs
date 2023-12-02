@@ -1,4 +1,7 @@
+
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 
 {- | A Snoc List type that merges elements of the same constructor using the Semigroup instance.
 For example, suppose we have some data type:
@@ -16,9 +19,12 @@ Then we can do:
 -}
 module Data.TypeMergingList where
 
+import Control.Lens ((^?))
 import Data.Data
 import Data.List (foldl')
+import GHC.Generics (Generic)
 import GHC.IsList qualified as L
+import Data.Generics.Sum.Constructors
 
 newtype TypeMergingList a = TypeMergingList [a]
     deriving (Eq, Ord, Show)
@@ -35,6 +41,14 @@ errorDifferentConstructors x y = error $ "Cannot merge values as they have diffe
 
 instance {-# OVERLAPPABLE #-} (Data a, Semigroup a) => DataMergeable a where
     merge = (<>)
+
+getByCtor :: forall ctor s a. (Generic s, AsConstructor ctor s s a a) => TypeMergingList s -> Maybe a
+getByCtor (TypeMergingList xs) = go xs
+  where
+    go [] = Nothing
+    go (x : xs') = case x ^? _Ctor @ctor of
+        Just a -> Just a
+        Nothing -> go xs'
 
 snoc :: (DataMergeable a) => TypeMergingList a -> a -> TypeMergingList a
 snoc xs x = append xs (TypeMergingList [x])
