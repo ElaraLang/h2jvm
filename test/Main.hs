@@ -2,8 +2,8 @@
 
 module Main where
 
-import Builder qualified (spec)
 import Analyse qualified (spec)
+import Builder qualified (spec)
 import Convert qualified (spec)
 import Test.Hspec (Spec, hspec)
 

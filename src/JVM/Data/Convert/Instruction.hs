@@ -196,7 +196,6 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.IStore 2) = pure Raw.IStore2
     convertInstruction (Abs.IStore 3) = pure Raw.IStore3
     convertInstruction (Abs.IStore idx) = pure (Raw.IStore idx)
-
     convertInstruction Abs.AConstNull = pure Raw.AConstNull
     convertInstruction (Abs.InvokeStatic c n m) = do
         idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))

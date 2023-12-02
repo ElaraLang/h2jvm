@@ -1,7 +1,6 @@
-
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 
 {- | A Snoc List type that merges elements of the same constructor using the Semigroup instance.
 For example, suppose we have some data type:
@@ -21,10 +20,12 @@ module Data.TypeMergingList where
 
 import Control.Lens ((^?))
 import Data.Data
+import Data.Generics.Sum.Constructors
 import Data.List (foldl')
 import GHC.Generics (Generic)
 import GHC.IsList qualified as L
-import Data.Generics.Sum.Constructors
+import Data.Vector (Vector)
+import Data.Vector qualified as V
 
 newtype TypeMergingList a = TypeMergingList [a]
     deriving (Eq, Ord, Show)
@@ -69,6 +70,9 @@ fromList = foldl' snoc (TypeMergingList [])
 toList :: TypeMergingList a -> [a]
 toList (TypeMergingList xs) = reverse xs -- snoc list to cons list
 
+toVector :: TypeMergingList a -> Vector a
+toVector (TypeMergingList xs) = V.fromList (reverse xs)
+
 instance (DataMergeable a) => Semigroup (TypeMergingList a) where
     (<>) = append
 
@@ -79,3 +83,7 @@ instance (DataMergeable a) => L.IsList (TypeMergingList a) where
     type Item (TypeMergingList a) = a
     fromList = fromList
     toList = toList
+
+
+instance Foldable TypeMergingList where
+    foldMap f (TypeMergingList xs) = foldMap f xs

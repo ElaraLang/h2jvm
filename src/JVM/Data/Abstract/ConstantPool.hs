@@ -10,8 +10,8 @@ import Data.Text (Text)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
 import Data.Data
-import JVM.Data.Pretty
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
+import JVM.Data.Pretty
 
 {- | High-level, type-safe representation of a constant pool entry
  This tries to hide indexes as much as possible, instead just allowing the values to be provided directly.
@@ -49,7 +49,6 @@ data FieldRef = FieldRef ClassInfoType Text FieldType
 instance Pretty FieldRef where
     pretty (FieldRef c n t) = pretty c <> "." <> pretty n <> ":" <> pretty t
 
-
 data MethodRef
     = MethodRef
         ClassInfoType
@@ -69,7 +68,6 @@ data BootstrapMethod
 
 instance Pretty BootstrapMethod where
     pretty (BootstrapMethod mh args) = pretty mh <+> hsep (map pretty args)
-
 
 data BootstrapArgument
     = BMClassArg ClassInfoType

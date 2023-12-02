@@ -85,7 +85,6 @@ library
     JVM.Data.Abstract.Instruction
     JVM.Data.Abstract.Name
     JVM.Data.Abstract.Type
-    JVM.Data.Analyse.Instruction
     JVM.Data.Convert
     JVM.Data.Convert.AccessFlag
     JVM.Data.Convert.ConstantPool
@@ -117,8 +116,8 @@ library
     , binary
     , bytestring
     , containers
-    , lens           >=5.0
     , generic-lens
+    , lens           >=5.0
     , mtl
     , prettyprinter
     , split

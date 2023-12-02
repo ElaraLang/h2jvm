@@ -16,6 +16,7 @@ import JVM.Data.Convert.Instruction (CodeConverter, convertInstructions, fullyRe
 import JVM.Data.Convert.Monad (ConvertM)
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.Types
+import Data.TypeMergingList qualified as TML
 
 -- >>> foldMWith (\a b -> pure (a + b, a + b)) 0 [1, 2, 3]
 -- (6,[1,3,6])
@@ -134,5 +135,5 @@ convertMethod Abs.ClassFileMethod{..} = do
     let flags = accessFlagsToWord16 methodAccessFlags
     nameIndex <- findIndexOf (CPUTF8Entry methodName)
     descriptorIndex <- findIndexOf (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
-    attributes <- traverse convertMethodAttribute methodAttributes
-    pure $ Raw.MethodInfo flags (fromIntegral nameIndex) (fromIntegral descriptorIndex) (V.fromList attributes)
+    attributes <- traverse convertMethodAttribute (TML.toVector methodAttributes)
+    pure $ Raw.MethodInfo flags (fromIntegral nameIndex) (fromIntegral descriptorIndex) attributes
