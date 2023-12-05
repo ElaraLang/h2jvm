@@ -16,7 +16,7 @@ import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), returnDescriptorType)
 import JVM.Data.Abstract.Instruction
-import JVM.Data.Abstract.Type (FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
+import JVM.Data.Abstract.Type (FieldType (..), PrimitiveType (..), classInfoTypeToFieldType, fieldTypeToClassInfoType)
 
 data BasicBlock = BasicBlock
     { index :: Int
@@ -93,11 +93,16 @@ analyseBlockDiff current block = foldl (flip analyseInstruction) current (takeWh
     analyseInstruction (IfGe _) ba = ba{stack = tail ba.stack}
     analyseInstruction (IfGt _) ba = ba{stack = tail ba.stack}
     analyseInstruction (IfLe _) ba = ba{stack = tail ba.stack}
+    analyseInstruction (CheckCast _) ba = ba
     analyseInstruction (InvokeStatic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.return)) <> drop (length md.params) ba.stack}
     analyseInstruction (InvokeVirtual _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.return)) <> drop (1 + length md.params) ba.stack}
     analyseInstruction (InvokeInterface _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.return)) <> drop (length md.params) ba.stack}
     analyseInstruction (InvokeDynamic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.return)) <> drop (1 + length md.params) ba.stack}
-    analyseInstruction other ba = error $ "Instruction not supported: " <> show other
+    analyseInstruction (PutStatic {}) ba = ba{stack = tail ba.stack}
+    analyseInstruction (GetField t _ _) ba = ba{stack = StackEntry (classInfoTypeToFieldType t) : tail ba.stack}
+    analyseInstruction (GetStatic t _ _) ba = ba{stack = StackEntry (classInfoTypeToFieldType t) : ba.stack}
+    analyseInstruction (Goto _) ba = ba
+    analyseInstruction (LDC l) ba = ba{stack = StackEntry (ldcEntryToFieldType l) : ba.stack}
 
 frameDiffToSMF :: (HasCallStack) => Frame -> BasicBlock -> StackMapFrame
 frameDiffToSMF f1@(Frame locals1 stack1) bb = do

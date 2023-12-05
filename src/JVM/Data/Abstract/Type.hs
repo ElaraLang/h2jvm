@@ -47,6 +47,11 @@ data ClassInfoType
     | ArrayClassInfoType ClassInfoType
     deriving (Show, Eq, Ord, Data)
 
+classInfoTypeToFieldType :: ClassInfoType -> FieldType
+classInfoTypeToFieldType (ClassInfoType c) = ObjectFieldType c
+classInfoTypeToFieldType (PrimitiveClassInfoType p) = PrimitiveFieldType p
+classInfoTypeToFieldType (ArrayClassInfoType c) = ArrayFieldType (classInfoTypeToFieldType c)
+
 instance Pretty ClassInfoType where
     pretty (ClassInfoType c) = pretty c
     pretty (PrimitiveClassInfoType p) = pretty p
