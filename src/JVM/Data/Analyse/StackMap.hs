@@ -10,11 +10,11 @@ module JVM.Data.Analyse.StackMap where
 import Control.Lens.Fold
 import Data.Generics.Sum (AsAny (_As))
 import Data.List
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, maybeToList)
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
-import JVM.Data.Abstract.Descriptor (MethodDescriptor (MethodDescriptor), methodParams)
+import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), returnDescriptorType)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
 
@@ -55,7 +55,7 @@ splitIntoBasicBlocks l =
 splitOnLabels :: [Instruction] -> [(Maybe Label, [Instruction])]
 splitOnLabels xs = go xs []
   where
-    go :: [Instruction] -> ([Instruction]) -> [(Maybe Label, [Instruction])]
+    go :: [Instruction] -> [Instruction] -> [(Maybe Label, [Instruction])]
     go [] acc = [(Nothing, acc)]
     go (x : xs) acc = case x ^? _As @"Label" of
         Just l' -> (Just l', acc) : go xs []
@@ -65,8 +65,7 @@ topFrame :: MethodDescriptor -> Frame
 topFrame (MethodDescriptor args _) = Frame (map LocalVariable args) []
 
 analyseBlockDiff :: Frame -> BasicBlock -> Frame
-analyseBlockDiff current block = do
-    foldl (flip analyseInstruction) current (takeWhileInclusive (not . isConditionalJump) block.instructions)
+analyseBlockDiff current block = foldl (flip analyseInstruction) current (takeWhileInclusive (not . isConditionalJump) block.instructions)
   where
     isConditionalJump :: Instruction -> Bool
     isConditionalJump (IfEq _) = True
@@ -94,10 +93,10 @@ analyseBlockDiff current block = do
     analyseInstruction (IfGe _) ba = ba{stack = tail ba.stack}
     analyseInstruction (IfGt _) ba = ba{stack = tail ba.stack}
     analyseInstruction (IfLe _) ba = ba{stack = tail ba.stack}
-    analyseInstruction (InvokeStatic _ _ md) ba = ba{stack = drop (length (methodParams md)) ba.stack}
-    analyseInstruction (InvokeVirtual _ _ md) ba = ba{stack = drop (1 + length (methodParams md)) ba.stack}
-    analyseInstruction (InvokeInterface _ _ md) ba = ba{stack = drop (1 + length (methodParams md)) ba.stack}
-    analyseInstruction (InvokeDynamic _ _ md) ba = ba{stack = drop (1 + length (methodParams md)) ba.stack}
+    analyseInstruction (InvokeStatic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.return)) <> drop (length md.params) ba.stack}
+    analyseInstruction (InvokeVirtual _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.return)) <> drop (1 + length md.params) ba.stack}
+    analyseInstruction (InvokeInterface _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.return)) <> drop (length md.params) ba.stack}
+    analyseInstruction (InvokeDynamic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.return)) <> drop (1 + length md.params) ba.stack}
     analyseInstruction other ba = error $ "Instruction not supported: " <> show other
 
 frameDiffToSMF :: (HasCallStack) => Frame -> BasicBlock -> StackMapFrame

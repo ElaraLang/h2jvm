@@ -4,15 +4,14 @@ import Data.Data
 import JVM.Data.Abstract.Type (FieldType)
 import JVM.Data.Pretty
 
-data MethodDescriptor
-    = MethodDescriptor [FieldType] ReturnDescriptor
+data MethodDescriptor = MethodDescriptor
+    { params :: [FieldType]
+    , return :: ReturnDescriptor
+    }
     deriving (Show, Eq, Ord, Data)
 
 instance Pretty MethodDescriptor where
     pretty (MethodDescriptor params ret) = "(" <> hsep (pretty <$> params) <> ")" <> pretty ret
-
-methodParams :: MethodDescriptor -> [FieldType]
-methodParams (MethodDescriptor params _) = params
 
 methodParam :: MethodDescriptor -> Int -> Maybe FieldType
 methodParam (MethodDescriptor params _) i = params !!? i
