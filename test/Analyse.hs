@@ -13,7 +13,7 @@ import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.ClassFile.Method ( StackMapFrame (..), VerificationTypeInfo (..))
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Instruction
-import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, frameDiffToSMF, splitIntoBasicBlocks, topFrame)
+import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, frameDiffToSMF, splitIntoBasicBlocks, topFrame, calculateStackMapFrames)
 import Test.Hspec
 import Test.Hspec.Hedgehog
 
@@ -62,6 +62,7 @@ spec = describe "Analysis checks" $ do
 
                     pure label
             hedgehog $ do
+                
                 let blocks = splitIntoBasicBlocks code
 
                 blocks

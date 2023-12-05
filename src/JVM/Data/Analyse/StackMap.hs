@@ -7,17 +7,16 @@ modifications to the code after this point will invalidate the stack map table a
 -}
 module JVM.Data.Analyse.StackMap where
 
-import Control.Lens ((^.), (^?), _Just)
-import Control.Lens.Extras (is)
 import Control.Lens.Fold
 import Data.Generics.Sum (AsAny (_As))
 import Data.List
 import Data.Maybe (fromJust)
+import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Descriptor (MethodDescriptor (MethodDescriptor))
 import JVM.Data.Abstract.Instruction
-import JVM.Data.Abstract.Type (ClassInfoType (..), FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
+import JVM.Data.Abstract.Type (FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
 
 data BasicBlock = BasicBlock
     { index :: Int
@@ -97,7 +96,7 @@ analyseBlockDiff current block = do
     analyseInstruction (IfLe _) ba = ba{stack = tail ba.stack}
     analyseInstruction other ba = error $ "Instruction not supported: " <> show other
 
-frameDiffToSMF :: Frame -> BasicBlock -> StackMapFrame
+frameDiffToSMF :: HasCallStack => Frame -> BasicBlock -> StackMapFrame
 frameDiffToSMF f1@(Frame locals1 stack1) bb = do
     let f2@(Frame locals2 stack2) = analyseBlockDiff f1 bb
     if
@@ -113,6 +112,14 @@ lvToVerificationTypeInfo (LocalVariable ft) = case ft of
     PrimitiveFieldType Long -> LongVariableInfo
     PrimitiveFieldType Double -> DoubleVariableInfo
     _ -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
+
+calculateStackMapFrames :: MethodDescriptor -> [Instruction] -> [StackMapFrame]
+calculateStackMapFrames md code = do
+    let blocks = splitIntoBasicBlocks code
+    let top = topFrame md
+    let frames = scanl analyseBlockDiff top blocks
+
+    zipWith frameDiffToSMF frames (init blocks)
 
 replaceAtOrGrow :: Int -> LocalVariable -> [LocalVariable] -> [LocalVariable]
 replaceAtOrGrow i x xs
