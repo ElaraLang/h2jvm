@@ -86,8 +86,8 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
         if i > genericLength ba.locals
             then error $ "ILoad index out of bounds. Given: " <> show i <> " Locals: " <> show ba.locals
             else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
-    analyseInstruction (AStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral (i - 1)) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
-    analyseInstruction (IStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral (i - 1)) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
+    analyseInstruction (AStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
+    analyseInstruction (IStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
     analyseInstruction AReturn ba = ba{stack = tail ba.stack}
     analyseInstruction Return ba = ba
     analyseInstruction (LDC (LDCInt _)) ba = ba{stack = StackEntry (PrimitiveFieldType Int) : ba.stack}
