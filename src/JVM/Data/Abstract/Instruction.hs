@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 {- | High level representation of a JVM instruction, with type-safe arguments and no stack manipulation needed.
  This is not a 1-1 mapping to the actual instructions, use 'JVM.Data.Raw.Instruction' for that.
