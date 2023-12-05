@@ -79,13 +79,13 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     analyseInstruction :: Instruction -> Frame -> Frame
     analyseInstruction (Label _) ba = error "Label should not be encountered in analyseInstruction"
     analyseInstruction (ALoad i) ba =
-        if i - 1 > genericLength ba.locals
+        if i > genericLength ba.locals
             then error $ "ALoad index out of bounds. Given: " <> show i <> " Locals: " <> show ba.locals
-            else ba{stack = lvToStackEntry (ba.locals !! fromIntegral (i - 1)) : ba.stack}
+            else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
     analyseInstruction (ILoad i) ba =
-        if i - 1 > genericLength ba.locals
+        if i > genericLength ba.locals
             then error $ "ILoad index out of bounds. Given: " <> show i <> " Locals: " <> show ba.locals
-            else ba{stack = lvToStackEntry (ba.locals !! fromIntegral (i - 1)) : ba.stack}
+            else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
     analyseInstruction (AStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral (i - 1)) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
     analyseInstruction (IStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral (i - 1)) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
     analyseInstruction AReturn ba = ba{stack = tail ba.stack}
