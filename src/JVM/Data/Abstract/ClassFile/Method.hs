@@ -5,12 +5,12 @@ import JVM.Data.Abstract.ClassFile.AccessFlags (MethodAccessFlag)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
 import Data.Data
-import Data.TypeMergingList (DataMergeable (merge), errorDifferentConstructors, TypeMergingList)
+import Data.TypeMergingList (DataMergeable (merge), TypeMergingList, errorDifferentConstructors)
+import GHC.Generics (Generic)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)
-import JVM.Data.Raw.Types (U2, U1)
-import GHC.Generics (Generic)
+import JVM.Data.Raw.Types (U1, U2)
 
 data ClassFileMethod = ClassFileMethod
     { methodAccessFlags :: [MethodAccessFlag]
@@ -54,14 +54,17 @@ instance DataMergeable CodeAttribute where
 data StackMapFrame
     = SameFrame Label
     | ChopFrame
-        !U1 -- | How many locals to chop
-        !Label -- | The label of the next instruction
+        !U1
+        -- ^ How many locals to chop
+        !Label
+        -- ^ The label of the next instruction
     | SameLocals1StackItemFrame !VerificationTypeInfo Label
     | AppendFrame ![VerificationTypeInfo] !Label
     | FullFrame ![VerificationTypeInfo] ![VerificationTypeInfo] !Label
     deriving (Show, Data, Eq)
 
-data  VerificationTypeInfo = TopVariableInfo
+data VerificationTypeInfo
+    = TopVariableInfo
     | IntegerVariableInfo
     | FloatVariableInfo
     | LongVariableInfo
