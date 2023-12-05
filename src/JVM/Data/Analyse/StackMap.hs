@@ -14,7 +14,7 @@ import Data.Maybe (fromJust)
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
-import JVM.Data.Abstract.Descriptor (MethodDescriptor (MethodDescriptor))
+import JVM.Data.Abstract.Descriptor (MethodDescriptor (MethodDescriptor), methodParams)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (FieldType (..), PrimitiveType (..), fieldTypeToClassInfoType)
 
@@ -94,6 +94,10 @@ analyseBlockDiff current block = do
     analyseInstruction (IfGe _) ba = ba{stack = tail ba.stack}
     analyseInstruction (IfGt _) ba = ba{stack = tail ba.stack}
     analyseInstruction (IfLe _) ba = ba{stack = tail ba.stack}
+    analyseInstruction (InvokeStatic _ _ md) ba = ba{stack = drop (length (methodParams md)) ba.stack}
+    analyseInstruction (InvokeVirtual _ _ md) ba = ba{stack = drop (1 + length (methodParams md)) ba.stack}
+    analyseInstruction (InvokeInterface _ _ md) ba = ba{stack = drop (1 + length (methodParams md)) ba.stack}
+    analyseInstruction (InvokeDynamic _ _ md) ba = ba{stack = drop (1 + length (methodParams md)) ba.stack}
     analyseInstruction other ba = error $ "Instruction not supported: " <> show other
 
 frameDiffToSMF :: (HasCallStack) => Frame -> BasicBlock -> StackMapFrame

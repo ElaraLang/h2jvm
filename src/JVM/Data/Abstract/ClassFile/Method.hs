@@ -59,7 +59,6 @@ instance DataMergeable CodeAttributeData where
     merge (CodeAttributeData a b c d e) (CodeAttributeData a' b' c' d' e') =
         CodeAttributeData (max a a') (max b b') (c <> c') (d <> d') (e <> e')
 
-
 data StackMapFrame
     = SameFrame Label
     | ChopFrame
