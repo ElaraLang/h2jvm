@@ -52,6 +52,7 @@
             };
             fourmolu.check = false;
             hw-fingertree.check = false;
+            hw-prim.check = false;
           };
         };
 
