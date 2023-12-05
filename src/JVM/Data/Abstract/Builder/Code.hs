@@ -37,23 +37,23 @@ newLabel = do
             put (s{labelSource = ls'})
             pure l
 
-emit :: Monad m => Instruction -> CodeBuilderT m ()
+emit :: (Monad m) => Instruction -> CodeBuilderT m ()
 emit i = emit' [i]
 
-emit' :: Monad m => [Instruction] -> CodeBuilderT m ()
+emit' :: (Monad m) => [Instruction] -> CodeBuilderT m ()
 emit' is = do
     modify (\s -> s{code = reverse is <> s.code})
 
-addCodeAttribute :: Monad m => CodeAttribute -> CodeBuilderT m ()
+addCodeAttribute :: (Monad m) => CodeAttribute -> CodeBuilderT m ()
 addCodeAttribute ca = do
     s@CodeState{attributes = attrs} <- get
     put (s{attributes = attrs `TML.snoc` ca})
     pure ()
 
-appendStackMapFrame :: Monad m => StackMapFrame -> CodeBuilderT m ()
+appendStackMapFrame :: (Monad m) => StackMapFrame -> CodeBuilderT m ()
 appendStackMapFrame f = addCodeAttribute (StackMapTable [f])
 
-getCode :: Monad m => CodeBuilderT m [Instruction]
+getCode :: (Monad m) => CodeBuilderT m [Instruction]
 getCode = gets (.code)
 
 rr :: (a, CodeState) -> (a, [CodeAttribute], [Instruction])
@@ -68,11 +68,11 @@ rr (a, s) =
 runCodeBuilder :: CodeBuilder a -> ([CodeAttribute], [Instruction])
 runCodeBuilder = (\(_, b, c) -> (b, c)) . runCodeBuilder'
 
-runCodeBuilderT :: Monad m => CodeBuilderT m a -> m (a, [CodeAttribute], [Instruction])
+runCodeBuilderT :: (Monad m) => CodeBuilderT m a -> m (a, [CodeAttribute], [Instruction])
 runCodeBuilderT = fmap rr . flip runStateT initialCodeState . unCodeBuilderT
 
 runCodeBuilder' :: CodeBuilder a -> (a, [CodeAttribute], [Instruction])
 runCodeBuilder' = rr . runIdentity . flip runStateT initialCodeState . unCodeBuilderT
 
-runCodeBuilderT' :: Monad m => CodeBuilderT m a -> m (a, [CodeAttribute], [Instruction])
+runCodeBuilderT' :: (Monad m) => CodeBuilderT m a -> m (a, [CodeAttribute], [Instruction])
 runCodeBuilderT' = fmap rr . flip runStateT initialCodeState . unCodeBuilderT

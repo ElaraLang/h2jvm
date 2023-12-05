@@ -23,37 +23,37 @@ unClassBuilderT (ClassBuilderT m) = m
 
 type ClassBuilder = ClassBuilderT Identity
 
-addAccessFlag :: Monad m => ClassAccessFlag -> ClassBuilderT m ()
+addAccessFlag :: (Monad m) => ClassAccessFlag -> ClassBuilderT m ()
 addAccessFlag flag = modify (\c -> c{accessFlags = flag : c.accessFlags})
 
-setName :: Monad m => QualifiedClassName -> ClassBuilderT m ()
+setName :: (Monad m) => QualifiedClassName -> ClassBuilderT m ()
 setName n = modify (\c -> c{name = n})
 
-setVersion :: Monad m => JVMVersion -> ClassBuilderT m ()
+setVersion :: (Monad m) => JVMVersion -> ClassBuilderT m ()
 setVersion v = modify (\c -> c{version = v})
 
-setSuperClass :: Monad m => QualifiedClassName -> ClassBuilderT m ()
+setSuperClass :: (Monad m) => QualifiedClassName -> ClassBuilderT m ()
 setSuperClass s = modify (\c -> c{superClass = Just s})
 
-addInterface :: Monad m => QualifiedClassName -> ClassBuilderT m ()
+addInterface :: (Monad m) => QualifiedClassName -> ClassBuilderT m ()
 addInterface i = modify (\c -> c{interfaces = i : c.interfaces})
 
-addField :: Monad m => ClassFileField -> ClassBuilderT m ()
+addField :: (Monad m) => ClassFileField -> ClassBuilderT m ()
 addField f = modify (\c -> c{fields = f : c.fields})
 
-buildAndAddField :: Monad m => ClassBuilderT m ClassFileField -> ClassBuilderT m ()
+buildAndAddField :: (Monad m) => ClassBuilderT m ClassFileField -> ClassBuilderT m ()
 buildAndAddField f = f >>= addField
 
-addMethod :: Monad m => ClassFileMethod -> ClassBuilderT m ()
+addMethod :: (Monad m) => ClassFileMethod -> ClassBuilderT m ()
 addMethod m = modify (\c -> c{methods = m : c.methods})
 
-buildAndAddMethod :: Monad m => ClassBuilderT m ClassFileMethod -> ClassBuilderT m ()
+buildAndAddMethod :: (Monad m) => ClassBuilderT m ClassFileMethod -> ClassBuilderT m ()
 buildAndAddMethod m = m >>= addMethod
 
-addAttribute :: Monad m => ClassFileAttribute -> ClassBuilderT m ()
+addAttribute :: (Monad m) => ClassFileAttribute -> ClassBuilderT m ()
 addAttribute a = modify (\c -> c{attributes = c.attributes `TML.snoc` a})
 
-addBootstrapMethod :: Monad m => BootstrapMethod -> ClassBuilderT m ()
+addBootstrapMethod :: (Monad m) => BootstrapMethod -> ClassBuilderT m ()
 addBootstrapMethod b = addAttribute (BootstrapMethods [b])
 
 dummyClass :: QualifiedClassName -> JVMVersion -> ClassFile
@@ -69,7 +69,7 @@ dummyClass name version =
         , attributes = mempty
         }
 
-runClassBuilderT :: Monad m => QualifiedClassName -> JVMVersion -> ClassBuilderT m a -> m (a, ClassFile)
+runClassBuilderT :: (Monad m) => QualifiedClassName -> JVMVersion -> ClassBuilderT m a -> m (a, ClassFile)
 runClassBuilderT n v m =
     runStateT (unClassBuilderT m) (dummyClass n v)
 

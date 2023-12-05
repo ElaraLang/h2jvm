@@ -9,7 +9,7 @@ import Debug.Trace (trace)
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
-showPretty :: IsString s => Pretty a => a -> s
+showPretty :: (IsString s) => (Pretty a) => a -> s
 showPretty = fromString . unpack . renderStrict . layoutPretty defaultLayoutOptions . pretty
 
 instance Pretty (Doc a) where

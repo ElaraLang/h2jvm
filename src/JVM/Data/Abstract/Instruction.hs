@@ -14,6 +14,7 @@ import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Type
 import JVM.Data.Pretty
 import JVM.Data.Raw.Types
+import Data.Data (Data)
 
 type Reference = Int
 
@@ -44,7 +45,7 @@ data Instruction' label
     | Goto label
     | CheckCast ClassInfoType
     | Return
-    deriving (Show, Eq, Ord, Functor, Generic)
+    deriving (Show, Eq, Ord, Functor, Generic, Data)
 
 instance (Pretty label) => Pretty (Instruction' label) where
     pretty (ALoad x) = "aload" <+> pretty x
@@ -88,7 +89,7 @@ data LDCEntry
     | LDCFloat Float
     | LDCString Text
     | LDCClass ClassInfoType
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Data, Generic)
 
 instance Pretty LDCEntry where
     pretty (LDCInt x) = pretty x

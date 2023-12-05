@@ -34,10 +34,10 @@ newtype TypeMergingList a = TypeMergingList [a]
 Instances of this class may assume that the constructors of the two arguments are the same (i.e. @toConstr x == toConstr y@), and
 are permitted to be partial if this is not the case.
 -}
-class Data a => DataMergeable a where
+class (Data a) => DataMergeable a where
     merge :: a -> a -> a
 
-errorDifferentConstructors :: Data a => a -> a -> b
+errorDifferentConstructors :: (Data a) => a -> a -> b
 errorDifferentConstructors x y = error $ "Cannot merge values as they have different data constructors: " <> showConstr (toConstr x) <> " and " <> showConstr (toConstr y)
 
 instance {-# OVERLAPPABLE #-} (Data a, Semigroup a) => DataMergeable a where
@@ -64,7 +64,7 @@ append (TypeMergingList xs) (TypeMergingList ys) = TypeMergingList (go xs ys)
         | toConstr x == toConstr y = (x `merge` y) : go xs' ys'
         | otherwise = y : go (x : xs') ys'
 
-fromList :: DataMergeable a => Data a => [a] -> TypeMergingList a
+fromList :: (DataMergeable a) => (Data a) => [a] -> TypeMergingList a
 fromList = foldl' snoc (TypeMergingList [])
 
 toList :: TypeMergingList a -> [a]

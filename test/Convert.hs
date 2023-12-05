@@ -70,5 +70,5 @@ spec = describe "test conversions" $ do
         bms === IM.singleton (Raw.BootstrapMethod (fromIntegral indexOfMethodHandle) [fromIntegral strArgIndex])
         inst === Raw.InvokeDynamic (fromIntegral indexOfIndy)
 
-findCPIndex :: MonadTest m => (a -> Bool) -> IM.IndexedMap a -> m Int
+findCPIndex :: (MonadTest m) => (a -> Bool) -> IM.IndexedMap a -> m Int
 findCPIndex pred cp = shouldBeJust $ IM.lookupIndexWhere pred cp

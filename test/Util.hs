@@ -10,7 +10,7 @@ import JVM.Data.Convert.Monad (runConvertM)
 import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec (HasCallStack)
 
-runConv :: MonadTest m => [Abs.Instruction] -> m ([Raw.Instruction], ConstantPoolState)
+runConv :: (MonadTest m) => [Abs.Instruction] -> m ([Raw.Instruction], ConstantPoolState)
 runConv =
     withFrozenCallStack $
         shouldBeRight
@@ -18,7 +18,7 @@ runConv =
             . fullyRunCodeConverter
             . convertInstructions
 
-shouldBeJust :: MonadTest m => HasCallStack => Maybe a -> m a
+shouldBeJust :: (MonadTest m) => (HasCallStack) => Maybe a -> m a
 shouldBeJust (Just a) = pure a
 shouldBeJust Nothing = withFrozenCallStack $ failWith Nothing "Expected Just, got Nothing" -- This is safe because we know that the expectationFailure function will never return
 

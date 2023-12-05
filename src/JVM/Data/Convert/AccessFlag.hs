@@ -11,7 +11,7 @@ import JVM.Data.Raw.AccessFlags qualified as Raw
 class ConvertAccessFlag a where
     convertAccessFlag :: a -> Raw.AccessFlag
 
-accessFlagsToWord16 :: ConvertAccessFlag a => [a] -> Word16
+accessFlagsToWord16 :: (ConvertAccessFlag a) => [a] -> Word16
 accessFlagsToWord16 = foldr (\flag acc -> acc .|. accessFlagValue (convertAccessFlag flag)) 0
 
 instance ConvertAccessFlag ClassAccessFlag where

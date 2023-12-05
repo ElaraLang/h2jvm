@@ -20,13 +20,13 @@ import JVM.Data.Raw.ConstantPool
 import JVM.Data.Raw.MagicNumbers
 import JVM.Data.Raw.Types
 
-lookupOrInsertM :: Monad m => ConstantPoolInfo -> ConstantPoolT m Int
+lookupOrInsertM :: (Monad m) => ConstantPoolInfo -> ConstantPoolT m Int
 lookupOrInsertM = IM.lookupOrInsertMOver _constantPool
 
 _constantPool :: Lens' ConstantPoolState (IndexedMap ConstantPoolInfo)
 _constantPool = lens (.constantPool) (\s x -> s{constantPool = x})
 
-transformEntry :: Monad m => ConstantPoolEntry -> ConstantPoolT m Int
+transformEntry :: (Monad m) => ConstantPoolEntry -> ConstantPoolT m Int
 transformEntry (CPUTF8Entry text) = lookupOrInsertM (UTF8Info $ encodeUtf8 text)
 transformEntry (CPIntegerEntry i) = lookupOrInsertM (IntegerInfo $ fromIntegral i)
 transformEntry (CPFloatEntry f) = lookupOrInsertM (FloatInfo (toJVMFloat f))
@@ -100,7 +100,7 @@ transformEntry (CPMethodTypeEntry methodDescriptor) = do
     descriptorIndex <- transformEntry (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
     lookupOrInsertM (MethodTypeInfo (fromIntegral descriptorIndex))
 
-convertBootstrapMethod :: Monad m => BootstrapMethod -> ConstantPoolT m Int
+convertBootstrapMethod :: (Monad m) => BootstrapMethod -> ConstantPoolT m Int
 convertBootstrapMethod (BootstrapMethod mhEntry args) = do
     mhIndex <- findIndexOf (CPMethodHandleEntry mhEntry)
     bsArgs <- traverse (findIndexOf . bmArgToCPEntry) args
@@ -126,10 +126,10 @@ newtype ConstantPoolT m a = ConstantPoolT (StateT ConstantPoolState m a)
 
 type ConstantPoolM = ConstantPoolT Identity
 
-class Monad m => MonadConstantPool m where
+class (Monad m) => MonadConstantPool m where
     findIndexOf :: ConstantPoolEntry -> m U2
 
-instance Monad m => MonadConstantPool (ConstantPoolT m) where
+instance (Monad m) => MonadConstantPool (ConstantPoolT m) where
     findIndexOf = fmap toU2OrError . transformEntry
       where
         toU2OrError :: Int -> U2
@@ -138,21 +138,21 @@ instance Monad m => MonadConstantPool (ConstantPoolT m) where
                 then error "Constant pool index out of bounds, too many entries?"
                 else fromIntegral i
 
-instance MonadConstantPool m => MonadConstantPool (StateT s m) where
+instance (MonadConstantPool m) => MonadConstantPool (StateT s m) where
     findIndexOf = lift . findIndexOf
 
-instance MonadConstantPool m => MonadConstantPool (ExceptT e m) where
+instance (MonadConstantPool m) => MonadConstantPool (ExceptT e m) where
     findIndexOf = lift . findIndexOf
 
-deriving instance MonadError e m => MonadError e (ConstantPoolT m)
+deriving instance (MonadError e m) => MonadError e (ConstantPoolT m)
 
 runConstantPoolM :: ConstantPoolM a -> (a, ConstantPoolState)
 runConstantPoolM = runConstantPoolMWith mempty
 
-runConstantPoolT :: Monad m => ConstantPoolT m a -> m (a, ConstantPoolState)
+runConstantPoolT :: (Monad m) => ConstantPoolT m a -> m (a, ConstantPoolState)
 runConstantPoolT = runConstantPoolTWith mempty
 
-runConstantPoolTWith :: Monad m => ConstantPoolState -> ConstantPoolT m a -> m (a, ConstantPoolState)
+runConstantPoolTWith :: (Monad m) => ConstantPoolState -> ConstantPoolT m a -> m (a, ConstantPoolState)
 runConstantPoolTWith s (ConstantPoolT t) = runStateT t s
 
 runConstantPoolMWith :: ConstantPoolState -> ConstantPoolM a -> (a, ConstantPoolState)

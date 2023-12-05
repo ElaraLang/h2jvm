@@ -39,8 +39,7 @@
           };
 
           packages = {
-            fourmolu.source = "0.11.0.0";
-
+            # fourmolu.source = "0.11.0.0";
           };
 
           settings = {

@@ -96,13 +96,13 @@ analyseBlockDiff current block = do
     analyseInstruction (IfLe _) ba = ba{stack = tail ba.stack}
     analyseInstruction other ba = error $ "Instruction not supported: " <> show other
 
-frameDiffToSMF :: HasCallStack => Frame -> BasicBlock -> StackMapFrame
+frameDiffToSMF :: (HasCallStack) => Frame -> BasicBlock -> StackMapFrame
 frameDiffToSMF f1@(Frame locals1 stack1) bb = do
     let f2@(Frame locals2 stack2) = analyseBlockDiff f1 bb
     if
-            | locals1 == locals2 && stack1 == stack2 -> SameFrame (fromJust bb.end)
-            | stack1 == stack2 && locals1 `isPrefixOf` locals2 -> AppendFrame (map lvToVerificationTypeInfo (drop (length locals1) locals2)) (fromJust bb.end)
-            | otherwise -> error (show f1 <> show f2)
+        | locals1 == locals2 && stack1 == stack2 -> SameFrame (fromJust bb.end)
+        | stack1 == stack2 && locals1 `isPrefixOf` locals2 -> AppendFrame (map lvToVerificationTypeInfo (drop (length locals1) locals2)) (fromJust bb.end)
+        | otherwise -> error (show f1 <> show f2)
 
 lvToVerificationTypeInfo :: LocalVariable -> VerificationTypeInfo
 lvToVerificationTypeInfo Uninitialised = TopVariableInfo

@@ -19,8 +19,9 @@ import JVM.Data.Pretty
 -}
 data ConstantPoolEntry
     = -- | A class reference
-      CPClassEntry ClassInfoType
-                   -- ^ The class being referenced
+      CPClassEntry
+        -- | The class being referenced
+        ClassInfoType
     | CPFieldRefEntry FieldRef
     | CPMethodRefEntry MethodRef
     | CPInterfaceMethodRefEntry MethodRef
@@ -35,12 +36,12 @@ data ConstantPoolEntry
     | CPMethodTypeEntry MethodDescriptor
     | -- | CONSTANT_InvokeDynamic_info
       CPInvokeDynamicEntry
+        -- | bootstrap_method_attr(_index)
         BootstrapMethod
-        -- ^ bootstrap_method_attr(_index)
+        -- | name(_and_type_index)
         Text
-        -- ^ name(_and_type_index)
+        -- | (name_and_)type(_index)
         MethodDescriptor
-        -- ^ (name_and_)type(_index)
     deriving (Show, Eq, Ord)
 
 data FieldRef = FieldRef ClassInfoType Text FieldType
@@ -51,12 +52,12 @@ instance Pretty FieldRef where
 
 data MethodRef
     = MethodRef
+        -- | The class containing the method
         ClassInfoType
-        -- ^ The class containing the method
+        -- | The name of the method
         Text
-        -- ^ The name of the method
+        -- | The descriptor of the method
         MethodDescriptor
-        -- ^ The descriptor of the method
     deriving (Show, Eq, Ord, Data)
 
 instance Pretty MethodRef where

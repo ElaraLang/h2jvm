@@ -117,7 +117,7 @@ instance (Ord a) => Ord (IndexedMap a) where
 instance Foldable IndexedMap where
     foldMap f (IndexedMap im _) = foldMap f im
 
-instance Ord a => IsList (IndexedMap a) where
+instance (Ord a) => IsList (IndexedMap a) where
     type Item (IndexedMap a) = a
     fromList = foldr (\a b -> snd $ insert a b) empty
     toList = toList . toVector

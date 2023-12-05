@@ -22,7 +22,7 @@ data ClassFileMethod = ClassFileMethod
 
 data MethodAttribute
     = Code !CodeAttributeData
-    deriving (Show, Generic)
+    deriving (Show, Generic, Data)
 
 data CodeAttributeData = CodeAttributeData
     { maxStack :: U2
@@ -31,7 +31,7 @@ data CodeAttributeData = CodeAttributeData
     , exceptionTable :: [ExceptionTableEntry]
     , codeAttributes :: [CodeAttribute]
     }
-    deriving (Show)
+    deriving (Show, Data, Generic)
 
 data ExceptionTableEntry = ExceptionTableEntry
     { startPc :: Int
@@ -39,12 +39,12 @@ data ExceptionTableEntry = ExceptionTableEntry
     , handlerPc :: Int
     , catchType :: Maybe ClassInfoType
     }
-    deriving (Show)
+    deriving (Show, Data, Generic)
 
 data CodeAttribute
     = LineNumberTable [LineNumberTableEntry]
     | StackMapTable [StackMapFrame]
-    deriving (Show, Eq, Data)
+    deriving (Show, Eq, Data, Generic)
 
 instance DataMergeable CodeAttribute where
     merge (LineNumberTable a) (LineNumberTable b) = LineNumberTable (a <> b)
@@ -54,10 +54,10 @@ instance DataMergeable CodeAttribute where
 data StackMapFrame
     = SameFrame Label
     | ChopFrame
+        -- | How many locals to chop
         !U1
-        -- ^ How many locals to chop
+        -- | The label of the next instruction
         !Label
-        -- ^ The label of the next instruction
     | SameLocals1StackItemFrame !VerificationTypeInfo Label
     | AppendFrame ![VerificationTypeInfo] !Label
     | FullFrame ![VerificationTypeInfo] ![VerificationTypeInfo] !Label
