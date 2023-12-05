@@ -32,5 +32,3 @@ spec = describe "test code building" $ do
                     , Raw.IfEq 3
                     , Raw.Return
                     ]
-
-            

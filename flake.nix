@@ -38,12 +38,17 @@
             hlsCheck.enable = false;
           };
 
+          packages = {
+            fourmolu.source = "0.11.0.0";
+
+          };
+
           settings = {
             ghcid = {
               separateBinOutput = false;
               check = false;
             };
-
+            fourmolu.check = false;
           };
         };
 
