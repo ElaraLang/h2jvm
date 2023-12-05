@@ -101,15 +101,27 @@ analyseBlockDiff current block = foldl (flip analyseInstruction) current (takeWh
 
 frameDiffToSMF :: (HasCallStack) => Frame -> BasicBlock -> StackMapFrame
 frameDiffToSMF f1@(Frame locals1 stack1) bb = do
-    let f2@(Frame locals2 stack2) = analyseBlockDiff f1 bb
+    let (Frame locals2 stack2) = analyseBlockDiff f1 bb
     if
         | locals1 == locals2 && stack1 == stack2 -> SameFrame (fromJust bb.end)
         | stack1 == stack2 && locals1 `isPrefixOf` locals2 -> AppendFrame (map lvToVerificationTypeInfo (drop (length locals1) locals2)) (fromJust bb.end)
-        | otherwise -> error (show f1 <> show f2)
+        | [x] <- stack2, locals1 == locals2 -> SameLocals1StackItemFrame (seToVerificationTypeInfo x) (fromJust bb.end)
+        | locals1 == locals2 && locals1 `isSuffixOf` locals2 -> ChopFrame (fromIntegral $ length locals1 - length locals2) (fromJust bb.end)
+        | otherwise -> FullFrame (map lvToVerificationTypeInfo locals2) (map seToVerificationTypeInfo stack2) (fromJust bb.end)
 
 lvToVerificationTypeInfo :: LocalVariable -> VerificationTypeInfo
 lvToVerificationTypeInfo Uninitialised = TopVariableInfo
 lvToVerificationTypeInfo (LocalVariable ft) = case ft of
+    PrimitiveFieldType Int -> IntegerVariableInfo
+    PrimitiveFieldType Float -> FloatVariableInfo
+    PrimitiveFieldType Long -> LongVariableInfo
+    PrimitiveFieldType Double -> DoubleVariableInfo
+    _ -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
+
+seToVerificationTypeInfo :: StackEntry -> VerificationTypeInfo
+seToVerificationTypeInfo StackEntryTop = TopVariableInfo
+seToVerificationTypeInfo StackEntryNull = NullVariableInfo
+seToVerificationTypeInfo (StackEntry ft) = case ft of
     PrimitiveFieldType Int -> IntegerVariableInfo
     PrimitiveFieldType Float -> FloatVariableInfo
     PrimitiveFieldType Long -> LongVariableInfo
