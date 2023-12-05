@@ -51,6 +51,15 @@ instance DataMergeable CodeAttribute where
     merge (StackMapTable a) (StackMapTable b) = StackMapTable (a <> b)
     merge x y = errorDifferentConstructors x y
 
+instance DataMergeable MethodAttribute where
+    merge (Code a) (Code b) = Code (merge a b)
+    merge x y = errorDifferentConstructors x y
+
+instance DataMergeable CodeAttributeData where
+    merge (CodeAttributeData a b c d e) (CodeAttributeData a' b' c' d' e') =
+        CodeAttributeData (max a a') (max b b') (c <> c') (d <> d') (e <> e')
+
+
 data StackMapFrame
     = SameFrame Label
     | ChopFrame

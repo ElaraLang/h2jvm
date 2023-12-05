@@ -40,6 +40,7 @@
 
           packages = {
             # fourmolu.source = "0.11.0.0";
+            hedgehog.source = "1.4";
           };
 
           settings = {

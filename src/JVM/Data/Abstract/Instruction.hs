@@ -6,6 +6,7 @@
 -}
 module JVM.Data.Abstract.Instruction where
 
+import Data.Data (Data)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 import JVM.Data.Abstract.Builder.Label (Label)
@@ -14,7 +15,6 @@ import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Type
 import JVM.Data.Pretty
 import JVM.Data.Raw.Types
-import Data.Data (Data)
 
 type Reference = Int
 
