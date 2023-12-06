@@ -6,7 +6,7 @@ import JVM.Data.Pretty
 
 data MethodDescriptor = MethodDescriptor
     { params :: [FieldType]
-    , return :: ReturnDescriptor
+    , returnDesc :: ReturnDescriptor
     }
     deriving (Show, Eq, Ord, Data)
 
