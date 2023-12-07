@@ -171,3 +171,5 @@ test-suite h2jvm-test
     , hedgehog        ^>=1.4
     , hspec
     , hspec-hedgehog
+    , polysemy
+    , polysemy-plugin
