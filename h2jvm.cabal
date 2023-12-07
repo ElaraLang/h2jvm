@@ -62,10 +62,12 @@ common extensions
     OverloadedRecordDot
     OverloadedStrings
     TypeFamilies
+    DataKinds
+    GADTs
 
 library
   import:           warnings, extensions
-  ghc-options:      -Werror=incomplete-patterns
+  ghc-options:      -Werror=incomplete-patterns -fplugin=Polysemy.Plugin
 
   -- Modules exported by the library.
   -- cabal-fmt: expand src
@@ -121,6 +123,8 @@ library
     , lens           >=5.0
     , mtl
     , prettyprinter
+    , polysemy
+    , polysemy-plugin
     , split
     , text
     , vector

@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module JVM.Data.Abstract.Builder.Code (CodeBuilderT (..), unCodeBuilderT, runCodeBuilderT, runCodeBuilderT', CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder', addCodeAttribute, appendStackMapFrame, getCode) where
 
 import Control.Monad.Identity
@@ -7,6 +8,16 @@ import Data.TypeMergingList qualified as TML
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method hiding (code)
 import JVM.Data.Abstract.Instruction
+import Polysemy
+
+data CodeBuilder m a where
+    AddCodeAttribute :: CodeAttribute -> CodeBuilder m ()
+    NewLabel :: CodeBuilder m Label
+
+    Emit' :: [Instruction] -> CodeBuilder m ()
+    GetCode :: CodeBuilder m [Instruction]
+
+makeSem ''CodeBuilder
 
 newtype CodeBuilderT m a = CodeBuilder (StateT CodeState m a)
     deriving (Functor, Applicative, Monad, MonadState CodeState)
@@ -17,7 +28,7 @@ unCodeBuilderT (CodeBuilder m) = m
 instance MonadTrans CodeBuilderT where
     lift = CodeBuilder . lift
 
-type CodeBuilder = CodeBuilderT Identity
+
 
 data CodeState = CodeState
     { labelSource :: [Label]
@@ -37,7 +48,7 @@ newLabel = do
             put (s{labelSource = ls'})
             pure l
 
-emit :: (Monad m) => Instruction -> CodeBuilderT m ()
+emit :: Member CodeBuilder r => Instruction -> Sem r ()
 emit i = emit' [i]
 
 emit' :: (Monad m) => [Instruction] -> CodeBuilderT m ()
