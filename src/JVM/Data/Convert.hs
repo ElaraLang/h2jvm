@@ -27,7 +27,7 @@ import Polysemy
 jloName :: QualifiedClassName
 jloName = parseQualifiedClassName "java.lang.Object"
 
-convertClassAttributes :: ConvertEff r => [Abs.ClassFileAttribute] -> Sem r [Raw.AttributeInfo]
+convertClassAttributes :: (ConvertEff r) => [Abs.ClassFileAttribute] -> Sem r [Raw.AttributeInfo]
 convertClassAttributes = traverse convertClassAttribute
   where
     convertClassAttribute (Abs.SourceFile text) = do
@@ -62,7 +62,7 @@ convert Abs.ClassFile{..} = do
                 (V.fromList attributes')
 
     let (bmIndex, finalConstantPool) = run $ runConstantPoolWith cpState $ do
-            let bootstrapAttr = BootstrapMethodsAttribute (IM.toVector  cpState.bootstrapMethods)
+            let bootstrapAttr = BootstrapMethodsAttribute (IM.toVector cpState.bootstrapMethods)
             attrNameIndex <- findIndexOf (CPUTF8Entry "BootstrapMethods")
             pure $ Raw.AttributeInfo attrNameIndex bootstrapAttr
 

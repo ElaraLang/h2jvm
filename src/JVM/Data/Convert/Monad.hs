@@ -8,7 +8,7 @@ import JVM.Data.Convert.ConstantPool (ConstantPool, ConstantPoolState, runConsta
 import Polysemy
 import Polysemy.Error
 
-type ConvertEff r = Members '[ConstantPool, Error CodeConverterError]r
+type ConvertEff r = Members '[ConstantPool, Error CodeConverterError] r
 
 runConvertM :: Sem (ConstantPool : Error CodeConverterError : r) a -> Sem r (Either CodeConverterError (a, ConstantPoolState))
 runConvertM = runError . runConstantPool
