@@ -58,12 +58,12 @@ common warnings
 
 common extensions
   default-extensions:
+    DataKinds
+    GADTs
     NoFieldSelectors
     OverloadedRecordDot
     OverloadedStrings
     TypeFamilies
-    DataKinds
-    GADTs
 
 library
   import:           warnings, extensions
@@ -115,16 +115,15 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:
-    , base           >=4.17.1.0
+    , base             >=4.17.1.0
     , binary
     , bytestring
     , containers
     , generic-lens
-    , lens           >=5.0
-    , mtl
-    , prettyprinter
+    , lens             >=5.0
     , polysemy
     , polysemy-plugin
+    , prettyprinter
     , split
     , text
     , vector
@@ -164,11 +163,11 @@ test-suite h2jvm-test
 
   -- Test dependencies.
   build-depends:
-    , base            ^>=4.17.1.0
+    , base             ^>=4.17.1.0
     , binary
     , bytestring
     , h2jvm
-    , hedgehog        ^>=1.4
+    , hedgehog         ^>=1.4
     , hspec
     , hspec-hedgehog
     , polysemy

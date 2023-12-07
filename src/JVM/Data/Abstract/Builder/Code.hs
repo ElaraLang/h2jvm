@@ -30,10 +30,10 @@ initialCodeState = CodeState{labelSource = MkLabel <$> [0 ..], attributes = memp
 
 -- snoc list
 
-emit :: Member CodeBuilder r => Instruction -> Sem r ()
+emit :: (Member CodeBuilder r) => Instruction -> Sem r ()
 emit = emit' . pure
 
-codeBuilderToState :: Member (State CodeState) r => Sem (CodeBuilder ': r) a -> Sem r a
+codeBuilderToState :: (Member (State CodeState) r) => Sem (CodeBuilder ': r) a -> Sem r a
 codeBuilderToState = interpret $ \case
     AddCodeAttribute ca -> modify (\s -> s{attributes = s.attributes `TML.snoc` ca})
     NewLabel -> do
@@ -53,7 +53,7 @@ runCodeBuilder =
         . runState initialCodeState
         . codeBuilderToState
         . raiseUnder
-    where
+  where
     rr (s, a) =
         ( a
         , TML.toList s.attributes
