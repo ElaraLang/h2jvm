@@ -8,7 +8,12 @@ import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 import JVM.Data.Abstract.Name
 import JVM.Data.Abstract.Type
-import JVM.Data.Analyse.Instruction
+
+import JVM.Data.Abstract.Builder.Code
+import JVM.Data.Abstract.ClassFile.Method (StackMapFrame (..), VerificationTypeInfo (..))
+import JVM.Data.Abstract.Descriptor
+import JVM.Data.Abstract.Instruction
+import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, calculateStackMapFrames, frameDiffToSMF, splitIntoBasicBlocks, topFrame)
 import Test.Hspec
 import Test.Hspec.Hedgehog
 
@@ -41,72 +46,112 @@ genFieldType =
         [ Gen.subterm genFieldType ArrayFieldType
         ]
 
-genStackDiff :: Gen StackDiff
-genStackDiff =
-    Gen.choice
-        [ stackPush <$> Gen.list (Range.linear 0 100) genFieldType
-        , stackPop <$> Gen.integral (Range.linear 0 100)
-        , stackPopAndPush <$> Gen.integral (Range.linear 0 100) <*> Gen.list (Range.linear 0 100) genFieldType
-        , pure StackSame
-        ]
-
 spec :: Spec
 spec = describe "Analysis checks" $ do
     describe "Does StackDiff concatenation correctly" $ do
-        it "Is StackSame identity" $ hedgehog $ do
-            a <- forAll genStackDiff
-            a <> StackSame === a
-            StackSame <> a === a
+        it "Can identify incredibly simple blocks properly" $ do
+            let (_, code) = runCodeBuilder $ do
+                    emit $ LDC (LDCInt 0) -- [0]
+                    emit $ AStore 0
+                    emit $ ALoad 0
+                    emit AReturn
 
-        it "is stackPopAndPush valid when normalised" $ hedgehog $ do
-            n <- forAll $ Gen.integral (Range.linear 1 100)
-            ts <- forAll $ Gen.list (Range.linear 1 100) genFieldType
+            hedgehog $ do
+                let blocks = splitIntoBasicBlocks code
 
-            normaliseStackDiff (stackPopAndPush n ts)
-                === if n <= length ts
-                    then stackPush (drop n ts)
-                    else stackPop (n - length ts)
+                blocks
+                    === [ BasicBlock 0 [LDC (LDCInt 0), AStore 0, ALoad 0, AReturn] Nothing
+                        ]
 
-            normaliseStackDiff (stackPopAndPush n ts) === stackPop n <> stackPush ts
-            stackPop n <> stackPush ts === normaliseStackDiff (stackPopAndPush n ts)
+                let top = topFrame (MethodDescriptor [] (TypeReturn (PrimitiveFieldType Int)))
+                let nextFrame = analyseBlockDiff top (head blocks)
 
-        it "is StackPush + StackPop valid" $ hedgehog $ do
-            n <- forAll $ Gen.integral (Range.linear 1 100)
-            ts <- forAll $ Gen.nonEmpty (Range.linear 1 100) genFieldType
+                nextFrame
+                    === Frame
+                        { locals = [LocalVariable (PrimitiveFieldType Int)]
+                        , stack = []
+                        }
 
-            StackPop n <> StackPush ts === case n `compare` length ts of 
-                LT -> stackPush (NE.drop n ts)
-                EQ -> StackSame
-                GT -> stackPop (n - length ts)
-            StackPush ts
-                <> StackPop n
-                === if n <= length ts
-                    then stackPush (NE.drop n ts)
-                    else stackPop (n - length ts)
+        it "Can identify sameframe blocks properly" $ do
+            let (l, _, code) = runCodeBuilder' $ do
+                    label <- newLabel
+                    emit $ LDC (LDCInt 0) -- [0]
+                    emit $ IfEq label
+                    emit $ LDC (LDCInt 0)
+                    emit AReturn
+                    emit $ Label label
+                    emit $ LDC (LDCInt 1)
+                    emit AReturn
 
-        it "Is StackPop + StackPopAndPush valid" $ hedgehog $ do
-            n <- forAll $ Gen.integral (Range.linear 1 100)
-            n2 <- forAll $ Gen.integral (Range.linear 1 100)
-            ts <- forAll $ Gen.list (Range.linear 1 100) genFieldType
+                    pure label
+            hedgehog $ do
+                let blocks = splitIntoBasicBlocks code
 
-            stackPop n <> stackPopAndPush n2 ts === stackPopAndPush (n2 + n) ts
-            stackPopAndPush n2 ts
-                <> stackPop n
-                === if (n + n2) <= length ts
-                    then stackPush (drop (n + n2) ts)
-                    else stackPop (n + n2 - length ts)
+                blocks
+                    === [ BasicBlock 0 [LDC (LDCInt 0), IfEq l, LDC (LDCInt 0), AReturn] (Just l)
+                        , BasicBlock 1 [LDC (LDCInt 1), AReturn] Nothing
+                        ]
 
-        it "Is StackPush + StackPopAndPush valid" $ hedgehog $ do
-            n <- forAll $ Gen.integral (Range.linear 1 100)
-            ts1 <- forAll $ Gen.list (Range.linear 1 100) genFieldType
-            ts2 <- forAll $ Gen.list (Range.linear 1 100) genFieldType
+                let top = topFrame (MethodDescriptor [] (TypeReturn (PrimitiveFieldType Int)))
+                let nextFrame = analyseBlockDiff top (head blocks)
 
-            stackPopAndPush n ts1
-                <> stackPush ts2
-                === if n >= length ts1
-                    then stackPop (n - length ts1) <> stackPush (ts2)
-                    else normaliseStackDiff $ stackPopAndPush n (ts1 <> ts2)
-            (stackPush ts1 <> stackPopAndPush n ts2)
-                === if n <= length ts1
-                    then stackPush (drop n ts1) <> stackPush ts2
-                    else stackPop (n - length ts1) <> stackPush ts2
+                nextFrame
+                    === Frame
+                        { locals = []
+                        , stack = []
+                        }
+
+                let nextFrame' = analyseBlockDiff nextFrame (blocks !! 1)
+
+                nextFrame'
+                    === Frame
+                        { locals = []
+                        , stack = []
+                        }
+
+                frameDiffToSMF top (head blocks)
+                    === SameFrame l
+
+        it "Can identify append frame blocks properly" $ do
+            let (l, _, code) = runCodeBuilder' $ do
+                    label <- newLabel
+                    emit $ LDC (LDCInt 0) -- [0]
+                    emit $ IStore 0 -- []
+                    emit $ LDC (LDCInt 0) -- [0]
+                    emit $ IStore 1 -- []
+                    emit $ ILoad 0 -- [0]
+                    emit $ IfLe label -- []
+                    emit $ LDC (LDCInt 0) -- [0]
+                    emit $ IStore 2 -- []
+                    emit $ Label label -- []
+                    emit $ LDC (LDCInt 0) -- [0]
+                    emit $ IStore 2 -- []
+                    emit Return -- []
+                    pure label
+            hedgehog $ do
+                let blocks = splitIntoBasicBlocks code
+
+                blocks
+                    === [ BasicBlock 0 [LDC (LDCInt 0), IStore 0, LDC (LDCInt 0), IStore 1, ILoad 0, IfLe l, LDC (LDCInt 0), IStore 2] (Just l)
+                        , BasicBlock 1 [LDC (LDCInt 0), IStore 2, Return] Nothing
+                        ]
+
+                let top = topFrame (MethodDescriptor [] VoidReturn)
+                let nextFrame = analyseBlockDiff top (head blocks)
+
+                nextFrame
+                    === Frame
+                        { locals = [LocalVariable (PrimitiveFieldType Int), LocalVariable (PrimitiveFieldType Int)]
+                        , stack = []
+                        }
+
+                let nextFrame' = analyseBlockDiff nextFrame (blocks !! 1)
+
+                nextFrame'
+                    === Frame
+                        { locals = [LocalVariable (PrimitiveFieldType Int), LocalVariable (PrimitiveFieldType Int), LocalVariable (PrimitiveFieldType Int)]
+                        , stack = []
+                        }
+
+                frameDiffToSMF top (head blocks)
+                    === AppendFrame [IntegerVariableInfo, IntegerVariableInfo] l

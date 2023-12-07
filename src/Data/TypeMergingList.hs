@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 {- | A Snoc List type that merges elements of the same constructor using the Semigroup instance.
@@ -16,8 +18,13 @@ Then we can do:
 -}
 module Data.TypeMergingList where
 
+import Control.Lens ((^?))
 import Data.Data
+import Data.Generics.Sum.Constructors
 import Data.List (foldl')
+import Data.Vector (Vector)
+import Data.Vector qualified as V
+import GHC.Generics (Generic)
 import GHC.IsList qualified as L
 
 newtype TypeMergingList a = TypeMergingList [a]
@@ -27,14 +34,22 @@ newtype TypeMergingList a = TypeMergingList [a]
 Instances of this class may assume that the constructors of the two arguments are the same (i.e. @toConstr x == toConstr y@), and
 are permitted to be partial if this is not the case.
 -}
-class Data a => DataMergeable a where
+class (Data a) => DataMergeable a where
     merge :: a -> a -> a
 
-errorDifferentConstructors :: Data a => a -> a -> b
+errorDifferentConstructors :: (Data a) => a -> a -> b
 errorDifferentConstructors x y = error $ "Cannot merge values as they have different data constructors: " <> showConstr (toConstr x) <> " and " <> showConstr (toConstr y)
 
 instance {-# OVERLAPPABLE #-} (Data a, Semigroup a) => DataMergeable a where
     merge = (<>)
+
+getByCtor :: forall ctor s a. (Generic s, AsConstructor ctor s s a a) => TypeMergingList s -> Maybe a
+getByCtor (TypeMergingList xs) = go xs
+  where
+    go [] = Nothing
+    go (x : xs') = case x ^? _Ctor @ctor of
+        Just a -> Just a
+        Nothing -> go xs'
 
 snoc :: (DataMergeable a) => TypeMergingList a -> a -> TypeMergingList a
 snoc xs x = append xs (TypeMergingList [x])
@@ -49,11 +64,14 @@ append (TypeMergingList xs) (TypeMergingList ys) = TypeMergingList (go xs ys)
         | toConstr x == toConstr y = (x `merge` y) : go xs' ys'
         | otherwise = y : go (x : xs') ys'
 
-fromList :: DataMergeable a => Data a => [a] -> TypeMergingList a
+fromList :: (DataMergeable a) => (Data a) => [a] -> TypeMergingList a
 fromList = foldl' snoc (TypeMergingList [])
 
 toList :: TypeMergingList a -> [a]
 toList (TypeMergingList xs) = reverse xs -- snoc list to cons list
+
+toVector :: TypeMergingList a -> Vector a
+toVector (TypeMergingList xs) = V.fromList (reverse xs)
 
 instance (DataMergeable a) => Semigroup (TypeMergingList a) where
     (<>) = append
@@ -65,3 +83,6 @@ instance (DataMergeable a) => L.IsList (TypeMergingList a) where
     type Item (TypeMergingList a) = a
     fromList = fromList
     toList = toList
+
+instance Foldable TypeMergingList where
+    foldMap f (TypeMergingList xs) = foldMap f xs

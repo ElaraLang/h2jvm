@@ -4,6 +4,7 @@
 module JVM.Data.Convert.Method where
 
 import Control.Applicative (liftA2)
+import Data.TypeMergingList qualified as TML
 import Data.Vector qualified as V
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.ClassFile.Method
@@ -19,14 +20,14 @@ import JVM.Data.Raw.Types
 
 -- >>> foldMWith (\a b -> pure (a + b, a + b)) 0 [1, 2, 3]
 -- (6,[1,3,6])
-foldMWith :: Monad m => (a -> b -> m (a, c)) -> a -> [b] -> m (a, [c])
+foldMWith :: (Monad m) => (a -> b -> m (a, c)) -> a -> [b] -> m (a, [c])
 foldMWith _ a [] = pure (a, [])
 foldMWith f a (x : xs) = do
     (a', x') <- f a x
     (a'', xs') <- foldMWith f a' xs
     pure (a'', x' : xs')
 
-convertMethodAttribute :: HasCallStack => Abs.MethodAttribute -> ConvertM Raw.AttributeInfo
+convertMethodAttribute :: (HasCallStack) => Abs.MethodAttribute -> ConvertM Raw.AttributeInfo
 convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
     (code', attributes') <- fullyRunCodeConverter $ do
         liftA2 (,) (convertInstructions code) (convertCodeAttributes codeAttributes)
@@ -129,10 +130,10 @@ convertVerificationTypeInfo (Abs.UninitializedVariableInfo x) = do
     label <- fullyResolveAbs x
     pure $ Raw.UninitializedVariableInfo (fromIntegral label)
 
-convertMethod :: HasCallStack => Abs.ClassFileMethod -> ConvertM Raw.MethodInfo
+convertMethod :: (HasCallStack) => Abs.ClassFileMethod -> ConvertM Raw.MethodInfo
 convertMethod Abs.ClassFileMethod{..} = do
     let flags = accessFlagsToWord16 methodAccessFlags
     nameIndex <- findIndexOf (CPUTF8Entry methodName)
     descriptorIndex <- findIndexOf (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
-    attributes <- traverse convertMethodAttribute methodAttributes
-    pure $ Raw.MethodInfo flags (fromIntegral nameIndex) (fromIntegral descriptorIndex) (V.fromList attributes)
+    attributes <- traverse convertMethodAttribute (TML.toVector methodAttributes)
+    pure $ Raw.MethodInfo flags (fromIntegral nameIndex) (fromIntegral descriptorIndex) attributes

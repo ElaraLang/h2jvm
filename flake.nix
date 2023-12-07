@@ -38,12 +38,21 @@
             hlsCheck.enable = false;
           };
 
+          packages = {
+            # fourmolu.source = "0.11.0.0";
+            hedgehog.source = "1.4";
+            tasty-hedgehog.source = "1.4.0.2";
+
+          };
+
           settings = {
             ghcid = {
               separateBinOutput = false;
               check = false;
             };
-
+            fourmolu.check = false;
+            hw-fingertree.check = false;
+            hw-prim.check = false;
           };
         };
 

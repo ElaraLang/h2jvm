@@ -133,7 +133,7 @@ data Instruction
     | IfNonNull Word16
     | IfNull Word16
     | IInc Word8 Word8
-    | ILoad
+    | ILoad U1
     | ILoad0
     | ILoad1
     | ILoad2
@@ -151,11 +151,11 @@ data Instruction
     | IReturn
     | IShl
     | IShr
-    | IStore
     | IStore0
     | IStore1
     | IStore2
     | IStore3
+    | IStore U1
     | ISub
     | IUShr
     | IXor
@@ -338,7 +338,7 @@ putInstruction = \case
     IfNonNull offset -> putWord8 MagicNumbers.instruction_ifNonNull *> putWord16be offset
     IfNull offset -> putWord8 MagicNumbers.instruction_ifNull *> putWord16be offset
     IInc index increment -> putWord8 MagicNumbers.instruction_iInc *> putWord8 index *> putWord8 increment
-    ILoad -> putWord8 MagicNumbers.instruction_iLoad
+    ILoad n -> putWord8 MagicNumbers.instruction_iLoad *> putWord8 n
     ILoad0 -> putWord8 MagicNumbers.instruction_iLoad0
     ILoad1 -> putWord8 MagicNumbers.instruction_iLoad1
     ILoad2 -> putWord8 MagicNumbers.instruction_iLoad2
@@ -356,7 +356,7 @@ putInstruction = \case
     IReturn -> putWord8 MagicNumbers.instruction_iReturn
     IShl -> putWord8 MagicNumbers.instruction_iShl
     IShr -> putWord8 MagicNumbers.instruction_iShr
-    IStore -> putWord8 MagicNumbers.instruction_iStore
+    IStore n -> putWord8 MagicNumbers.instruction_iStore *> putWord8 n
     IStore0 -> putWord8 MagicNumbers.instruction_iStore0
     IStore1 -> putWord8 MagicNumbers.instruction_iStore1
     IStore2 -> putWord8 MagicNumbers.instruction_iStore2

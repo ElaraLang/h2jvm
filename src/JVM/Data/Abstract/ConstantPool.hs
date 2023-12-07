@@ -10,8 +10,8 @@ import Data.Text (Text)
 import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 
 import Data.Data
-import JVM.Data.Pretty
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
+import JVM.Data.Pretty
 
 {- | High-level, type-safe representation of a constant pool entry
  This tries to hide indexes as much as possible, instead just allowing the values to be provided directly.
@@ -19,8 +19,9 @@ import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 -}
 data ConstantPoolEntry
     = -- | A class reference
-      CPClassEntry ClassInfoType
-                   -- ^ The class being referenced
+      CPClassEntry
+        -- | The class being referenced
+        ClassInfoType
     | CPFieldRefEntry FieldRef
     | CPMethodRefEntry MethodRef
     | CPInterfaceMethodRefEntry MethodRef
@@ -35,12 +36,12 @@ data ConstantPoolEntry
     | CPMethodTypeEntry MethodDescriptor
     | -- | CONSTANT_InvokeDynamic_info
       CPInvokeDynamicEntry
+        -- | bootstrap_method_attr(_index)
         BootstrapMethod
-        -- ^ bootstrap_method_attr(_index)
+        -- | name(_and_type_index)
         Text
-        -- ^ name(_and_type_index)
+        -- | (name_and_)type(_index)
         MethodDescriptor
-        -- ^ (name_and_)type(_index)
     deriving (Show, Eq, Ord)
 
 data FieldRef = FieldRef ClassInfoType Text FieldType
@@ -49,15 +50,14 @@ data FieldRef = FieldRef ClassInfoType Text FieldType
 instance Pretty FieldRef where
     pretty (FieldRef c n t) = pretty c <> "." <> pretty n <> ":" <> pretty t
 
-
 data MethodRef
     = MethodRef
+        -- | The class containing the method
         ClassInfoType
-        -- ^ The class containing the method
+        -- | The name of the method
         Text
-        -- ^ The name of the method
+        -- | The descriptor of the method
         MethodDescriptor
-        -- ^ The descriptor of the method
     deriving (Show, Eq, Ord, Data)
 
 instance Pretty MethodRef where
@@ -69,7 +69,6 @@ data BootstrapMethod
 
 instance Pretty BootstrapMethod where
     pretty (BootstrapMethod mh args) = pretty mh <+> hsep (map pretty args)
-
 
 data BootstrapArgument
     = BMClassArg ClassInfoType

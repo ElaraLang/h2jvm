@@ -21,7 +21,7 @@ name:            h2jvm
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version:         0.4.4.2
+version:         0.4.4.3
 
 -- A short (one-line) description of the package.
 synopsis:
@@ -85,7 +85,7 @@ library
     JVM.Data.Abstract.Instruction
     JVM.Data.Abstract.Name
     JVM.Data.Abstract.Type
-    JVM.Data.Analyse.Instruction
+    JVM.Data.Analyse.StackMap
     JVM.Data.Convert
     JVM.Data.Convert.AccessFlag
     JVM.Data.Convert.ConstantPool
@@ -117,6 +117,7 @@ library
     , binary
     , bytestring
     , containers
+    , generic-lens
     , lens           >=5.0
     , mtl
     , prettyprinter
@@ -152,6 +153,7 @@ test-suite h2jvm-test
   -- The entrypoint to the test suite.
   main-is:          Main.hs
   other-modules:
+    Analyse
     Builder
     Convert
     Util
