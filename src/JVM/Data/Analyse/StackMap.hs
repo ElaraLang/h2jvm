@@ -105,8 +105,8 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     analyseInstruction (InvokeInterface _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (length md.params) ba.stack}
     analyseInstruction (InvokeDynamic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (1 + length md.params) ba.stack}
     analyseInstruction (PutStatic{}) ba = ba{stack = tail ba.stack}
-    analyseInstruction (GetField t _ _) ba = ba{stack = StackEntry (classInfoTypeToFieldType t) : tail ba.stack}
-    analyseInstruction (GetStatic t _ _) ba = ba{stack = StackEntry (classInfoTypeToFieldType t) : ba.stack}
+    analyseInstruction (GetField _ _ ft) ba = ba{stack = StackEntry (ft t) : tail ba.stack}
+    analyseInstruction (GetStatic _ _ ft) ba = ba{stack = StackEntry (ft t) : ba.stack}
     analyseInstruction (Goto _) ba = ba
     analyseInstruction (LDC l) ba = ba{stack = StackEntry (ldcEntryToFieldType l) : ba.stack}
 
