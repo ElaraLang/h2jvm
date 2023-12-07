@@ -114,7 +114,7 @@ transformEntry (CPMethodHandleEntry methodHandleEntry) = do
 transformEntry (CPInvokeDynamicEntry bootstrapMethod name methodDescriptor) = do
     nameAndTypeIndex <- findIndexOf (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
     bmIndex <- convertBootstrapMethod bootstrapMethod
-    lookupOrInsertMCP (InvokeDynamicInfo (fromIntegral bmIndex)  (fromIntegral nameAndTypeIndex))
+    lookupOrInsertMCP (InvokeDynamicInfo (fromIntegral bmIndex) (fromIntegral nameAndTypeIndex))
 transformEntry (CPMethodTypeEntry methodDescriptor) = do
     descriptorIndex <- transformEntry (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
     lookupOrInsertMCP (MethodTypeInfo (fromIntegral descriptorIndex))
