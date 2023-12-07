@@ -6,6 +6,7 @@ import Hedgehog
 import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Raw.Instruction qualified as Raw
+import Polysemy
 import Test.Hspec
 import Test.Hspec.Hedgehog
 import Util (runConv)
@@ -19,7 +20,7 @@ spec = describe "test code building" $ do
         Label #1
         4: return
         -}
-        let (_, code) = runCodeBuilder $ do
+        let (_, _, code) = run $ runCodeBuilder $ do
                 label <- newLabel
                 emit $ ALoad 0
                 emit (IfEq label)

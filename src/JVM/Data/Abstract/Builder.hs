@@ -1,11 +1,11 @@
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 -- | Provides a monadic interface for building class files in a high-level format.
 module JVM.Data.Abstract.Builder where
 
-import Control.Monad.State
-import Data.Functor.Identity
 import Data.TypeMergingList qualified as TML
 import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute (BootstrapMethods), methods)
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
@@ -14,46 +14,39 @@ import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion
+import Polysemy
+import Polysemy.State
 
-newtype ClassBuilderT m a = ClassBuilderT (StateT ClassFile m a)
-    deriving newtype (Functor, Applicative, Monad, MonadState ClassFile, MonadTrans)
+data ClassBuilder m a where
+    ModifyClass :: (ClassFile -> ClassFile) -> ClassBuilder m ()
 
-unClassBuilderT :: ClassBuilderT m a -> StateT ClassFile m a
-unClassBuilderT (ClassBuilderT m) = m
+makeSem ''ClassBuilder
 
-type ClassBuilder = ClassBuilderT Identity
+addAccessFlag :: (Member ClassBuilder r) => ClassAccessFlag -> Sem r ()
+addAccessFlag flag = modifyClass (\c -> c{accessFlags = flag : c.accessFlags})
 
-addAccessFlag :: (Monad m) => ClassAccessFlag -> ClassBuilderT m ()
-addAccessFlag flag = modify (\c -> c{accessFlags = flag : c.accessFlags})
+setName :: (Member ClassBuilder r) => QualifiedClassName -> Sem r ()
+setName n = modifyClass (\c -> c{name = n})
 
-setName :: (Monad m) => QualifiedClassName -> ClassBuilderT m ()
-setName n = modify (\c -> c{name = n})
+setVersion :: (Member ClassBuilder r) => JVMVersion -> Sem r ()
+setVersion v = modifyClass (\c -> c{version = v})
 
-setVersion :: (Monad m) => JVMVersion -> ClassBuilderT m ()
-setVersion v = modify (\c -> c{version = v})
+setSuperClass :: (Member ClassBuilder r) => QualifiedClassName -> Sem r ()
+setSuperClass s = modifyClass (\c -> c{superClass = Just s})
 
-setSuperClass :: (Monad m) => QualifiedClassName -> ClassBuilderT m ()
-setSuperClass s = modify (\c -> c{superClass = Just s})
+addInterface :: (Member ClassBuilder r) => QualifiedClassName -> Sem r ()
+addInterface i = modifyClass (\c -> c{interfaces = i : c.interfaces})
 
-addInterface :: (Monad m) => QualifiedClassName -> ClassBuilderT m ()
-addInterface i = modify (\c -> c{interfaces = i : c.interfaces})
+addField :: (Member ClassBuilder r) => ClassFileField -> Sem r ()
+addField f = modifyClass (\c -> c{fields = f : c.fields})
 
-addField :: (Monad m) => ClassFileField -> ClassBuilderT m ()
-addField f = modify (\c -> c{fields = f : c.fields})
+addMethod :: (Member ClassBuilder r) => ClassFileMethod -> Sem r ()
+addMethod m = modifyClass (\c -> c{methods = m : c.methods})
 
-buildAndAddField :: (Monad m) => ClassBuilderT m ClassFileField -> ClassBuilderT m ()
-buildAndAddField f = f >>= addField
+addAttribute :: (Member ClassBuilder r) => ClassFileAttribute -> Sem r ()
+addAttribute a = modifyClass (\c -> c{attributes = c.attributes `TML.snoc` a})
 
-addMethod :: (Monad m) => ClassFileMethod -> ClassBuilderT m ()
-addMethod m = modify (\c -> c{methods = m : c.methods})
-
-buildAndAddMethod :: (Monad m) => ClassBuilderT m ClassFileMethod -> ClassBuilderT m ()
-buildAndAddMethod m = m >>= addMethod
-
-addAttribute :: (Monad m) => ClassFileAttribute -> ClassBuilderT m ()
-addAttribute a = modify (\c -> c{attributes = c.attributes `TML.snoc` a})
-
-addBootstrapMethod :: (Monad m) => BootstrapMethod -> ClassBuilderT m ()
+addBootstrapMethod :: (Member ClassBuilder r) => BootstrapMethod -> Sem r ()
 addBootstrapMethod b = addAttribute (BootstrapMethods [b])
 
 dummyClass :: QualifiedClassName -> JVMVersion -> ClassFile
@@ -69,10 +62,12 @@ dummyClass name version =
         , attributes = mempty
         }
 
-runClassBuilderT :: (Monad m) => QualifiedClassName -> JVMVersion -> ClassBuilderT m a -> m (a, ClassFile)
-runClassBuilderT n v m =
-    runStateT (unClassBuilderT m) (dummyClass n v)
+classBuilderToState :: (Member (State ClassFile) r) => Sem (ClassBuilder ': r) a -> Sem r a
+classBuilderToState = interpret $ \case
+    ModifyClass f -> modify f
 
-runClassBuilder :: QualifiedClassName -> JVMVersion -> ClassBuilder a -> (a, ClassFile)
-runClassBuilder n v m =
-    runIdentity $ runClassBuilderT n v m
+runClassBuilder :: QualifiedClassName -> JVMVersion -> Sem (ClassBuilder : r) a -> Sem r (ClassFile, a)
+runClassBuilder n v =
+    runState (dummyClass n v)
+        . classBuilderToState
+        . raiseUnder

@@ -17,16 +17,17 @@ import JVM.Data.Convert.AccessFlag (accessFlagsToWord16)
 import JVM.Data.Convert.ConstantPool
 import JVM.Data.Convert.Field (convertField)
 import JVM.Data.Convert.Method (convertMethod)
-import JVM.Data.Convert.Monad (CodeConverterError, ConvertM, runConvertM)
+import JVM.Data.Convert.Monad
 import JVM.Data.JVMVersion (getMajor, getMinor)
 import JVM.Data.Raw.ClassFile (Attribute (BootstrapMethodsAttribute))
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
+import Polysemy
 
 jloName :: QualifiedClassName
 jloName = parseQualifiedClassName "java.lang.Object"
 
-convertClassAttributes :: [Abs.ClassFileAttribute] -> ConvertM [Raw.AttributeInfo]
+convertClassAttributes :: ConvertEff r => [Abs.ClassFileAttribute] -> Sem r [Raw.AttributeInfo]
 convertClassAttributes = traverse convertClassAttribute
   where
     convertClassAttribute (Abs.SourceFile text) = do
@@ -37,7 +38,7 @@ convertClassAttributes = traverse convertClassAttribute
 
 convert :: Abs.ClassFile -> Either CodeConverterError Raw.ClassFile
 convert Abs.ClassFile{..} = do
-    (tempClass, cpState) <- runConvertM $ do
+    (tempClass, cpState) <- run $ runConvertM $ do
         nameIndex <- findIndexOf (CPClassEntry $ ClassInfoType name)
         superIndex <- findIndexOf (CPClassEntry $ ClassInfoType (fromMaybe jloName superClass))
         let flags = accessFlagsToWord16 accessFlags
@@ -60,9 +61,9 @@ convert Abs.ClassFile{..} = do
                 (V.fromList methods')
                 (V.fromList attributes')
 
-    let (bmIndex, finalConstantPool) = runConstantPoolMWith cpState $ do
-            let bootstrapAttr = BootstrapMethodsAttribute (IM.toVector $ cpState.bootstrapMethods)
+    let (bmIndex, finalConstantPool) = run $ runConstantPoolWith cpState $ do
+            let bootstrapAttr = BootstrapMethodsAttribute (IM.toVector  cpState.bootstrapMethods)
             attrNameIndex <- findIndexOf (CPUTF8Entry "BootstrapMethods")
             pure $ Raw.AttributeInfo attrNameIndex bootstrapAttr
 
-    pure $ tempClass{Raw.constantPool = IM.toVector finalConstantPool.constantPool, Raw.attributes = bmIndex `V.cons` (tempClass.attributes)}
+    pure $ tempClass{Raw.constantPool = IM.toVector finalConstantPool.constantPool, Raw.attributes = bmIndex `V.cons` tempClass.attributes}

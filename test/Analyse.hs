@@ -14,6 +14,7 @@ import JVM.Data.Abstract.ClassFile.Method (StackMapFrame (..), VerificationTypeI
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, calculateStackMapFrames, frameDiffToSMF, splitIntoBasicBlocks, topFrame)
+import Polysemy
 import Test.Hspec
 import Test.Hspec.Hedgehog
 
@@ -50,7 +51,7 @@ spec :: Spec
 spec = describe "Analysis checks" $ do
     describe "Does StackDiff concatenation correctly" $ do
         it "Can identify incredibly simple blocks properly" $ do
-            let (_, code) = runCodeBuilder $ do
+            let (_, _, code) = run $ runCodeBuilder $ do
                     emit $ LDC (LDCInt 0) -- [0]
                     emit $ AStore 0
                     emit $ ALoad 0
@@ -73,7 +74,7 @@ spec = describe "Analysis checks" $ do
                         }
 
         it "Can identify sameframe blocks properly" $ do
-            let (l, _, code) = runCodeBuilder' $ do
+            let (l, _, code) = run $ runCodeBuilder $ do
                     label <- newLabel
                     emit $ LDC (LDCInt 0) -- [0]
                     emit $ IfEq label
@@ -113,7 +114,7 @@ spec = describe "Analysis checks" $ do
                     === SameFrame l
 
         it "Can identify append frame blocks properly" $ do
-            let (l, _, code) = runCodeBuilder' $ do
+            let (l, _, code) = run $ runCodeBuilder $ do
                     label <- newLabel
                     emit $ LDC (LDCInt 0) -- [0]
                     emit $ IStore 0 -- []

@@ -1,15 +1,14 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module JVM.Data.Convert.ConstantPool where
 
-import Control.Lens (Lens', lens)
-import Control.Monad.Except
-import Control.Monad.Identity
-import Control.Monad.State.Strict
 import Data.IndexedMap (IndexedMap)
 import Data.IndexedMap qualified as IM
 import Data.Text.Encoding
+import Data.Tuple (swap)
 import Data.Vector qualified as V
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Convert.Descriptor
@@ -19,46 +18,66 @@ import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.ConstantPool
 import JVM.Data.Raw.MagicNumbers
 import JVM.Data.Raw.Types
+import Polysemy
+import Polysemy.State
 
-lookupOrInsertM :: (Monad m) => ConstantPoolInfo -> ConstantPoolT m Int
-lookupOrInsertM = IM.lookupOrInsertMOver _constantPool
+data ConstantPoolState = ConstantPoolState
+    { constantPool :: IndexedMap ConstantPoolInfo
+    , bootstrapMethods :: IndexedMap Raw.BootstrapMethod
+    }
+    deriving (Show, Eq, Ord)
 
-_constantPool :: Lens' ConstantPoolState (IndexedMap ConstantPoolInfo)
-_constantPool = lens (.constantPool) (\s x -> s{constantPool = x})
+data ConstantPool m a where
+    GetCP :: ConstantPool m ConstantPoolState
+    SetCP :: ConstantPoolState -> ConstantPool m ()
 
-transformEntry :: (Monad m) => ConstantPoolEntry -> ConstantPoolT m Int
-transformEntry (CPUTF8Entry text) = lookupOrInsertM (UTF8Info $ encodeUtf8 text)
-transformEntry (CPIntegerEntry i) = lookupOrInsertM (IntegerInfo $ fromIntegral i)
-transformEntry (CPFloatEntry f) = lookupOrInsertM (FloatInfo (toJVMFloat f))
+makeSem ''ConstantPool
+
+lookupOrInsertMOver :: (Member ConstantPool r, Ord a) => a -> (ConstantPoolState -> IndexedMap a) -> (ConstantPoolState -> IndexedMap a -> ConstantPoolState) -> Sem r Int
+lookupOrInsertMOver cpInfo get set = do
+    cp <- getCP
+    let (i, newCP) = IM.lookupOrInsert cpInfo (get cp)
+    setCP (set cp newCP)
+    pure i
+
+lookupOrInsertMCP :: (Member ConstantPool r) => ConstantPoolInfo -> Sem r Int
+lookupOrInsertMCP cpInfo = lookupOrInsertMOver cpInfo (.constantPool) (\s x -> s{constantPool = x})
+lookupOrInsertMBM :: (Member ConstantPool r) => Raw.BootstrapMethod -> Sem r Int
+lookupOrInsertMBM bmInfo = lookupOrInsertMOver bmInfo (.bootstrapMethods) (\s x -> s{bootstrapMethods = x})
+
+transformEntry :: (Member ConstantPool r) => ConstantPoolEntry -> Sem r Int
+transformEntry (CPUTF8Entry text) = lookupOrInsertMCP (UTF8Info $ encodeUtf8 text)
+transformEntry (CPIntegerEntry i) = lookupOrInsertMCP (IntegerInfo $ fromIntegral i)
+transformEntry (CPFloatEntry f) = lookupOrInsertMCP (FloatInfo (toJVMFloat f))
 transformEntry (CPStringEntry msg) = do
     i <- transformEntry (CPUTF8Entry msg)
-    lookupOrInsertM (StringInfo $ fromIntegral i)
+    lookupOrInsertMCP (StringInfo $ fromIntegral i)
 transformEntry (CPLongEntry i) = do
     let (high, low) = toJVMLong i
-    lookupOrInsertM (LongInfo high low)
+    lookupOrInsertMCP (LongInfo high low)
 transformEntry (CPDoubleEntry d) = do
     let (high, low) = toJVMLong (round d)
-    lookupOrInsertM (DoubleInfo high low)
+    lookupOrInsertMCP (DoubleInfo high low)
 transformEntry (CPClassEntry name) = do
     let className = classInfoTypeDescriptor name
     nameIndex <- transformEntry (CPUTF8Entry className)
-    lookupOrInsertM (ClassInfo $ fromIntegral nameIndex)
+    lookupOrInsertMCP (ClassInfo $ fromIntegral nameIndex)
 transformEntry (CPMethodRefEntry (MethodRef classRef name methodDescriptor)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
-    lookupOrInsertM (MethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
+    lookupOrInsertMCP (MethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
 transformEntry (CPInterfaceMethodRefEntry (MethodRef classRef name methodDescriptor)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
-    lookupOrInsertM (InterfaceMethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
+    lookupOrInsertMCP (InterfaceMethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
 transformEntry (CPNameAndTypeEntry name descriptor) = do
     nameIndex <- transformEntry (CPUTF8Entry name)
     descriptorIndex <- transformEntry (CPUTF8Entry descriptor)
-    lookupOrInsertM (NameAndTypeInfo (fromIntegral nameIndex) (fromIntegral descriptorIndex))
+    lookupOrInsertMCP (NameAndTypeInfo (fromIntegral nameIndex) (fromIntegral descriptorIndex))
 transformEntry (CPFieldRefEntry (FieldRef classRef name fieldType)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (fieldTypeDescriptor fieldType))
-    lookupOrInsertM (FieldRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
+    lookupOrInsertMCP (FieldRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
 transformEntry (CPMethodHandleEntry methodHandleEntry) = do
     let transformFieldMHE f@(FieldRef{}) = findIndexOf (CPFieldRefEntry f)
     let transformMethodMHE m@(MethodRef{}) = findIndexOf (CPMethodRefEntry m)
@@ -91,27 +110,21 @@ transformEntry (CPMethodHandleEntry methodHandleEntry) = do
         MHInvokeInterface mr -> do
             mri <- transformMethodMHE mr
             pure (_REF_invokeInterface, mri)
-    lookupOrInsertM (MethodHandleInfo referenceKind referenceIndex)
+    lookupOrInsertMCP (MethodHandleInfo referenceKind referenceIndex)
 transformEntry (CPInvokeDynamicEntry bootstrapMethod name methodDescriptor) = do
     nameAndTypeIndex <- findIndexOf (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
     bmIndex <- convertBootstrapMethod bootstrapMethod
-    lookupOrInsertM (InvokeDynamicInfo (fromIntegral nameAndTypeIndex) (fromIntegral bmIndex))
+    lookupOrInsertMCP (InvokeDynamicInfo (fromIntegral nameAndTypeIndex) (fromIntegral bmIndex))
 transformEntry (CPMethodTypeEntry methodDescriptor) = do
     descriptorIndex <- transformEntry (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
-    lookupOrInsertM (MethodTypeInfo (fromIntegral descriptorIndex))
+    lookupOrInsertMCP (MethodTypeInfo (fromIntegral descriptorIndex))
 
-convertBootstrapMethod :: (Monad m) => BootstrapMethod -> ConstantPoolT m Int
+convertBootstrapMethod :: (Member ConstantPool r) => BootstrapMethod -> Sem r Int
 convertBootstrapMethod (BootstrapMethod mhEntry args) = do
     mhIndex <- findIndexOf (CPMethodHandleEntry mhEntry)
     bsArgs <- traverse (findIndexOf . bmArgToCPEntry) args
     let bootstrapMethod = Raw.BootstrapMethod (fromIntegral mhIndex) (V.fromList bsArgs)
-    IM.lookupOrInsertMOver (lens (.bootstrapMethods) (\s x -> s{bootstrapMethods = x})) bootstrapMethod
-
-data ConstantPoolState = ConstantPoolState
-    { constantPool :: IndexedMap ConstantPoolInfo
-    , bootstrapMethods :: IndexedMap Raw.BootstrapMethod
-    }
-    deriving (Show, Eq, Ord)
+    lookupOrInsertMBM bootstrapMethod
 
 instance Semigroup ConstantPoolState where
     (ConstantPoolState cp1 bm1) <> (ConstantPoolState cp2 bm2) = ConstantPoolState (cp1 <> cp2) (bm1 <> bm2)
@@ -119,43 +132,26 @@ instance Semigroup ConstantPoolState where
 instance Monoid ConstantPoolState where
     mempty = ConstantPoolState mempty mempty
 
--- Constant Pool Monad
-
-newtype ConstantPoolT m a = ConstantPoolT (StateT ConstantPoolState m a)
-    deriving (Functor, Applicative, Monad, MonadState ConstantPoolState, MonadTrans)
-
-type ConstantPoolM = ConstantPoolT Identity
-
-class (Monad m) => MonadConstantPool m where
-    findIndexOf :: ConstantPoolEntry -> m U2
-
-instance (Monad m) => MonadConstantPool (ConstantPoolT m) where
-    findIndexOf = fmap toU2OrError . transformEntry
-      where
-        toU2OrError :: Int -> U2
-        toU2OrError i =
-            if i > fromIntegral (maxBound @U2)
-                then error "Constant pool index out of bounds, too many entries?"
-                else fromIntegral i
-
-instance (MonadConstantPool m) => MonadConstantPool (StateT s m) where
-    findIndexOf = lift . findIndexOf
-
-instance (MonadConstantPool m) => MonadConstantPool (ExceptT e m) where
-    findIndexOf = lift . findIndexOf
-
-deriving instance (MonadError e m) => MonadError e (ConstantPoolT m)
-
-runConstantPoolM :: ConstantPoolM a -> (a, ConstantPoolState)
-runConstantPoolM = runConstantPoolMWith mempty
-
-runConstantPoolT :: (Monad m) => ConstantPoolT m a -> m (a, ConstantPoolState)
-runConstantPoolT = runConstantPoolTWith mempty
-
-runConstantPoolTWith :: (Monad m) => ConstantPoolState -> ConstantPoolT m a -> m (a, ConstantPoolState)
-runConstantPoolTWith s (ConstantPoolT t) = runStateT t s
-
-runConstantPoolMWith :: ConstantPoolState -> ConstantPoolM a -> (a, ConstantPoolState)
-runConstantPoolMWith = runIdentity .: runConstantPoolTWith
+findIndexOf :: (Member ConstantPool r) => ConstantPoolEntry -> Sem r U2
+findIndexOf = fmap toU2OrError . transformEntry
   where
-    (.:) = (.) . (.)
+    toU2OrError :: Int -> U2
+    toU2OrError i =
+        if i > fromIntegral (maxBound @U2)
+            then error "Constant pool index out of bounds, too many entries?"
+            else fromIntegral i
+
+constantPoolToState :: (Member (State ConstantPoolState) r) => Sem (ConstantPool ': r) a -> Sem r a
+constantPoolToState = interpret $ \case
+    GetCP -> gets id
+    SetCP s -> modify (const s)
+
+runConstantPoolWith :: ConstantPoolState -> Sem (ConstantPool ': r) a -> Sem r (a, ConstantPoolState)
+runConstantPoolWith s =
+    fmap swap
+        . runState s
+        . constantPoolToState
+        . raiseUnder
+
+runConstantPool :: Sem (ConstantPool ': r) a -> Sem r (a, ConstantPoolState)
+runConstantPool = runConstantPoolWith mempty

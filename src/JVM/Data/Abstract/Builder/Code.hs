@@ -1,23 +1,23 @@
-module JVM.Data.Abstract.Builder.Code (CodeBuilderT (..), unCodeBuilderT, runCodeBuilderT, runCodeBuilderT', CodeBuilder, newLabel, emit, emit', runCodeBuilder, runCodeBuilder', addCodeAttribute, appendStackMapFrame, getCode) where
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TemplateHaskell #-}
 
-import Control.Monad.Identity
-import Control.Monad.State
+module JVM.Data.Abstract.Builder.Code where
+
 import Data.TypeMergingList (TypeMergingList)
 import Data.TypeMergingList qualified as TML
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method hiding (code)
 import JVM.Data.Abstract.Instruction
+import Polysemy
+import Polysemy.State
 
-newtype CodeBuilderT m a = CodeBuilder (StateT CodeState m a)
-    deriving (Functor, Applicative, Monad, MonadState CodeState)
+data CodeBuilder m a where
+    AddCodeAttribute :: CodeAttribute -> CodeBuilder m ()
+    NewLabel :: CodeBuilder m Label
+    Emit' :: [Instruction] -> CodeBuilder m ()
+    GetCode :: CodeBuilder m [Instruction]
 
-unCodeBuilderT :: CodeBuilderT m a -> StateT CodeState m a
-unCodeBuilderT (CodeBuilder m) = m
-
-instance MonadTrans CodeBuilderT where
-    lift = CodeBuilder . lift
-
-type CodeBuilder = CodeBuilderT Identity
+makeSem ''CodeBuilder
 
 data CodeState = CodeState
     { labelSource :: [Label]
@@ -28,51 +28,34 @@ data CodeState = CodeState
 initialCodeState :: CodeState
 initialCodeState = CodeState{labelSource = MkLabel <$> [0 ..], attributes = mempty, code = []}
 
-newLabel :: CodeBuilder Label
-newLabel = do
-    s@CodeState{labelSource = ls} <- get
-    case ls of
-        [] -> error "No more labels"
-        l : ls' -> do
-            put (s{labelSource = ls'})
-            pure l
-
-emit :: (Monad m) => Instruction -> CodeBuilderT m ()
-emit i = emit' [i]
-
-emit' :: (Monad m) => [Instruction] -> CodeBuilderT m ()
-emit' is = do
-    modify (\s -> s{code = reverse is <> s.code})
-
-addCodeAttribute :: (Monad m) => CodeAttribute -> CodeBuilderT m ()
-addCodeAttribute ca = do
-    s@CodeState{attributes = attrs} <- get
-    put (s{attributes = attrs `TML.snoc` ca})
-    pure ()
-
-appendStackMapFrame :: (Monad m) => StackMapFrame -> CodeBuilderT m ()
-appendStackMapFrame f = addCodeAttribute (StackMapTable [f])
-
-getCode :: (Monad m) => CodeBuilderT m [Instruction]
-getCode = gets (.code)
-
-rr :: (a, CodeState) -> (a, [CodeAttribute], [Instruction])
-rr (a, s) =
-    ( a
-    , TML.toList s.attributes
-    , reverse s.code
-    )
-
 -- snoc list
 
-runCodeBuilder :: CodeBuilder a -> ([CodeAttribute], [Instruction])
-runCodeBuilder = (\(_, b, c) -> (b, c)) . runCodeBuilder'
+emit :: (Member CodeBuilder r) => Instruction -> Sem r ()
+emit = emit' . pure
 
-runCodeBuilderT :: (Monad m) => CodeBuilderT m a -> m (a, [CodeAttribute], [Instruction])
-runCodeBuilderT = fmap rr . flip runStateT initialCodeState . unCodeBuilderT
+codeBuilderToState :: (Member (State CodeState) r) => Sem (CodeBuilder ': r) a -> Sem r a
+codeBuilderToState = interpret $ \case
+    AddCodeAttribute ca -> modify (\s -> s{attributes = s.attributes `TML.snoc` ca})
+    NewLabel -> do
+        s@CodeState{labelSource = ls} <- get
+        case ls of
+            [] -> error "No more labels"
+            l : ls' -> do
+                put (s{labelSource = ls'})
+                pure l
+    Emit' is -> modify (\s -> s{code = reverse is <> s.code})
+    -- code is a snoc list (kind of)
+    GetCode -> gets (.code)
 
-runCodeBuilder' :: CodeBuilder a -> (a, [CodeAttribute], [Instruction])
-runCodeBuilder' = rr . runIdentity . flip runStateT initialCodeState . unCodeBuilderT
-
-runCodeBuilderT' :: (Monad m) => CodeBuilderT m a -> m (a, [CodeAttribute], [Instruction])
-runCodeBuilderT' = fmap rr . flip runStateT initialCodeState . unCodeBuilderT
+runCodeBuilder :: forall r a. Sem (CodeBuilder ': r) a -> Sem r (a, [CodeAttribute], [Instruction])
+runCodeBuilder =
+    fmap rr
+        . runState initialCodeState
+        . codeBuilderToState
+        . raiseUnder
+  where
+    rr (s, a) =
+        ( a
+        , TML.toList s.attributes
+        , reverse s.code
+        )

@@ -6,14 +6,16 @@ Because of the specialised nature, its indexes start at 1, not 0. I would apolog
 -}
 module Data.IndexedMap where
 
-import Control.Lens (Lens', assign, use)
+import Control.Lens (Lens', set, view)
 import Control.Monad (forM_)
-import Control.Monad.State (MonadState, execState)
+
 import Data.IntMap qualified as IM
 import Data.Map qualified as M
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import GHC.Exts (IsList (..))
+import Polysemy
+import Polysemy.State
 import Prelude hiding (lookup)
 
 data IndexedMap a = IndexedMap !(IM.IntMap a) !(M.Map a Int)
@@ -70,14 +72,14 @@ lookupOrInsert a (IndexedMap m m') = case M.lookup a m' of
     Just i -> (i, IndexedMap m m')
     Nothing -> insert a (IndexedMap m m')
 
-lookupOrInsertM :: (Ord a, MonadState (IndexedMap a) m) => a -> m Int
+lookupOrInsertM :: (Member (State (IndexedMap a)) r, Ord a) => a -> Sem r Int
 lookupOrInsertM = lookupOrInsertMOver id
 
-lookupOrInsertMOver :: (MonadState a m, Ord b) => Lens' a (IndexedMap b) -> b -> m Int
+lookupOrInsertMOver :: (Member (State a) r, Ord b) => Lens' a (IndexedMap b) -> b -> Sem r Int
 lookupOrInsertMOver lens a = do
-    i <- use lens
+    i <- gets (view lens)
     let (idx, new) = lookupOrInsert a i
-    assign lens new
+    modify (set lens new)
     pure idx
 
 isEmpty :: IndexedMap a -> Bool
@@ -127,7 +129,7 @@ instance (Ord a) => IsList (IndexedMap a) where
 -}
 instance (Ord a) => Semigroup (IndexedMap a) where
     l <> r =
-        flip execState empty $ do
+        run $ execState empty $ do
             forM_ (toVector l) lookupOrInsertM
             forM_ (toVector r) lookupOrInsertM
 

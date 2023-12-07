@@ -1,14 +1,17 @@
+{-# LANGUAGE ConstraintKinds #-}
+
 module JVM.Data.Convert.Monad where
 
-import Control.Monad.Except
 import Data.Word (Word16)
 import JVM.Data.Abstract.Builder.Label
-import JVM.Data.Convert.ConstantPool (ConstantPoolState, ConstantPoolT, runConstantPoolT)
+import JVM.Data.Convert.ConstantPool (ConstantPool, ConstantPoolState, runConstantPool)
+import Polysemy
+import Polysemy.Error
 
-type ConvertM = ConstantPoolT (Except CodeConverterError)
+type ConvertEff r = Members '[ConstantPool, Error CodeConverterError]r
 
-runConvertM :: ConvertM a -> Either CodeConverterError (a, ConstantPoolState)
-runConvertM = runExcept . runConstantPoolT
+runConvertM :: Sem (ConstantPool : Error CodeConverterError : r) a -> Sem r (Either CodeConverterError (a, ConstantPoolState))
+runConvertM = runError . runConstantPool
 
 data CodeConverterError
     = DuplicateLabel Label Word16

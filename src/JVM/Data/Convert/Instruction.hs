@@ -4,10 +4,8 @@
  This includes resolving labels into offsets
  TODO: this is very inefficient, requiring three passes over the instructions
 -}
-module JVM.Data.Convert.Instruction (CodeConverter, fullyRunCodeConverter, convertInstructions, fullyResolveAbs) where
+module JVM.Data.Convert.Instruction (CodeConverterEff, fullyRunCodeConverter, convertInstructions, fullyResolveAbs) where
 
-import Control.Monad.Except
-import Control.Monad.State
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Maybe
@@ -20,25 +18,17 @@ import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
 import Data.Word (Word16)
-import JVM.Data.Convert.Monad (CodeConverterError (..), ConvertM)
+import JVM.Data.Convert.Monad
+import Polysemy
+import Polysemy.Error
+import Polysemy.State
 
-newtype CodeConverter a = CodeConverter (StateT ConvertState (ConstantPoolT (Except CodeConverterError)) a)
-    deriving (Functor, Applicative, Monad, MonadState ConvertState)
+type CodeConverterEff r = Members '[ConstantPool, State ConvertState, Error CodeConverterError] r
 
-unCodeConverter :: CodeConverter a -> StateT ConvertState (ConstantPoolT (Except CodeConverterError)) a
-unCodeConverter (CodeConverter m) = m
-
-instance MonadConstantPool CodeConverter where
-    findIndexOf = CodeConverter . lift . findIndexOf
-
-fullyRunCodeConverter :: CodeConverter a -> ConvertM a
-fullyRunCodeConverter xs = do
-    (a, _) <- runStateT (unCodeConverter xs) (ConvertState 0 Map.empty)
+fullyRunCodeConverter :: (ConvertEff r') => Sem (State ConvertState : r') a -> Sem r' a
+fullyRunCodeConverter r = do
+    (_, a) <- runState (ConvertState 0 Map.empty) r
     pure a
-
-instance MonadError CodeConverterError CodeConverter where
-    throwError = CodeConverter . lift . throwError
-    catchError (CodeConverter m) f = CodeConverter (catchError m (unCodeConverter . f))
 
 data ConvertState = ConvertState
     { currentOffset :: Word16
@@ -97,10 +87,10 @@ instructionSize Abs.Return = 1
 instructionSize Abs.Dup = 1
 instructionSize (Abs.Goto _) = 3
 
-convertInstructions :: [Abs.Instruction] -> CodeConverter [Raw.Instruction]
+convertInstructions :: (CodeConverterEff r) => [Abs.Instruction] -> Sem r [Raw.Instruction]
 convertInstructions xs = do
     withOffsets <- insertAllLabels xs
-    insts <- traverse resolveLabel (fmap (fmap UnresolvedLabel) <$> withOffsets)
+    insts <- traverse (resolveLabel . fmap (fmap UnresolvedLabel)) withOffsets
     catMaybes <$> traverse convertInstruction insts
 
 data MaybeResolvedLabel = ResolvedLabel Word16 | UnresolvedLabel Label
@@ -109,22 +99,22 @@ data OffsetInstruction a = OffsetInstruction Word16 a
     deriving (Show, Eq, Ord, Functor)
 
 -- | Inserts the corresponding label offsets into the state
-insertAllLabels :: [Abs.Instruction] -> CodeConverter [OffsetInstruction Abs.Instruction]
+insertAllLabels :: (CodeConverterEff r) => [Abs.Instruction] -> Sem r [OffsetInstruction Abs.Instruction]
 insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
   where
-    incOffset :: Abs.Instruction -> CodeConverter ()
+    incOffset :: (CodeConverterEff r) => Abs.Instruction -> Sem r ()
     incOffset (Label _) = pure () -- Label instructions have no representation in the bytecode, so they don't affect the offset
     incOffset inst = do
         offset <- gets (.currentOffset)
         modify (\s -> s{currentOffset = offset + instructionSize inst})
 
-    insertLabel :: Abs.Instruction -> CodeConverter (OffsetInstruction Abs.Instruction)
+    insertLabel :: (CodeConverterEff r) => Abs.Instruction -> Sem r (OffsetInstruction Abs.Instruction)
     insertLabel (Label l) = do
         currentOffset <- gets (.currentOffset)
 
-        CodeConverter $ modifyM $ \s -> do
+        modifyM $ \s -> do
             case Map.lookup l s.labelOffsets of
-                Just _ -> throwError (DuplicateLabel l currentOffset)
+                Just _ -> throw (DuplicateLabel l currentOffset)
                 Nothing -> do
                     pure (s{labelOffsets = Map.insert l currentOffset s.labelOffsets})
         pure (OffsetInstruction (error "Label offset should not be evaluated") (Label l))
@@ -132,13 +122,11 @@ insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
         offset <- gets (.currentOffset)
         pure (OffsetInstruction (offset - instructionSize x) x)
 
-modifyM :: (Monad m) => (s -> m s) -> StateT s m ()
-modifyM f = StateT $ \s -> do
-    s' <- f s
-    return ((), s')
+modifyM :: (Member (State s) r) => (s -> Sem r s) -> Sem r ()
+modifyM f = get >>= f >>= put
 
 -- | Turns labels into offsets where possible
-resolveLabel :: OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> CodeConverter (OffsetInstruction (Abs.Instruction' MaybeResolvedLabel))
+resolveLabel :: (CodeConverterEff r) => OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> Sem r (OffsetInstruction (Abs.Instruction' MaybeResolvedLabel))
 resolveLabel (OffsetInstruction instOffset inst) =
     OffsetInstruction instOffset <$> case inst of
         Abs.IfEq l -> Abs.IfEq <$> resolveLabelAbs l
@@ -150,13 +138,13 @@ resolveLabel (OffsetInstruction instOffset inst) =
         Abs.Goto l -> Abs.Goto <$> resolveLabelAbs l
         _ -> pure inst
 
-fullyResolveAbs :: Label -> CodeConverter Word16
+fullyResolveAbs :: (CodeConverterEff r) => Label -> Sem r Word16
 fullyResolveAbs l = do
     x <- resolveLabelAbs (UnresolvedLabel l)
     mustBeResolvedAbs x
 
 -- | Attempt to resolve a label to an __absolute__ offset
-resolveLabelAbs :: MaybeResolvedLabel -> CodeConverter MaybeResolvedLabel
+resolveLabelAbs :: (CodeConverterEff r) => MaybeResolvedLabel -> Sem r MaybeResolvedLabel
 resolveLabelAbs r@(ResolvedLabel _) = pure r
 resolveLabelAbs (UnresolvedLabel l) = do
     offset <- gets (Map.lookup l . (.labelOffsets))
@@ -165,14 +153,14 @@ resolveLabelAbs (UnresolvedLabel l) = do
         Nothing -> pure (UnresolvedLabel l)
 
 -- | Attempt to resolve a label to an __absolute__ offset, throwing an error if it cannot be resolved
-mustBeResolvedAbs :: MaybeResolvedLabel -> CodeConverter Word16
+mustBeResolvedAbs :: (CodeConverterEff r) => MaybeResolvedLabel -> Sem r Word16
 mustBeResolvedAbs (ResolvedLabel i) = pure i
-mustBeResolvedAbs (UnresolvedLabel l) = throwError (UnmarkedLabel l)
+mustBeResolvedAbs (UnresolvedLabel l) = throw (UnmarkedLabel l)
 
-mustBeResolved :: Word16 -> MaybeResolvedLabel -> CodeConverter Word16
+mustBeResolved :: (CodeConverterEff r) => Word16 -> MaybeResolvedLabel -> Sem r Word16
 mustBeResolved instOffset = fmap (- instOffset) . mustBeResolvedAbs
 
-convertInstruction :: OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> CodeConverter (Maybe Raw.Instruction)
+convertInstruction :: (CodeConverterEff r) => OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> Sem r (Maybe Raw.Instruction)
 convertInstruction (OffsetInstruction _ (Abs.Label _)) = pure Nothing
 convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstruction o
   where

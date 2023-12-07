@@ -9,11 +9,13 @@ import JVM.Data.Convert.Instruction (convertInstructions, fullyRunCodeConverter)
 import JVM.Data.Convert.Monad (runConvertM)
 import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec (HasCallStack)
+import Polysemy
 
 runConv :: (MonadTest m) => [Abs.Instruction] -> m ([Raw.Instruction], ConstantPoolState)
 runConv =
     withFrozenCallStack $
         shouldBeRight
+            . run
             . runConvertM
             . fullyRunCodeConverter
             . convertInstructions
