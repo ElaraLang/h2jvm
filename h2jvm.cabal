@@ -21,7 +21,7 @@ name:            h2jvm
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version:         0.5.4.6
+version:         0.5.4.7
 
 -- A short (one-line) description of the package.
 synopsis:

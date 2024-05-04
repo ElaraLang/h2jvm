@@ -107,7 +107,7 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     analyseInstruction (PutStatic{}) ba = ba{stack = tail ba.stack}
     analyseInstruction (GetField _ _ ft) ba = ba{stack = StackEntry ft : tail ba.stack}
     analyseInstruction (GetStatic _ _ ft) ba = ba{stack = StackEntry ft : ba.stack}
-    analyseInstruction (PutField {}) ba = ba{stack = tail $ tail ba.stack}
+    analyseInstruction (PutField{}) ba = ba{stack = tail $ tail ba.stack}
     analyseInstruction (Goto _) ba = ba
     analyseInstruction (LDC l) ba = ba{stack = StackEntry (ldcEntryToFieldType l) : ba.stack}
 

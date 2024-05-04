@@ -43,7 +43,7 @@ data Instruction' label
     | PutStatic ClassInfoType Text FieldType
     | GetField ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType
-    | PutField ClassInfoType Text FieldType 
+    | PutField ClassInfoType Text FieldType
     | Goto label
     | CheckCast ClassInfoType
     | Return
