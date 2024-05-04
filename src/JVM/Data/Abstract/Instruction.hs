@@ -43,6 +43,7 @@ data Instruction' label
     | PutStatic ClassInfoType Text FieldType
     | GetField ClassInfoType Text FieldType
     | GetStatic ClassInfoType Text FieldType
+    | PutField ClassInfoType Text FieldType 
     | Goto label
     | CheckCast ClassInfoType
     | Return
@@ -71,6 +72,7 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty (PutStatic c n t) = "putstatic" <+> pretty c <> "." <> pretty n <+> pretty t
     pretty (GetField c n t) = "getfield" <+> pretty c <> "." <> pretty n <+> pretty t
     pretty (GetStatic c n t) = "getstatic" <+> pretty c <> "." <> pretty n <+> pretty t
+    pretty (PutField c n t) = "putfield" <+> pretty c <> "." <> pretty n <+> pretty t
     pretty (Goto l) = "goto" <+> pretty l
     pretty (CheckCast c) = "checkcast" <+> pretty c
     pretty Return = "return"
