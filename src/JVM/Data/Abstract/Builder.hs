@@ -5,7 +5,7 @@
 module JVM.Data.Abstract.Builder where
 
 import Data.TypeMergingList qualified as TML
-import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute (BootstrapMethods), methods, InnerClassInfo)
+import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute (BootstrapMethods), InnerClassInfo, methods)
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
 import JVM.Data.Abstract.ClassFile.Field
 import JVM.Data.Abstract.ClassFile.Method
