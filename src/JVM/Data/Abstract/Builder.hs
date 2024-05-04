@@ -1,13 +1,11 @@
-{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 -- | Provides a monadic interface for building class files in a high-level format.
 module JVM.Data.Abstract.Builder where
 
 import Data.TypeMergingList qualified as TML
-import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute (BootstrapMethods), methods)
+import JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute (BootstrapMethods), methods, InnerClassInfo)
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
 import JVM.Data.Abstract.ClassFile.Field
 import JVM.Data.Abstract.ClassFile.Method
@@ -19,6 +17,7 @@ import Polysemy.State
 
 data ClassBuilder m a where
     ModifyClass :: (ClassFile -> ClassFile) -> ClassBuilder m ()
+    GetClass :: ClassBuilder m ClassFile
 
 makeSem ''ClassBuilder
 
@@ -27,6 +26,9 @@ addAccessFlag flag = modifyClass (\c -> c{accessFlags = flag : c.accessFlags})
 
 setName :: (Member ClassBuilder r) => QualifiedClassName -> Sem r ()
 setName n = modifyClass (\c -> c{name = n})
+
+getName :: (Member ClassBuilder r) => Sem r QualifiedClassName
+getName = (.name) <$> getClass
 
 setVersion :: (Member ClassBuilder r) => JVMVersion -> Sem r ()
 setVersion v = modifyClass (\c -> c{version = v})
@@ -65,6 +67,7 @@ dummyClass name version =
 classBuilderToState :: (Member (State ClassFile) r) => Sem (ClassBuilder ': r) a -> Sem r a
 classBuilderToState = interpret $ \case
     ModifyClass f -> modify f
+    GetClass -> get
 
 runClassBuilder :: QualifiedClassName -> JVMVersion -> Sem (ClassBuilder : r) a -> Sem r (ClassFile, a)
 runClassBuilder n v =
