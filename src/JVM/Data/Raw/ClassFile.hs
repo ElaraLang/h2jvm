@@ -79,11 +79,20 @@ data Attribute
         , exceptionTable :: Vector ExceptionTableEntry
         , codeAttributes :: Vector AttributeInfo
         }
+    | InnerClassesAttribute (Vector InnerClassInfo)
     | LineNumberTableAttribute (Vector LineNumberTableEntry)
     | StackMapTableAttribute (Vector StackMapFrame)
     | ConstantValueAttribute Word16
     | SourceFileAttribute Word16
     | BootstrapMethodsAttribute (Vector BootstrapMethod)
+    deriving (Show)
+
+data InnerClassInfo = InnerClassInfo
+    { innerClassInfo :: Word16
+    , outerClassInfo :: Word16
+    , innerName :: Word16
+    , accessFlags :: Word16
+    }
     deriving (Show)
 
 data LineNumberTableEntry = LineNumberTableEntry

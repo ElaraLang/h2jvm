@@ -34,7 +34,17 @@ convertClassAttributes = traverse convertClassAttribute
         nameIndex <- findIndexOf (CPUTF8Entry "SourceFile")
         textIndex <- findIndexOf (CPUTF8Entry text)
         pure $ Raw.AttributeInfo nameIndex (Raw.SourceFileAttribute textIndex)
-    convertClassAttribute o = error $ "Unsupported class attribute: " <> show o
+    convertClassAttribute (Abs.InnerClasses classes) = do
+        nameIndex <- findIndexOf (CPUTF8Entry "InnerClasses")
+        classes' <- traverse convertInnerClass classes
+        pure $ Raw.AttributeInfo nameIndex (Raw.InnerClassesAttribute (V.fromList classes'))
+
+    convertInnerClass Abs.InnerClassInfo{..} = do
+        innerIndex <- findIndexOf (CPClassEntry $ ClassInfoType innerClassInfo)
+        outerIndex <- (findIndexOf . CPClassEntry . ClassInfoType) outerClassInfo
+        nameIndex <- (findIndexOf . CPUTF8Entry) innerName
+        let innerFlags = accessFlagsToWord16 accessFlags
+        pure $ Raw.InnerClassInfo innerIndex outerIndex nameIndex innerFlags
 
 convert :: Abs.ClassFile -> Either CodeConverterError Raw.ClassFile
 convert Abs.ClassFile{..} = do
