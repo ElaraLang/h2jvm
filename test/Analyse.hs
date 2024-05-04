@@ -1,8 +1,5 @@
 module Analyse where
 
-import Control.Monad (guard)
-import Control.Monad.IO.Class
-import Data.List.NonEmpty qualified as NE
 import Hedgehog
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
@@ -13,7 +10,7 @@ import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.ClassFile.Method (StackMapFrame (..), VerificationTypeInfo (..))
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Instruction
-import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, calculateStackMapFrames, frameDiffToSMF, splitIntoBasicBlocks, topFrame)
+import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, frameDiffToSMF, splitIntoBasicBlocks, topFrame)
 import Polysemy
 import Test.Hspec
 import Test.Hspec.Hedgehog
