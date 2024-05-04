@@ -38,6 +38,7 @@ convertClassAttributes = traverse convertClassAttribute
         nameIndex <- findIndexOf (CPUTF8Entry "InnerClasses")
         classes' <- traverse convertInnerClass classes
         pure $ Raw.AttributeInfo nameIndex (Raw.InnerClassesAttribute (V.fromList classes'))
+    convertClassAttribute other = error $ "Unsupported class attribute: " <> show other
 
     convertInnerClass Abs.InnerClassInfo{..} = do
         innerIndex <- findIndexOf (CPClassEntry $ ClassInfoType innerClassInfo)

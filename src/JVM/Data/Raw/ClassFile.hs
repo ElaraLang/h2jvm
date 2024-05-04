@@ -202,6 +202,16 @@ putAttribute (CodeAttribute maxStack maxLocals code exceptionTable codeAttribute
     putByteString codeStr
     putExceptionTable exceptionTable
     putAttributes codeAttributes
+putAttribute (InnerClassesAttribute classes) = do
+    putWord16be $ fromIntegral $ V.length classes
+    mapM_ putInnerClassInfo classes
+  where
+    putInnerClassInfo :: InnerClassInfo -> Put
+    putInnerClassInfo InnerClassInfo{..} = do
+        putWord16be innerClassInfo
+        putWord16be outerClassInfo
+        putWord16be innerName
+        putWord16be accessFlags
 putAttribute (SourceFileAttribute sfIndex) = do
     putWord16be sfIndex
 putAttribute (BootstrapMethodsAttribute bms) = do
