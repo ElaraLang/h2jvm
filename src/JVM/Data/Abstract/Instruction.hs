@@ -36,6 +36,7 @@ data Instruction' label
     | InvokeInterface ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | InvokeDynamic BootstrapMethod Text MethodDescriptor
+    | InvokeSpecial ClassInfoType Text MethodDescriptor
     | ILoad U1
     | IStore U1
     | Label label
@@ -47,6 +48,7 @@ data Instruction' label
     | Goto label
     | CheckCast ClassInfoType
     | Return
+    | New ClassInfoType
     deriving (Show, Eq, Ord, Functor, Generic, Data)
 
 instance (Pretty label) => Pretty (Instruction' label) where
@@ -65,6 +67,7 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty (InvokeInterface c n d) = "invokeinterface" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (InvokeVirtual c n d) = "invokevirtual" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (InvokeDynamic b n d) = "invokedynamic" <+> pretty b <> "." <> pretty n <> pretty d
+    pretty (InvokeSpecial c n d) = "invokespecial" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (ILoad x) = "iload" <+> pretty x
     pretty (IStore x) = "istore" <+> pretty x
     pretty (Label l) = ":" <> pretty l
@@ -76,6 +79,7 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty (Goto l) = "goto" <+> pretty l
     pretty (CheckCast c) = "checkcast" <+> pretty c
     pretty Return = "return"
+    pretty (New c) = "new" <+> pretty c
 
 jumpTarget :: Instruction' label -> Maybe label
 jumpTarget (IfEq l) = Just l

@@ -77,6 +77,7 @@ instructionSize (Abs.InvokeStatic{}) = 3
 instructionSize (Abs.InvokeVirtual{}) = 3
 instructionSize (Abs.InvokeInterface{}) = 5
 instructionSize (Abs.InvokeDynamic{}) = 5
+instructionSize (Abs.InvokeSpecial{}) = 3
 instructionSize (Abs.Label _) = 0
 instructionSize (Abs.LDC _) = 2
 instructionSize (Abs.PutStatic{}) = 3
@@ -87,6 +88,7 @@ instructionSize (Abs.CheckCast _) = 3
 instructionSize Abs.Return = 1
 instructionSize Abs.Dup = 1
 instructionSize (Abs.Goto _) = 3
+instructionSize (Abs.New _) = 3
 
 convertInstructions :: (CodeConverterEff r) => [Abs.Instruction] -> Sem r [Raw.Instruction]
 convertInstructions xs = do
@@ -196,6 +198,9 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
         idx <- findIndexOf (CPInterfaceMethodRefEntry (MethodRef c n m))
         let count = countArguments m
         pure (Raw.InvokeInterface idx (fromIntegral count))
+    convertInstruction (Abs.InvokeSpecial c n m) = do
+        idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))
+        pure (Raw.InvokeSpecial idx)
     convertInstruction (Abs.LDC ldc) = do
         idx <-
             findIndexOf
@@ -237,3 +242,6 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.IfLe offset) = Raw.IfLe <$> mustBeResolved instOffset offset
     convertInstruction (Abs.Goto offset) = Raw.Goto <$> mustBeResolved instOffset offset
     convertInstruction (Abs.Label _) = error "unreachable"
+    convertInstruction (Abs.New t) = do
+        idx <- findIndexOf (CPClassEntry t)
+        pure (Raw.New idx)

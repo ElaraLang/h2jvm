@@ -104,12 +104,14 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     analyseInstruction (InvokeVirtual _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (1 + length md.params) ba.stack}
     analyseInstruction (InvokeInterface _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (length md.params) ba.stack}
     analyseInstruction (InvokeDynamic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (1 + length md.params) ba.stack}
+    analyseInstruction (InvokeSpecial _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (1 + length md.params) ba.stack}
     analyseInstruction (PutStatic{}) ba = ba{stack = tail ba.stack}
     analyseInstruction (GetField _ _ ft) ba = ba{stack = StackEntry ft : tail ba.stack}
     analyseInstruction (GetStatic _ _ ft) ba = ba{stack = StackEntry ft : ba.stack}
     analyseInstruction (PutField{}) ba = ba{stack = tail $ tail ba.stack}
     analyseInstruction (Goto _) ba = ba
     analyseInstruction (LDC l) ba = ba{stack = StackEntry (ldcEntryToFieldType l) : ba.stack}
+    analyseInstruction (New t) ba = ba{stack = StackEntry (classInfoTypeToFieldType t) : ba.stack}
 
 frameDiffToSMF :: (HasCallStack) => Frame -> BasicBlock -> StackMapFrame
 frameDiffToSMF f1@(Frame locals1 stack1) bb = do
