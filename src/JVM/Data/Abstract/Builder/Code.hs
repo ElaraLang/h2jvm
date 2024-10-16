@@ -1,3 +1,4 @@
+{-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
@@ -6,7 +7,7 @@ module JVM.Data.Abstract.Builder.Code where
 import Data.TypeMergingList (TypeMergingList)
 import Data.TypeMergingList qualified as TML
 import JVM.Data.Abstract.Builder.Label
-import JVM.Data.Abstract.ClassFile.Method hiding (code)
+import JVM.Data.Abstract.ClassFile.Method (CodeAttribute)
 import JVM.Data.Abstract.Instruction
 import Polysemy
 import Polysemy.State

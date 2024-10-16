@@ -28,7 +28,7 @@
 
           autoWire = [ "packages" "apps" "checks" ]; # Wire all but the devShell
 
-          basePackages = pkgs.haskell.packages.ghc94;
+          basePackages = pkgs.haskell.packages.ghc98;
 
           devShell = {
             tools = hp: {
@@ -42,7 +42,7 @@
             # fourmolu.source = "0.11.0.0";
             hedgehog.source = "1.4";
             tasty-hedgehog.source = "1.4.0.2";
-
+            hlint.source = "3.8";
           };
 
           settings = {
