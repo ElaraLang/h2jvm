@@ -3,7 +3,7 @@ module JVM.Data.Abstract.ClassFile.Field where
 import Data.Text (Text)
 import JVM.Data.Abstract.ClassFile.AccessFlags (FieldAccessFlag)
 import JVM.Data.Abstract.Type (FieldType)
-import JVM.Data.Pretty (Pretty (pretty))
+import JVM.Data.Pretty (Pretty (pretty), hsep, (<+>))
 import JVM.Data.Raw.Types (JVMDouble, JVMFloat, JVMInt, JVMLong, JVMString)
 
 data ClassFileField = ClassFileField
@@ -29,7 +29,7 @@ data ConstantValue
 
 instance Pretty ClassFileField where
     pretty (ClassFileField accessFlags name fieldType attributes) =
-        pretty accessFlags <> " " <> pretty fieldType <> " " <> pretty name <> " " <> pretty attributes
+        hsep (pretty <$> accessFlags) <+> pretty fieldType <> " " <> pretty name <> " " <> pretty attributes
 
 instance Pretty FieldAttribute where
     pretty (ConstantValue v) = "ConstantValue " <> pretty v

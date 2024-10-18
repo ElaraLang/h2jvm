@@ -63,7 +63,7 @@ data InnerClassInfo = InnerClassInfo
 
 instance Pretty ClassFile where
     pretty ClassFile{name, version, accessFlags, superClass, interfaces, fields, methods, attributes} =
-        pretty accessFlags
+        hsep (pretty <$> accessFlags)
             <+> "class"
             <+> pretty name
             <+> parens (pretty version)
