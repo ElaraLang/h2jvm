@@ -5,13 +5,15 @@ module JVM.Data.Abstract.ClassFile where
 
 import Data.Data
 import Data.Text (Text)
-import Data.TypeMergingList (DataMergeable (merge), TypeMergingList, errorDifferentConstructors)
+import Data.TypeMergingList (DataMergeable (merge), TypeMergingList, errorDifferentConstructors, toList)
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
 import JVM.Data.Abstract.ClassFile.Field (ClassFileField)
 import JVM.Data.Abstract.ClassFile.Method (ClassFileMethod)
 import JVM.Data.Abstract.ConstantPool (BootstrapMethod)
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion (JVMVersion)
+import JVM.Data.Pretty
+import Prettyprinter (encloseSep, line, parens)
 
 data ClassFile = ClassFile
     { name :: QualifiedClassName
@@ -58,3 +60,34 @@ data InnerClassInfo = InnerClassInfo
     , accessFlags :: [ClassAccessFlag]
     }
     deriving (Show, Eq, Data)
+
+instance Pretty ClassFile where
+    pretty ClassFile{name, version, accessFlags, superClass, interfaces, fields, methods, attributes} =
+        pretty accessFlags
+            <+> "class"
+            <+> pretty name
+            <+> parens (pretty version)
+            <+> maybe "" (("extends" <+>) . pretty) superClass
+            <+> (if null interfaces then "" else "implements" <+> pretty interfaces)
+            <+> body
+      where
+        body = encloseSep open close sep (map pretty fields ++ map pretty methods ++ map pretty (toList attributes))
+        open = "{"
+        close = "}"
+        sep = line
+
+instance Pretty ClassFileAttribute where
+    pretty (InnerClasses xs) = "InnerClasses" <+> pretty xs
+    pretty EnclosingMethod = "EnclosingMethod"
+    pretty Synthetic = "Synthetic"
+    pretty Signature = "Signature"
+    pretty (SourceFile x) = "SourceFile" <+> pretty x
+    pretty SourceDebugExtension = "SourceDebugExtension"
+    pretty Deprecated = "Deprecated"
+    pretty RuntimeVisibleAnnotations = "RuntimeVisibleAnnotations"
+    pretty RuntimeInvisibleAnnotations = "RuntimeInvisibleAnnotations"
+    pretty (BootstrapMethods xs) = "BootstrapMethods" <+> pretty xs
+
+instance Pretty InnerClassInfo where
+    pretty InnerClassInfo{innerClassInfo, outerClassInfo, innerName, accessFlags} =
+        pretty accessFlags <+> "inner class" <+> pretty innerClassInfo <+> "in" <+> pretty outerClassInfo <+> "named" <+> pretty innerName

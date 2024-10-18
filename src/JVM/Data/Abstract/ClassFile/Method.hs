@@ -10,6 +10,7 @@ import GHC.Generics (Generic)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)
+import JVM.Data.Pretty (Pretty (pretty))
 import JVM.Data.Raw.Types (U1, U2)
 
 data ClassFileMethod = ClassFileMethod
@@ -88,3 +89,44 @@ data LineNumberTableEntry = LineNumberTableEntry
     , lineNumberTableEntryLineNumber :: U2
     }
     deriving (Show, Data, Eq)
+
+instance Pretty ClassFileMethod where
+    pretty (ClassFileMethod accessFlags name descriptor attributes) =
+        pretty accessFlags <> " " <> pretty descriptor <> " " <> pretty name <> " " <> pretty attributes
+
+instance Pretty MethodAttribute where
+    pretty (Code a) = "Code " <> pretty a
+
+instance Pretty CodeAttributeData where
+    pretty CodeAttributeData{maxStack, maxLocals, code, exceptionTable, codeAttributes} =
+        "CodeAttributeData " <> pretty maxStack <> " " <> pretty maxLocals <> " " <> pretty code <> " " <> pretty exceptionTable <> " " <> pretty codeAttributes
+
+instance Pretty ExceptionTableEntry where
+    pretty ExceptionTableEntry{startPc, endPc, handlerPc, catchType} =
+        "ExceptionTableEntry " <> pretty startPc <> " " <> pretty endPc <> " " <> pretty handlerPc <> " " <> pretty catchType
+
+instance Pretty CodeAttribute where
+    pretty (LineNumberTable a) = "LineNumberTable " <> pretty a
+    pretty (StackMapTable a) = "StackMapTable " <> pretty a
+
+instance Pretty StackMapFrame where
+    pretty (SameFrame a) = "SameFrame " <> pretty a
+    pretty (ChopFrame a b) = "ChopFrame " <> pretty a <> " " <> pretty b
+    pretty (SameLocals1StackItemFrame a b) = "SameLocals1StackItemFrame " <> pretty a <> " " <> pretty b
+    pretty (AppendFrame a b) = "AppendFrame " <> pretty a <> " " <> pretty b
+    pretty (FullFrame a b c) = "FullFrame " <> pretty a <> " " <> pretty b <> " " <> pretty c
+
+instance Pretty VerificationTypeInfo where
+    pretty TopVariableInfo = "TopVariableInfo"
+    pretty IntegerVariableInfo = "IntegerVariableInfo"
+    pretty FloatVariableInfo = "FloatVariableInfo"
+    pretty LongVariableInfo = "LongVariableInfo"
+    pretty DoubleVariableInfo = "DoubleVariableInfo"
+    pretty NullVariableInfo = "NullVariableInfo"
+    pretty UninitializedThisVariableInfo = "UninitializedThisVariableInfo"
+    pretty (ObjectVariableInfo a) = "ObjectVariableInfo " <> pretty a
+    pretty (UninitializedVariableInfo a) = "UninitializedVariableInfo " <> pretty a
+
+instance Pretty LineNumberTableEntry where
+    pretty LineNumberTableEntry{lineNumberTableEntryStartPc, lineNumberTableEntryLineNumber} =
+        "LineNumberTableEntry " <> pretty lineNumberTableEntryStartPc <> " " <> pretty lineNumberTableEntryLineNumber

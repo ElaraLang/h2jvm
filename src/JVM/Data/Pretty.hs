@@ -14,5 +14,7 @@ showPretty = fromString . unpack . renderStrict . layoutPretty defaultLayoutOpti
 
 instance Pretty (Doc a) where
     pretty = unAnnotate
+
+
 tracePrettyId :: (Pretty a) => a -> a
 tracePrettyId a = trace (showPretty a) a

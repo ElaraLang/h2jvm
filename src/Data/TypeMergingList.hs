@@ -26,6 +26,7 @@ import Data.Vector (Vector)
 import Data.Vector qualified as V
 import GHC.Generics (Generic)
 import GHC.IsList qualified as L
+import JVM.Data.Pretty (Pretty (pretty))
 
 newtype TypeMergingList a = TypeMergingList [a]
     deriving (Eq, Ord, Show)
@@ -86,3 +87,6 @@ instance (DataMergeable a) => L.IsList (TypeMergingList a) where
 
 instance Foldable TypeMergingList where
     foldMap f (TypeMergingList xs) = foldMap f xs
+
+instance (Pretty a) => Pretty (TypeMergingList a) where
+    pretty (TypeMergingList xs) = foldMap pretty xs
