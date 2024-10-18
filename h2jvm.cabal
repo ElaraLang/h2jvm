@@ -163,11 +163,11 @@ test-suite h2jvm-test
 
   -- Test dependencies.
   build-depends:
-    , base             ^>=4.17.1.0
+    , base             >=4.17.1.0
     , binary
     , bytestring
     , h2jvm
-    , hedgehog         ^>=1.4
+    , hedgehog         >=1.4
     , hspec
     , hspec-hedgehog
     , polysemy
