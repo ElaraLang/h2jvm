@@ -17,7 +17,7 @@ import Test.Hspec.Hedgehog
 
 genPrimitiveType :: Gen PrimitiveType
 genPrimitiveType =
-    Gen.element
+    Gen.element @[]
         [ Byte
         , Char
         , Double
