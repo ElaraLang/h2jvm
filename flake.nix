@@ -1,117 +1,93 @@
 {
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    systems.url = "github:nix-systems/default";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    haskell-flake.url = "github:srid/haskell-flake";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
-    flake-root.url = "github:srid/flake-root";
-    mission-control.url = "github:Platonic-Systems/mission-control";
+  description = "A Haskell project";
+  inputs.hix.url = "git+https://git.tryp.io/tek/hix";
+  outputs = {hix, ...}: hix.lib.pro {
+    ghcVersions = ["ghc98" "ghc910"];
+    compiler = "ghc910";
 
-  };
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-
-      systems = import inputs.systems;
-
-      imports = with inputs; [
-        haskell-flake.flakeModule
-        treefmt-nix.flakeModule
-        flake-root.flakeModule
-        mission-control.flakeModule
-      ];
-
-      perSystem = { self', config, pkgs, ... }: {
-
-        haskellProjects.default = {
-
-          autoWire = [ "packages" "apps" "checks" ]; # Wire all but the devShell
-
-          basePackages = pkgs.haskell.packages.ghc98;
-
-          devShell = {
-            tools = hp: {
-              treefmt = config.treefmt.build.wrapper;
-            } // config.treefmt.build.programs;
-
-            hlsCheck.enable = false;
-          };
-
-          packages = {
-            # fourmolu.source = "0.11.0.0";
-            hedgehog.source = "1.4";
-            tasty-hedgehog.source = "1.4.0.2";
-            hlint.source = "3.8";
-          };
-
-          settings = {
-            ghcid = {
-              separateBinOutput = false;
-              check = false;
-            };
-            fourmolu.check = false;
-            hw-fingertree.check = false;
-            hw-prim.check = false;
+    packages = {
+      h2jvm = {
+        src = ./.;
+        cabal = {
+          author = "Alexander Wood";
+          build-type = "Simple";
+          license = "MIT";
+          license-file = "LICENSE";
+          version = "0.5.4.9";
+          meta = {
+            maintainer = "alexljwood24@hotmail.co.uk";
+            synopsis = "Haskell library for writing JVM bytecode in a high level format";
           };
         };
-
-
-
-        treefmt.config = {
-          inherit (config.flake-root) projectRootFile;
-          package = pkgs.treefmt;
-
-          programs.ormolu.enable = true;
-          programs.nixpkgs-fmt.enable = true;
-          programs.cabal-fmt.enable = true;
-          programs.hlint.enable = false;
-
-          programs.ormolu.package = pkgs.haskellPackages.fourmolu;
-          settings.formatter.ormolu.options = [
-            "--ghc-opt"
-            "-XImportQualifiedPost"
+        library = {
+          enable = true;
+          dependencies = [
+            "binary"
+            "bytestring"
+            "containers"
+            "generic-lens"
+            "lens >=5.0"
+            "polysemy"
+            "polysemy-plugin"
+            "prettyprinter"
+            "split"
+            "text"
+            "vector"
+          ];
+          default-extensions = [
+            "DataKinds"
+            "GADTs"
+            "NoFieldSelectors"
+            "OverloadedRecordDot"
+            "OverloadedStrings"
+            "TypeFamilies"
+          ];
+          source-dirs = "src";
+          language = "GHC2021";
+          ghc-options = [
+            "-Wall"
+            "-Wunused-packages"
+            "-Wno-name-shadowing"
+            "-Werror=incomplete-patterns"
+            "-fplugin=Polysemy.Plugin"
           ];
         };
-
-        mission-control.scripts = {
-          docs = {
-            description = "Start Hoogle server for project dependencies";
-            exec = ''
-              echo http://127.0.0.1:8888
-              hoogle serve -p 8888 --local
-            '';
-            category = "Dev Tools";
-          };
-
-          fmt = {
-            description = "Format the source tree";
-            exec = config.treefmt.build.wrapper;
-            category = "Dev Tools";
-          };
-
-          run = {
-            description = "Run the project with ghcid auto-recompile";
-            exec = ''
-              ghcid -c "cabal repl h2jvm:test:h2jvm-test" --warnings -T :main --colour=always
-            '';
-            category = "Primary";
-          };
-        };
-
-
-        packages.default = self'.packages.h2jvm;
-
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            config.haskellProjects.default.outputs.devShell
-            config.flake-root.devShell
-            config.mission-control.devShell
+        tests.h2jvm-test = {
+          dependencies = [
+            "binary"
+            "bytestring"
+            "h2jvm"
+            "hedgehog >=1.4"
+            "hspec"
+            "hspec-hedgehog"
+            "polysemy"
+            "polysemy-plugin"
           ];
-
+          default-extensions = [
+            "DataKinds"
+            "GADTs"
+            "NoFieldSelectors"
+            "OverloadedRecordDot"
+            "OverloadedStrings"
+            "TypeFamilies"
+          ];
+          source-dirs = "test";
+          language = "GHC2021";
+          ghc-options = [
+            "-Wall"
+            "-Wunused-packages"
+            "-Wno-name-shadowing"
+          ];
+          component = {
+            other-modules = [
+              "Analyse"
+              "Builder"
+              "Convert"
+              "Util"
+            ];
+          };
         };
-
       };
     };
+  };
 }
-

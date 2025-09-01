@@ -1,29 +1,21 @@
-name: "CI"
-on:
-  push:
-    branches:
-      - "*"
+name: Flake checks
+on: [push, pull_request]
+permissions:
+  contents: read
+  id-token: write
 jobs:
-  tests:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  check:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: cachix/install-nix-action@v22
-        name: Install Nix
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v19
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - uses: cachix/cachix-action@v12
+          extra-conf: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            extra-substituters = https://tek.cachix.org
+            extra-trusted-public-keys = tek.cachix.org-1:+sdc73WFq8aEKnrVv5j/kuhmnW2hQJuqdPJF5SnaCBk=
+      - uses: cachix/cachix-action@v16
         with:
           name: elara
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-
-      - name: Run CI
-        run: |
-          nix run github:srid/nixci
+          signingKey: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - run: nix flake check
