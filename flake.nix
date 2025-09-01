@@ -1,6 +1,8 @@
 {
   description = "A Haskell project";
   inputs.hix.url = "git+https://git.tryp.io/tek/hix";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs.hix.inputs.nixpkgs.follows = "nixpkgs";
   outputs = {hix, ...}: hix.lib.flake {
     ghcVersions = ["ghc98" "ghc910"];
     compiler = "ghc910";
