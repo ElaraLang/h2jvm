@@ -1,7 +1,7 @@
 {
   description = "A Haskell project";
   inputs.hix.url = "git+https://git.tryp.io/tek/hix";
-  outputs = {hix, ...}: hix.lib.pro {
+  outputs = {hix, ...}: hix.lib.flake {
     ghcVersions = ["ghc98" "ghc910"];
     compiler = "ghc910";
 
