@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.36.1.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -62,51 +62,17 @@ library
       OverloadedRecordDot
       OverloadedStrings
       TypeFamilies
-      AllowAmbiguousTypes
-      ApplicativeDo
-      BlockArguments
-      DataKinds
-      DefaultSignatures
-      DeriveAnyClass
-      DerivingStrategies
-      DerivingVia
-      DisambiguateRecordFields
-      DuplicateRecordFields
-      FunctionalDependencies
-      GADTs
-      LambdaCase
-      LiberalTypeSynonyms
-      MonadComprehensions
-      MultiWayIf
-      NoFieldSelectors
-      OverloadedLabels
-      OverloadedLists
-      OverloadedRecordDot
-      OverloadedStrings
-      PackageImports
-      PartialTypeSignatures
-      PatternSynonyms
-      QuantifiedConstraints
-      QuasiQuotes
-      RecordWildCards
-      RecursiveDo
-      RoleAnnotations
-      TemplateHaskell
-      TypeFamilies
-      TypeFamilyDependencies
-      UndecidableInstances
-      UnicodeSyntax
-      ViewPatterns
-  ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -fplugin=Polysemy.Plugin -Wall -Widentities -Wincomplete-uni-patterns -Wmissing-deriving-strategies -Wredundant-constraints -Wunused-type-patterns -Wunused-packages
+  ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -fplugin=Effectful.Plugin
   build-depends:
       base ==4.*
     , binary
     , bytestring
     , containers
+    , effectful-core
+    , effectful-plugin
+    , effectful-th
     , generic-lens
     , lens >=5.0
-    , polysemy
-    , polysemy-plugin
     , prettyprinter
     , split
     , text
@@ -130,50 +96,15 @@ test-suite h2jvm-test
       OverloadedRecordDot
       OverloadedStrings
       TypeFamilies
-      AllowAmbiguousTypes
-      ApplicativeDo
-      BlockArguments
-      DataKinds
-      DefaultSignatures
-      DeriveAnyClass
-      DerivingStrategies
-      DerivingVia
-      DisambiguateRecordFields
-      DuplicateRecordFields
-      FunctionalDependencies
-      GADTs
-      LambdaCase
-      LiberalTypeSynonyms
-      MonadComprehensions
-      MultiWayIf
-      NoFieldSelectors
-      OverloadedLabels
-      OverloadedLists
-      OverloadedRecordDot
-      OverloadedStrings
-      PackageImports
-      PartialTypeSignatures
-      PatternSynonyms
-      QuantifiedConstraints
-      QuasiQuotes
-      RecordWildCards
-      RecursiveDo
-      RoleAnnotations
-      TemplateHaskell
-      TypeFamilies
-      TypeFamilyDependencies
-      UndecidableInstances
-      UnicodeSyntax
-      ViewPatterns
-  ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -threaded -rtsopts -with-rtsopts=-N -Wall -Widentities -Wincomplete-uni-patterns -Wmissing-deriving-strategies -Wredundant-constraints -Wunused-type-patterns -Wunused-packages
+  ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.*
     , binary
     , bytestring
+    , effectful
+    , effectful-plugin
     , h2jvm
     , hedgehog >=1.4
     , hspec
     , hspec-hedgehog
-    , polysemy
-    , polysemy-plugin
   default-language: GHC2021

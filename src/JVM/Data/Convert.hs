@@ -22,12 +22,12 @@ import JVM.Data.JVMVersion (getMajor, getMinor)
 import JVM.Data.Raw.ClassFile (Attribute (BootstrapMethodsAttribute))
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
-import Polysemy
+import Effectful
 
 jloName :: QualifiedClassName
 jloName = parseQualifiedClassName "java.lang.Object"
 
-convertClassAttributes :: (ConvertEff r) => [Abs.ClassFileAttribute] -> Sem r [Raw.AttributeInfo]
+convertClassAttributes :: (ConvertEff r) => [Abs.ClassFileAttribute] -> Eff r [Raw.AttributeInfo]
 convertClassAttributes = traverse convertClassAttribute
   where
     convertClassAttribute (Abs.SourceFile text) = do
@@ -49,7 +49,7 @@ convertClassAttributes = traverse convertClassAttribute
 
 convert :: Abs.ClassFile -> Either CodeConverterError Raw.ClassFile
 convert Abs.ClassFile{..} = do
-    (tempClass, cpState) <- run $ runConvertM $ do
+    (tempClass, cpState) <- runPureEff $ runConvertM $ do
         nameIndex <- findIndexOf (CPClassEntry $ ClassInfoType name)
         superIndex <- findIndexOf (CPClassEntry $ ClassInfoType (fromMaybe jloName superClass))
         let flags = accessFlagsToWord16 accessFlags
@@ -72,7 +72,7 @@ convert Abs.ClassFile{..} = do
                 (V.fromList methods')
                 (V.fromList attributes')
 
-    let (bmIndex, finalConstantPool) = run $ runConstantPoolWith cpState $ do
+    let (bmIndex, finalConstantPool) = runPureEff $ runConstantPoolWith cpState $ do
             let bootstrapAttr = BootstrapMethodsAttribute (IM.toVector cpState.bootstrapMethods)
             attrNameIndex <- findIndexOf (CPUTF8Entry "BootstrapMethods")
             pure $ Raw.AttributeInfo attrNameIndex bootstrapAttr

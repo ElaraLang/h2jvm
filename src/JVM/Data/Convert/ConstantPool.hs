@@ -18,8 +18,10 @@ import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.ConstantPool
 import JVM.Data.Raw.MagicNumbers
 import JVM.Data.Raw.Types
-import Polysemy
-import Polysemy.State
+import Effectful
+import Effectful.State.Static.Local
+import Effectful.TH (makeEffect)
+import Effectful.Dispatch.Dynamic (interpret)
 
 data ConstantPoolState = ConstantPoolState
     { constantPool :: IndexedMap ConstantPoolInfo
@@ -27,25 +29,27 @@ data ConstantPoolState = ConstantPoolState
     }
     deriving (Show, Eq, Ord)
 
+-- | Effect for managing the constant pool state
 data ConstantPool m a where
     GetCP :: ConstantPool m ConstantPoolState
     SetCP :: ConstantPoolState -> ConstantPool m ()
 
-makeSem ''ConstantPool
+makeEffect ''ConstantPool
 
-lookupOrInsertMOver :: (Member ConstantPool r, Ord a) => a -> (ConstantPoolState -> IndexedMap a) -> (ConstantPoolState -> IndexedMap a -> ConstantPoolState) -> Sem r Int
+lookupOrInsertMOver :: (ConstantPool  :> r, Ord a) => a -> (ConstantPoolState -> IndexedMap a) -> (ConstantPoolState -> IndexedMap a -> ConstantPoolState) -> Eff  r Int
 lookupOrInsertMOver cpInfo get set = do
     cp <- getCP
     let (i, newCP) = IM.lookupOrInsert cpInfo (get cp)
     setCP (set cp newCP)
     pure i
 
-lookupOrInsertMCP :: (Member ConstantPool r) => ConstantPoolInfo -> Sem r Int
+lookupOrInsertMCP :: (ConstantPool :> r) => ConstantPoolInfo -> Eff r Int
 lookupOrInsertMCP cpInfo = lookupOrInsertMOver cpInfo (.constantPool) (\s x -> s{constantPool = x})
-lookupOrInsertMBM :: (Member ConstantPool r) => Raw.BootstrapMethod -> Sem r Int
+
+lookupOrInsertMBM :: (ConstantPool :> r) => Raw.BootstrapMethod -> Eff r Int
 lookupOrInsertMBM bmInfo = lookupOrInsertMOver bmInfo (.bootstrapMethods) (\s x -> s{bootstrapMethods = x})
 
-transformEntry :: (Member ConstantPool r) => ConstantPoolEntry -> Sem r Int
+transformEntry :: (ConstantPool :> r) => ConstantPoolEntry -> Eff r Int
 transformEntry (CPUTF8Entry text) = lookupOrInsertMCP (UTF8Info $ encodeUtf8 text)
 transformEntry (CPIntegerEntry i) = lookupOrInsertMCP (IntegerInfo $ fromIntegral i)
 transformEntry (CPFloatEntry f) = lookupOrInsertMCP (FloatInfo (toJVMFloat f))
@@ -124,7 +128,7 @@ transformEntry (CPMethodTypeEntry methodDescriptor) = do
     descriptorIndex <- transformEntry (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
     lookupOrInsertMCP (MethodTypeInfo (fromIntegral descriptorIndex))
 
-convertBootstrapMethod :: (Member ConstantPool r) => BootstrapMethod -> Sem r Int
+convertBootstrapMethod :: (ConstantPool :> r) => BootstrapMethod -> Eff r Int
 convertBootstrapMethod (BootstrapMethod mhEntry args) = do
     mhIndex <- findIndexOf (CPMethodHandleEntry mhEntry)
     bsArgs <- traverse (findIndexOf . bmArgToCPEntry) args
@@ -137,7 +141,7 @@ instance Semigroup ConstantPoolState where
 instance Monoid ConstantPoolState where
     mempty = ConstantPoolState mempty mempty
 
-findIndexOf :: (Member ConstantPool r) => ConstantPoolEntry -> Sem r U2
+findIndexOf :: (ConstantPool :> r) => ConstantPoolEntry -> Eff  r U2
 findIndexOf = fmap toU2OrError . transformEntry
   where
     toU2OrError :: Int -> U2
@@ -146,17 +150,17 @@ findIndexOf = fmap toU2OrError . transformEntry
             then error "Constant pool index out of bounds, too many entries?"
             else fromIntegral i
 
-constantPoolToState :: (Member (State ConstantPoolState) r) => Sem (ConstantPool ': r) a -> Sem r a
-constantPoolToState = interpret $ \case
+constantPoolToState :: State ConstantPoolState :> r => Eff (ConstantPool ': r) a -> Eff r a
+constantPoolToState = interpret $ \_ -> \case
     GetCP -> gets id
     SetCP s -> modify (const s)
 
-runConstantPoolWith :: ConstantPoolState -> Sem (ConstantPool ': r) a -> Sem r (a, ConstantPoolState)
+runConstantPoolWith :: ConstantPoolState -> Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
 runConstantPoolWith s =
-    fmap swap
-        . runState s
+    
+        runState s
         . constantPoolToState
-        . raiseUnder
+        . inject
 
-runConstantPool :: Sem (ConstantPool ': r) a -> Sem r (a, ConstantPoolState)
+runConstantPool :: Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
 runConstantPool = runConstantPoolWith mempty

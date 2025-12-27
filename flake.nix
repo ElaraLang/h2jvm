@@ -4,8 +4,9 @@
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   inputs.hix.inputs.nixpkgs.follows = "nixpkgs";
   outputs = {hix, ...}: hix.lib.flake {
-    ghcVersions = ["ghc98" "ghc910"];
-    compiler = "ghc910";
+    ghcVersions = ["ghc98" "ghc910" "ghc912"];
+    compiler = "ghc912";
+    gen-overrides.enable = true;
 
     packages = {
       h2jvm = {
@@ -15,7 +16,7 @@
           build-type = "Simple";
           license = "MIT";
           license-file = "LICENSE";
-          version = "0.5.4.9";
+          version = "0.6.0.0";
           meta = {
             maintainer = "alexljwood24@hotmail.co.uk";
             synopsis = "Haskell library for writing JVM bytecode in a high level format";
@@ -29,8 +30,9 @@
             "containers"
             "generic-lens"
             "lens >=5.0"
-            "polysemy"
-            "polysemy-plugin"
+            "effectful-core"
+            "effectful-th"
+            "effectful-plugin"
             "prettyprinter"
             "split"
             "text"
@@ -51,7 +53,7 @@
             "-Wunused-packages"
             "-Wno-name-shadowing"
             "-Werror=incomplete-patterns"
-            "-fplugin=Polysemy.Plugin"
+            "-fplugin=Effectful.Plugin"
           ];
         };
         tests.h2jvm-test = {
@@ -62,8 +64,8 @@
             "hedgehog >=1.4"
             "hspec"
             "hspec-hedgehog"
-            "polysemy"
-            "polysemy-plugin"
+            "effectful"
+            "effectful-plugin"
           ];
           default-extensions = [
             "DataKinds"

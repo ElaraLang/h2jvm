@@ -6,11 +6,13 @@ module JVM.Data.Abstract.Builder.Code where
 
 import Data.TypeMergingList (TypeMergingList)
 import Data.TypeMergingList qualified as TML
+import Effectful
+import Effectful.Dispatch.Dynamic
+import Effectful.State.Static.Local
+import Effectful.TH (makeEffect)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method (CodeAttribute)
 import JVM.Data.Abstract.Instruction
-import Polysemy
-import Polysemy.State
 
 data CodeBuilder m a where
     AddCodeAttribute :: CodeAttribute -> CodeBuilder m ()
@@ -18,7 +20,7 @@ data CodeBuilder m a where
     Emit' :: [Instruction] -> CodeBuilder m ()
     GetCode :: CodeBuilder m [Instruction]
 
-makeSem ''CodeBuilder
+makeEffect ''CodeBuilder
 
 data CodeState = CodeState
     { labelSource :: [Label]
@@ -31,11 +33,11 @@ initialCodeState = CodeState{labelSource = MkLabel <$> [0 ..], attributes = memp
 
 -- snoc list
 
-emit :: (Member CodeBuilder r) => Instruction -> Sem r ()
+emit :: (CodeBuilder :> r) => Instruction -> Eff r ()
 emit = emit' . pure
 
-codeBuilderToState :: (Member (State CodeState) r) => Sem (CodeBuilder ': r) a -> Sem r a
-codeBuilderToState = interpret $ \case
+codeBuilderToState :: ((State CodeState) :> r) => Eff (CodeBuilder ': r) a -> Eff r a
+codeBuilderToState = interpret $ \_ -> \case
     AddCodeAttribute ca -> modify (\s -> s{attributes = s.attributes `TML.snoc` ca})
     NewLabel -> do
         s@CodeState{labelSource = ls} <- get
@@ -48,14 +50,14 @@ codeBuilderToState = interpret $ \case
     -- code is a snoc list (kind of)
     GetCode -> gets (.code)
 
-runCodeBuilder :: forall r a. Sem (CodeBuilder ': r) a -> Sem r (a, [CodeAttribute], [Instruction])
+runCodeBuilder :: forall r a. Eff (CodeBuilder ': r) a -> Eff r (a, [CodeAttribute], [Instruction])
 runCodeBuilder =
     fmap rr
         . runState initialCodeState
         . codeBuilderToState
-        . raiseUnder
+        . inject
   where
-    rr (s, a) =
+    rr (a, s) =
         ( a
         , TML.toList s.attributes
         , reverse s.code

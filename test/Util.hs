@@ -8,14 +8,14 @@ import JVM.Data.Convert.ConstantPool (ConstantPoolState)
 import JVM.Data.Convert.Instruction (convertInstructions, fullyRunCodeConverter)
 import JVM.Data.Convert.Monad (runConvertM)
 import JVM.Data.Raw.Instruction qualified as Raw
-import Polysemy
+import Effectful
 import Test.Hspec (HasCallStack)
 
 runConv :: (MonadTest m) => [Abs.Instruction] -> m ([Raw.Instruction], ConstantPoolState)
 runConv =
     withFrozenCallStack $
         shouldBeRight
-            . run
+            . runPureEff
             . runConvertM
             . fullyRunCodeConverter
             . convertInstructions

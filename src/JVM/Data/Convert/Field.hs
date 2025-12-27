@@ -12,9 +12,9 @@ import JVM.Data.Convert.ConstantPool
 import JVM.Data.Convert.Monad
 import JVM.Data.Convert.Type (fieldTypeDescriptor)
 import JVM.Data.Raw.ClassFile qualified as Raw
-import Polysemy
+import Effectful
 
-convertConstantValue :: (ConvertEff r) => Abs.ConstantValue -> Sem r Word16
+convertConstantValue :: (ConvertEff r) => Abs.ConstantValue -> Eff r Word16
 convertConstantValue =
     fmap fromIntegral . findIndexOf . \case
         Abs.ConstantInteger i -> CPIntegerEntry (fromIntegral i)
@@ -23,14 +23,14 @@ convertConstantValue =
         Abs.ConstantDouble d -> CPDoubleEntry d
         Abs.ConstantString s -> CPStringEntry s
 
-convertFieldAttribute :: (ConvertEff r) => Abs.FieldAttribute -> Sem r Raw.AttributeInfo
+convertFieldAttribute :: (ConvertEff  r) => Abs.FieldAttribute -> Eff r Raw.AttributeInfo
 convertFieldAttribute (Abs.ConstantValue constantValue) = do
     nameIndex <- findIndexOf (CPUTF8Entry "ConstantValue")
     constantValueIndex <- convertConstantValue constantValue
     pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.ConstantValueAttribute constantValueIndex)
 convertFieldAttribute _ = error "convertFieldAttribute"
 
-convertField :: (ConvertEff r) => Abs.ClassFileField -> Sem r Raw.FieldInfo
+convertField :: (ConvertEff  r) => Abs.ClassFileField -> Eff r Raw.FieldInfo
 convertField Abs.ClassFileField{..} = do
     nameIndex <- findIndexOf (CPUTF8Entry fieldName)
     descriptorIndex <- findIndexOf (CPUTF8Entry (fieldTypeDescriptor fieldType))

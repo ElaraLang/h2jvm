@@ -13,9 +13,9 @@ import Data.IntMap qualified as IM
 import Data.Map qualified as M
 import Data.Vector (Vector)
 import Data.Vector qualified as V
+import Effectful
+import Effectful.State.Static.Local
 import GHC.Exts (IsList (..))
-import Polysemy
-import Polysemy.State
 import Prelude hiding (lookup)
 
 data IndexedMap a = IndexedMap !(IM.IntMap a) !(M.Map a Int)
@@ -72,10 +72,10 @@ lookupOrInsert a (IndexedMap m m') = case M.lookup a m' of
     Just i -> (i, IndexedMap m m')
     Nothing -> insert a (IndexedMap m m')
 
-lookupOrInsertM :: (Member (State (IndexedMap a)) r, Ord a) => a -> Sem r Int
+lookupOrInsertM :: (State (IndexedMap a) :> r, Ord a) => a -> Eff r Int
 lookupOrInsertM = lookupOrInsertMOver id
 
-lookupOrInsertMOver :: (Member (State a) r, Ord b) => Lens' a (IndexedMap b) -> b -> Sem r Int
+lookupOrInsertMOver :: (State a :> r, Ord b) => Lens' a (IndexedMap b) -> b -> Eff r Int
 lookupOrInsertMOver lens a = do
     i <- gets (view lens)
     let (idx, new) = lookupOrInsert a i
@@ -129,7 +129,7 @@ instance (Ord a) => IsList (IndexedMap a) where
 -}
 instance (Ord a) => Semigroup (IndexedMap a) where
     l <> r =
-        run $ execState empty $ do
+        runPureEff $ execState empty $ do
             forM_ (toVector l) lookupOrInsertM
             forM_ (toVector r) lookupOrInsertM
 
