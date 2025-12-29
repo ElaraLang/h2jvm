@@ -32,6 +32,7 @@ data Instruction' label
     | IfGe label
     | IfGt label
     | IfLe label
+    | Instanceof ClassInfoType
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeInterface ClassInfoType Text MethodDescriptor
     | InvokeVirtual ClassInfoType Text MethodDescriptor
@@ -63,6 +64,7 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty (IfGe l) = "ifge" <+> pretty l
     pretty (IfGt l) = "ifgt" <+> pretty l
     pretty (IfLe l) = "ifle" <+> pretty l
+    pretty (Instanceof c) = "instanceof" <+> pretty c
     pretty (InvokeStatic c n d) = "invokestatic" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (InvokeInterface c n d) = "invokeinterface" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (InvokeVirtual c n d) = "invokevirtual" <+> pretty c <> "." <> pretty n <> pretty d

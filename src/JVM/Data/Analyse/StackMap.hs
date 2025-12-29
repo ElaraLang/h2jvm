@@ -100,6 +100,7 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     analyseInstruction (IfGt _) ba = ba{stack = tail ba.stack}
     analyseInstruction (IfLe _) ba = ba{stack = tail ba.stack}
     analyseInstruction (CheckCast _) ba = ba
+    analyseInstruction (Instanceof _) ba = ba{stack = StackEntry (PrimitiveFieldType Int) : tail ba.stack}
     analyseInstruction (InvokeStatic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (length md.params) ba.stack}
     analyseInstruction (InvokeVirtual _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (1 + length md.params) ba.stack}
     analyseInstruction (InvokeInterface _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (length md.params) ba.stack}

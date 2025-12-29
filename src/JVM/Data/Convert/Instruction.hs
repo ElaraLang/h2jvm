@@ -73,6 +73,7 @@ instructionSize (Abs.IfLt _) = 3
 instructionSize (Abs.IfGe _) = 3
 instructionSize (Abs.IfGt _) = 3
 instructionSize (Abs.IfLe _) = 3
+instructionSize (Abs.Instanceof{}) = 3
 instructionSize (Abs.InvokeStatic{}) = 3
 instructionSize (Abs.InvokeVirtual{}) = 3
 instructionSize (Abs.InvokeInterface{}) = 5
@@ -188,6 +189,9 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.IStore 3) = pure Raw.IStore3
     convertInstruction (Abs.IStore idx) = pure (Raw.IStore idx)
     convertInstruction Abs.AConstNull = pure Raw.AConstNull
+    convertInstruction (Abs.Instanceof t) = do
+        idx <- findIndexOf (CPClassEntry t)
+        pure (Raw.Instanceof idx)
     convertInstruction (Abs.InvokeStatic c n m) = do
         idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))
         pure (Raw.InvokeStatic idx)

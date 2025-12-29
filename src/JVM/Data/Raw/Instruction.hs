@@ -140,7 +140,7 @@ data Instruction
     | ILoad3
     | IMul
     | INeg
-    | InstanceOf ConstantPoolIndex
+    | Instanceof ConstantPoolIndex
     | InvokeDynamic ConstantPoolIndex
     | InvokeInterface ConstantPoolIndex Word8
     | InvokeSpecial ConstantPoolIndex
@@ -345,7 +345,7 @@ putInstruction = \case
     ILoad3 -> putWord8 MagicNumbers.instruction_iLoad3
     IMul -> putWord8 MagicNumbers.instruction_iMul
     INeg -> putWord8 MagicNumbers.instruction_iNeg
-    InstanceOf index -> putWord8 MagicNumbers.instruction_instanceOf *> putWord16be index
+    Instanceof index -> putWord8 MagicNumbers.instruction_instanceOf *> putWord16be index
     InvokeDynamic index -> putWord8 MagicNumbers.instruction_invokeDynamic *> putWord16be index *> putWord8 0 *> putWord8 0
     InvokeInterface index count -> putWord8 MagicNumbers.instruction_invokeInterface *> putWord16be index *> putWord8 count *> putWord8 0
     InvokeSpecial index -> putWord8 MagicNumbers.instruction_invokeSpecial *> putWord16be index
