@@ -8,8 +8,7 @@ inputs:
   
   cachix-auth-token:
     description: "Cachix Auth Token"
-    required: false
-    default: ${{ secrets.CACHIX_AUTH_TOKEN }}
+    required: true
 
 runs:
   using: "composite"
