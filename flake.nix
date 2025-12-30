@@ -7,6 +7,7 @@
     ghcVersions = ["ghc98" "ghc910" "ghc912"];
     compiler = "ghc912";
     gen-overrides.enable = true;
+    managed.enable = true;
 
     packages = {
       h2jvm = {
