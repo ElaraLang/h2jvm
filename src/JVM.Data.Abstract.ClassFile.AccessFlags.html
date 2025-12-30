@@ -1,0 +1,742 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679449172"><span id="local-6989586621679449173"><span id="local-6989586621679449174"><span id="local-6989586621679449175"><span id="local-6989586621679449176"><span id="local-6989586621679449177"><span id="local-6989586621679449178"><span id="local-6989586621679449179"><span id="local-6989586621679449180"><span id="local-6989586621679449181"><span id="local-6989586621679449182"><span id="local-6989586621679449183"><span id="local-6989586621679449184"><span id="local-6989586621679449185"><span id="local-6989586621679449186"><span id="local-6989586621679449187"><span id="local-6989586621679449188"><span id="local-6989586621679449189"><span id="local-6989586621679449190"><span id="local-6989586621679449191"><span id="local-6989586621679449192"><span id="local-6989586621679449193"><span id="local-6989586621679449194"><span id="local-6989586621679449195"><span id="local-6989586621679449196"><span id="local-6989586621679449197"><span id="local-6989586621679449198"><span id="local-6989586621679449199"><span id="local-6989586621679449200"><span id="local-6989586621679449201"><span id="local-6989586621679449202"><span id="local-6989586621679449203"></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.AccessFlags</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Data</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Pretty.html"><span class="hs-identifier">JVM.Data.Pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier">Pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier">pretty</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="annot"><span class="hs-comment">-- | Access flags for a class</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">data</span><span> </span><span id="ClassAccessFlag"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#ClassAccessFlag"><span class="hs-identifier hs-var">ClassAccessFlag</span></a></span></span><span>
+</span><span id="line-8"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="Public"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Public"><span class="hs-identifier hs-var">Public</span></a></span></span><span>
+</span><span id="line-9"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Final"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Final"><span class="hs-identifier hs-var">Final</span></a></span></span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Super"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Super"><span class="hs-identifier hs-var">Super</span></a></span></span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Interface"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Interface"><span class="hs-identifier hs-var">Interface</span></a></span></span><span>
+</span><span id="line-12"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Abstract"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Abstract"><span class="hs-identifier hs-var">Abstract</span></a></span></span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Synthetic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span></span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Annotation"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Annotation"><span class="hs-identifier hs-var">Annotation</span></a></span></span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Enum"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Enum"><span class="hs-identifier hs-var">Enum</span></a></span></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679449214"><span id="local-6989586621679449216"><span id="local-6989586621679449220"><span class="annot"><span class="annottext">Int -&gt; ClassAccessFlag -&gt; ShowS
+[ClassAccessFlag] -&gt; ShowS
+ClassAccessFlag -&gt; String
+(Int -&gt; ClassAccessFlag -&gt; ShowS)
+-&gt; (ClassAccessFlag -&gt; String)
+-&gt; ([ClassAccessFlag] -&gt; ShowS)
+-&gt; Show ClassAccessFlag
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ClassAccessFlag -&gt; ShowS
+showsPrec :: Int -&gt; ClassAccessFlag -&gt; ShowS
+$cshow :: ClassAccessFlag -&gt; String
+show :: ClassAccessFlag -&gt; String
+$cshowList :: [ClassAccessFlag] -&gt; ShowS
+showList :: [ClassAccessFlag] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679449225"><span id="local-6989586621679449230"><span class="annot"><span class="annottext">ClassAccessFlag -&gt; ClassAccessFlag -&gt; Bool
+(ClassAccessFlag -&gt; ClassAccessFlag -&gt; Bool)
+-&gt; (ClassAccessFlag -&gt; ClassAccessFlag -&gt; Bool)
+-&gt; Eq ClassAccessFlag
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ClassAccessFlag -&gt; ClassAccessFlag -&gt; Bool
+== :: ClassAccessFlag -&gt; ClassAccessFlag -&gt; Bool
+$c/= :: ClassAccessFlag -&gt; ClassAccessFlag -&gt; Bool
+/= :: ClassAccessFlag -&gt; ClassAccessFlag -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679449237"><span id="local-6989586621679449239"><span id="local-6989586621679449241"><span id="local-6989586621679449243"><span id="local-6989586621679449245"><span id="local-6989586621679449251"><span id="local-6989586621679449256"><span id="local-6989586621679449259"><span id="local-6989586621679449262"><span id="local-6989586621679449265"><span id="local-6989586621679449268"><span id="local-6989586621679449271"><span id="local-6989586621679449276"><span id="local-6989586621679449281"><span class="annot"><span class="annottext">Typeable ClassAccessFlag
+Typeable ClassAccessFlag =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; ClassAccessFlag -&gt; c ClassAccessFlag)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassAccessFlag)
+-&gt; (ClassAccessFlag -&gt; Constr)
+-&gt; (ClassAccessFlag -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassAccessFlag))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c ClassAccessFlag))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; ClassAccessFlag -&gt; ClassAccessFlag)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassAccessFlag -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassAccessFlag -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; ClassAccessFlag -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassAccessFlag -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ClassAccessFlag -&gt; m ClassAccessFlag)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ClassAccessFlag -&gt; m ClassAccessFlag)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ClassAccessFlag -&gt; m ClassAccessFlag)
+-&gt; Data ClassAccessFlag
+ClassAccessFlag -&gt; Constr
+ClassAccessFlag -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; ClassAccessFlag -&gt; ClassAccessFlag
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassAccessFlag -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassAccessFlag -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassAccessFlag -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassAccessFlag -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassAccessFlag -&gt; m ClassAccessFlag
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassAccessFlag -&gt; m ClassAccessFlag
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassAccessFlag
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ClassAccessFlag -&gt; c ClassAccessFlag
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassAccessFlag)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ClassAccessFlag)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ClassAccessFlag -&gt; c ClassAccessFlag
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ClassAccessFlag -&gt; c ClassAccessFlag
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassAccessFlag
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassAccessFlag
+$ctoConstr :: ClassAccessFlag -&gt; Constr
+toConstr :: ClassAccessFlag -&gt; Constr
+$cdataTypeOf :: ClassAccessFlag -&gt; DataType
+dataTypeOf :: ClassAccessFlag -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassAccessFlag)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassAccessFlag)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ClassAccessFlag)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ClassAccessFlag)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; ClassAccessFlag -&gt; ClassAccessFlag
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; ClassAccessFlag -&gt; ClassAccessFlag
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassAccessFlag -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassAccessFlag -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassAccessFlag -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassAccessFlag -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassAccessFlag -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassAccessFlag -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassAccessFlag -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassAccessFlag -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassAccessFlag -&gt; m ClassAccessFlag
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassAccessFlag -&gt; m ClassAccessFlag
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassAccessFlag -&gt; m ClassAccessFlag
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassAccessFlag -&gt; m ClassAccessFlag
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassAccessFlag -&gt; m ClassAccessFlag
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassAccessFlag -&gt; m ClassAccessFlag
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="FieldAccessFlag"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FieldAccessFlag"><span class="hs-identifier hs-var">FieldAccessFlag</span></a></span></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="FPublic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FPublic"><span class="hs-identifier hs-var">FPublic</span></a></span></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FPrivate"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FPrivate"><span class="hs-identifier hs-var">FPrivate</span></a></span></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FProtected"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FProtected"><span class="hs-identifier hs-var">FProtected</span></a></span></span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FStatic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FStatic"><span class="hs-identifier hs-var">FStatic</span></a></span></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FFinal"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FFinal"><span class="hs-identifier hs-var">FFinal</span></a></span></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FVolatile"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FVolatile"><span class="hs-identifier hs-var">FVolatile</span></a></span></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FTransient"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FTransient"><span class="hs-identifier hs-var">FTransient</span></a></span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FSynthetic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FSynthetic"><span class="hs-identifier hs-var">FSynthetic</span></a></span></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FEnum"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FEnum"><span class="hs-identifier hs-var">FEnum</span></a></span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679449300"><span id="local-6989586621679449302"><span id="local-6989586621679449306"><span class="annot"><span class="annottext">Int -&gt; FieldAccessFlag -&gt; ShowS
+[FieldAccessFlag] -&gt; ShowS
+FieldAccessFlag -&gt; String
+(Int -&gt; FieldAccessFlag -&gt; ShowS)
+-&gt; (FieldAccessFlag -&gt; String)
+-&gt; ([FieldAccessFlag] -&gt; ShowS)
+-&gt; Show FieldAccessFlag
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; FieldAccessFlag -&gt; ShowS
+showsPrec :: Int -&gt; FieldAccessFlag -&gt; ShowS
+$cshow :: FieldAccessFlag -&gt; String
+show :: FieldAccessFlag -&gt; String
+$cshowList :: [FieldAccessFlag] -&gt; ShowS
+showList :: [FieldAccessFlag] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679449311"><span id="local-6989586621679449313"><span id="local-6989586621679449315"><span id="local-6989586621679449317"><span id="local-6989586621679449319"><span id="local-6989586621679449325"><span id="local-6989586621679449330"><span id="local-6989586621679449333"><span id="local-6989586621679449336"><span id="local-6989586621679449339"><span id="local-6989586621679449342"><span id="local-6989586621679449345"><span id="local-6989586621679449350"><span id="local-6989586621679449355"><span class="annot"><span class="annottext">Typeable FieldAccessFlag
+Typeable FieldAccessFlag =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; FieldAccessFlag -&gt; c FieldAccessFlag)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c FieldAccessFlag)
+-&gt; (FieldAccessFlag -&gt; Constr)
+-&gt; (FieldAccessFlag -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c FieldAccessFlag))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c FieldAccessFlag))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; FieldAccessFlag -&gt; FieldAccessFlag)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldAccessFlag -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldAccessFlag -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; FieldAccessFlag -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; FieldAccessFlag -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; FieldAccessFlag -&gt; m FieldAccessFlag)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; FieldAccessFlag -&gt; m FieldAccessFlag)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; FieldAccessFlag -&gt; m FieldAccessFlag)
+-&gt; Data FieldAccessFlag
+FieldAccessFlag -&gt; Constr
+FieldAccessFlag -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; FieldAccessFlag -&gt; FieldAccessFlag
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; FieldAccessFlag -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; FieldAccessFlag -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldAccessFlag -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldAccessFlag -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; FieldAccessFlag -&gt; m FieldAccessFlag
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; FieldAccessFlag -&gt; m FieldAccessFlag
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c FieldAccessFlag
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; FieldAccessFlag -&gt; c FieldAccessFlag
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c FieldAccessFlag)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c FieldAccessFlag)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; FieldAccessFlag -&gt; c FieldAccessFlag
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; FieldAccessFlag -&gt; c FieldAccessFlag
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c FieldAccessFlag
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c FieldAccessFlag
+$ctoConstr :: FieldAccessFlag -&gt; Constr
+toConstr :: FieldAccessFlag -&gt; Constr
+$cdataTypeOf :: FieldAccessFlag -&gt; DataType
+dataTypeOf :: FieldAccessFlag -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c FieldAccessFlag)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c FieldAccessFlag)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c FieldAccessFlag)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c FieldAccessFlag)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; FieldAccessFlag -&gt; FieldAccessFlag
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; FieldAccessFlag -&gt; FieldAccessFlag
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldAccessFlag -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldAccessFlag -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldAccessFlag -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldAccessFlag -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; FieldAccessFlag -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; FieldAccessFlag -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; FieldAccessFlag -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; FieldAccessFlag -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; FieldAccessFlag -&gt; m FieldAccessFlag
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; FieldAccessFlag -&gt; m FieldAccessFlag
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; FieldAccessFlag -&gt; m FieldAccessFlag
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; FieldAccessFlag -&gt; m FieldAccessFlag
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; FieldAccessFlag -&gt; m FieldAccessFlag
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; FieldAccessFlag -&gt; m FieldAccessFlag
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="MethodAccessFlag"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MethodAccessFlag"><span class="hs-identifier hs-var">MethodAccessFlag</span></a></span></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="MPublic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MPublic"><span class="hs-identifier hs-var">MPublic</span></a></span></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MPrivate"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MPrivate"><span class="hs-identifier hs-var">MPrivate</span></a></span></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MProtected"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MProtected"><span class="hs-identifier hs-var">MProtected</span></a></span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MStatic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MStatic"><span class="hs-identifier hs-var">MStatic</span></a></span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MFinal"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MFinal"><span class="hs-identifier hs-var">MFinal</span></a></span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MSynchronized"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MSynchronized"><span class="hs-identifier hs-var">MSynchronized</span></a></span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MBridge"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MBridge"><span class="hs-identifier hs-var">MBridge</span></a></span></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MVarargs"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MVarargs"><span class="hs-identifier hs-var">MVarargs</span></a></span></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MNative"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MNative"><span class="hs-identifier hs-var">MNative</span></a></span></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MAbstract"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MAbstract"><span class="hs-identifier hs-var">MAbstract</span></a></span></span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MStrict"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MStrict"><span class="hs-identifier hs-var">MStrict</span></a></span></span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MSynthetic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MSynthetic"><span class="hs-identifier hs-var">MSynthetic</span></a></span></span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679449372"><span id="local-6989586621679449374"><span id="local-6989586621679449378"><span class="annot"><span class="annottext">Int -&gt; MethodAccessFlag -&gt; ShowS
+[MethodAccessFlag] -&gt; ShowS
+MethodAccessFlag -&gt; String
+(Int -&gt; MethodAccessFlag -&gt; ShowS)
+-&gt; (MethodAccessFlag -&gt; String)
+-&gt; ([MethodAccessFlag] -&gt; ShowS)
+-&gt; Show MethodAccessFlag
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MethodAccessFlag -&gt; ShowS
+showsPrec :: Int -&gt; MethodAccessFlag -&gt; ShowS
+$cshow :: MethodAccessFlag -&gt; String
+show :: MethodAccessFlag -&gt; String
+$cshowList :: [MethodAccessFlag] -&gt; ShowS
+showList :: [MethodAccessFlag] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679449383"><span id="local-6989586621679449385"><span id="local-6989586621679449387"><span id="local-6989586621679449389"><span id="local-6989586621679449391"><span id="local-6989586621679449397"><span id="local-6989586621679449402"><span id="local-6989586621679449405"><span id="local-6989586621679449408"><span id="local-6989586621679449411"><span id="local-6989586621679449414"><span id="local-6989586621679449417"><span id="local-6989586621679449422"><span id="local-6989586621679449427"><span class="annot"><span class="annottext">Typeable MethodAccessFlag
+Typeable MethodAccessFlag =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; MethodAccessFlag -&gt; c MethodAccessFlag)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodAccessFlag)
+-&gt; (MethodAccessFlag -&gt; Constr)
+-&gt; (MethodAccessFlag -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodAccessFlag))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c MethodAccessFlag))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; MethodAccessFlag -&gt; MethodAccessFlag)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAccessFlag -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAccessFlag -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAccessFlag -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAccessFlag -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodAccessFlag -&gt; m MethodAccessFlag)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodAccessFlag -&gt; m MethodAccessFlag)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodAccessFlag -&gt; m MethodAccessFlag)
+-&gt; Data MethodAccessFlag
+MethodAccessFlag -&gt; Constr
+MethodAccessFlag -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodAccessFlag -&gt; MethodAccessFlag
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAccessFlag -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAccessFlag -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAccessFlag -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAccessFlag -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAccessFlag -&gt; m MethodAccessFlag
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAccessFlag -&gt; m MethodAccessFlag
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodAccessFlag
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodAccessFlag -&gt; c MethodAccessFlag
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodAccessFlag)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodAccessFlag)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodAccessFlag -&gt; c MethodAccessFlag
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodAccessFlag -&gt; c MethodAccessFlag
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodAccessFlag
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodAccessFlag
+$ctoConstr :: MethodAccessFlag -&gt; Constr
+toConstr :: MethodAccessFlag -&gt; Constr
+$cdataTypeOf :: MethodAccessFlag -&gt; DataType
+dataTypeOf :: MethodAccessFlag -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodAccessFlag)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodAccessFlag)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodAccessFlag)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodAccessFlag)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodAccessFlag -&gt; MethodAccessFlag
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodAccessFlag -&gt; MethodAccessFlag
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAccessFlag -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAccessFlag -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAccessFlag -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAccessFlag -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAccessFlag -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAccessFlag -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAccessFlag -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAccessFlag -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAccessFlag -&gt; m MethodAccessFlag
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAccessFlag -&gt; m MethodAccessFlag
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAccessFlag -&gt; m MethodAccessFlag
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAccessFlag -&gt; m MethodAccessFlag
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAccessFlag -&gt; m MethodAccessFlag
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAccessFlag -&gt; m MethodAccessFlag
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679449433"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#ClassAccessFlag"><span class="hs-identifier hs-type">ClassAccessFlag</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-46"></span><span>    </span><span id="local-6989586621679449446"><span class="annot"><span class="annottext">pretty :: forall ann. ClassAccessFlag -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Public"><span class="hs-identifier hs-var">Public</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;public&quot;</span></span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Final"><span class="hs-identifier hs-var">Final</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;final&quot;</span></span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Super"><span class="hs-identifier hs-var">Super</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;super&quot;</span></span><span>
+</span><span id="line-49"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Interface"><span class="hs-identifier hs-var">Interface</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;interface&quot;</span></span><span>
+</span><span id="line-50"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Abstract"><span class="hs-identifier hs-var">Abstract</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;abstract&quot;</span></span><span>
+</span><span id="line-51"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;synthetic&quot;</span></span><span>
+</span><span id="line-52"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Annotation"><span class="hs-identifier hs-var">Annotation</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;@interface&quot;</span></span><span>
+</span><span id="line-53"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Enum"><span class="hs-identifier hs-var">Enum</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;enum&quot;</span></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679449449"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FieldAccessFlag"><span class="hs-identifier hs-type">FieldAccessFlag</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-56"></span><span>    </span><span id="local-6989586621679449461"><span class="annot"><span class="annottext">pretty :: forall ann. FieldAccessFlag -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FPublic"><span class="hs-identifier hs-var">FPublic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;public&quot;</span></span><span>
+</span><span id="line-57"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FPrivate"><span class="hs-identifier hs-var">FPrivate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;private&quot;</span></span><span>
+</span><span id="line-58"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FProtected"><span class="hs-identifier hs-var">FProtected</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;protected&quot;</span></span><span>
+</span><span id="line-59"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FStatic"><span class="hs-identifier hs-var">FStatic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;static&quot;</span></span><span>
+</span><span id="line-60"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FFinal"><span class="hs-identifier hs-var">FFinal</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;final&quot;</span></span><span>
+</span><span id="line-61"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FVolatile"><span class="hs-identifier hs-var">FVolatile</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;volatile&quot;</span></span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FTransient"><span class="hs-identifier hs-var">FTransient</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;transient&quot;</span></span><span>
+</span><span id="line-63"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FSynthetic"><span class="hs-identifier hs-var">FSynthetic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;synthetic&quot;</span></span><span>
+</span><span id="line-64"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FEnum"><span class="hs-identifier hs-var">FEnum</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;enum&quot;</span></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679449464"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MethodAccessFlag"><span class="hs-identifier hs-type">MethodAccessFlag</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-67"></span><span>    </span><span id="local-6989586621679449479"><span class="annot"><span class="annottext">pretty :: forall ann. MethodAccessFlag -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MPublic"><span class="hs-identifier hs-var">MPublic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;public&quot;</span></span><span>
+</span><span id="line-68"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MPrivate"><span class="hs-identifier hs-var">MPrivate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;private&quot;</span></span><span>
+</span><span id="line-69"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MProtected"><span class="hs-identifier hs-var">MProtected</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;protected&quot;</span></span><span>
+</span><span id="line-70"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MStatic"><span class="hs-identifier hs-var">MStatic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;static&quot;</span></span><span>
+</span><span id="line-71"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MFinal"><span class="hs-identifier hs-var">MFinal</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;final&quot;</span></span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MSynchronized"><span class="hs-identifier hs-var">MSynchronized</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;synchronized&quot;</span></span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MBridge"><span class="hs-identifier hs-var">MBridge</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;bridge&quot;</span></span><span>
+</span><span id="line-74"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MVarargs"><span class="hs-identifier hs-var">MVarargs</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;varargs&quot;</span></span><span>
+</span><span id="line-75"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MNative"><span class="hs-identifier hs-var">MNative</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;native&quot;</span></span><span>
+</span><span id="line-76"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MAbstract"><span class="hs-identifier hs-var">MAbstract</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;abstract&quot;</span></span><span>
+</span><span id="line-77"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MStrict"><span class="hs-identifier hs-var">MStrict</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;strict&quot;</span></span><span>
+</span><span id="line-78"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MSynthetic"><span class="hs-identifier hs-var">MSynthetic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;synthetic&quot;</span></span></pre></body></html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Information about JVM Versions</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html"><span class="hs-identifier">JVM.Data.JVMVersion</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Word16</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Pretty.html"><span class="hs-identifier">JVM.Data.Pretty</span></a></span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | A JVM Version Number</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">newtype</span><span> </span><span id="JVMVersion"><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="JVMVersion"><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679445779"><span id="local-6989586621679445784"><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+(JVMVersion -&gt; JVMVersion -&gt; Bool)
+-&gt; (JVMVersion -&gt; JVMVersion -&gt; Bool) -&gt; Eq JVMVersion
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: JVMVersion -&gt; JVMVersion -&gt; Bool
+== :: JVMVersion -&gt; JVMVersion -&gt; Bool
+$c/= :: JVMVersion -&gt; JVMVersion -&gt; Bool
+/= :: JVMVersion -&gt; JVMVersion -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679445792"><span id="local-6989586621679445797"><span id="local-6989586621679445801"><span id="local-6989586621679445805"><span id="local-6989586621679445809"><span id="local-6989586621679445813"><span id="local-6989586621679445817"><span class="annot"><span class="annottext">Eq JVMVersion
+Eq JVMVersion =&gt;
+(JVMVersion -&gt; JVMVersion -&gt; Ordering)
+-&gt; (JVMVersion -&gt; JVMVersion -&gt; Bool)
+-&gt; (JVMVersion -&gt; JVMVersion -&gt; Bool)
+-&gt; (JVMVersion -&gt; JVMVersion -&gt; Bool)
+-&gt; (JVMVersion -&gt; JVMVersion -&gt; Bool)
+-&gt; (JVMVersion -&gt; JVMVersion -&gt; JVMVersion)
+-&gt; (JVMVersion -&gt; JVMVersion -&gt; JVMVersion)
+-&gt; Ord JVMVersion
+JVMVersion -&gt; JVMVersion -&gt; Bool
+JVMVersion -&gt; JVMVersion -&gt; Ordering
+JVMVersion -&gt; JVMVersion -&gt; JVMVersion
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: JVMVersion -&gt; JVMVersion -&gt; Ordering
+compare :: JVMVersion -&gt; JVMVersion -&gt; Ordering
+$c&lt; :: JVMVersion -&gt; JVMVersion -&gt; Bool
+&lt; :: JVMVersion -&gt; JVMVersion -&gt; Bool
+$c&lt;= :: JVMVersion -&gt; JVMVersion -&gt; Bool
+&lt;= :: JVMVersion -&gt; JVMVersion -&gt; Bool
+$c&gt; :: JVMVersion -&gt; JVMVersion -&gt; Bool
+&gt; :: JVMVersion -&gt; JVMVersion -&gt; Bool
+$c&gt;= :: JVMVersion -&gt; JVMVersion -&gt; Bool
+&gt;= :: JVMVersion -&gt; JVMVersion -&gt; Bool
+$cmax :: JVMVersion -&gt; JVMVersion -&gt; JVMVersion
+max :: JVMVersion -&gt; JVMVersion -&gt; JVMVersion
+$cmin :: JVMVersion -&gt; JVMVersion -&gt; JVMVersion
+min :: JVMVersion -&gt; JVMVersion -&gt; JVMVersion
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679445828"><span id="local-6989586621679445834"><span id="local-6989586621679445838"><span class="annot"><span class="annottext">Int -&gt; JVMVersion -&gt; ShowS
+[JVMVersion] -&gt; ShowS
+JVMVersion -&gt; String
+(Int -&gt; JVMVersion -&gt; ShowS)
+-&gt; (JVMVersion -&gt; String)
+-&gt; ([JVMVersion] -&gt; ShowS)
+-&gt; Show JVMVersion
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; JVMVersion -&gt; ShowS
+showsPrec :: Int -&gt; JVMVersion -&gt; ShowS
+$cshow :: JVMVersion -&gt; String
+show :: JVMVersion -&gt; String
+$cshowList :: [JVMVersion] -&gt; ShowS
+showList :: [JVMVersion] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">newtype</span><span> </span><span id="MajorVersion"><span class="annot"><a href="JVM.Data.JVMVersion.html#MajorVersion"><span class="hs-identifier hs-var">MajorVersion</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MajorVersion"><span class="annot"><a href="JVM.Data.JVMVersion.html#MajorVersion"><span class="hs-identifier hs-var">MajorVersion</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679445844"><span id="local-6989586621679445848"><span class="annot"><span class="annottext">MajorVersion -&gt; MajorVersion -&gt; Bool
+(MajorVersion -&gt; MajorVersion -&gt; Bool)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; Bool) -&gt; Eq MajorVersion
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MajorVersion -&gt; MajorVersion -&gt; Bool
+== :: MajorVersion -&gt; MajorVersion -&gt; Bool
+$c/= :: MajorVersion -&gt; MajorVersion -&gt; Bool
+/= :: MajorVersion -&gt; MajorVersion -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679445855"><span id="local-6989586621679445859"><span id="local-6989586621679445863"><span id="local-6989586621679445867"><span id="local-6989586621679445871"><span id="local-6989586621679445875"><span id="local-6989586621679445879"><span class="annot"><span class="annottext">Eq MajorVersion
+Eq MajorVersion =&gt;
+(MajorVersion -&gt; MajorVersion -&gt; Ordering)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; Bool)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; Bool)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; Bool)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; Bool)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; MajorVersion)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; MajorVersion)
+-&gt; Ord MajorVersion
+MajorVersion -&gt; MajorVersion -&gt; Bool
+MajorVersion -&gt; MajorVersion -&gt; Ordering
+MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: MajorVersion -&gt; MajorVersion -&gt; Ordering
+compare :: MajorVersion -&gt; MajorVersion -&gt; Ordering
+$c&lt; :: MajorVersion -&gt; MajorVersion -&gt; Bool
+&lt; :: MajorVersion -&gt; MajorVersion -&gt; Bool
+$c&lt;= :: MajorVersion -&gt; MajorVersion -&gt; Bool
+&lt;= :: MajorVersion -&gt; MajorVersion -&gt; Bool
+$c&gt; :: MajorVersion -&gt; MajorVersion -&gt; Bool
+&gt; :: MajorVersion -&gt; MajorVersion -&gt; Bool
+$c&gt;= :: MajorVersion -&gt; MajorVersion -&gt; Bool
+&gt;= :: MajorVersion -&gt; MajorVersion -&gt; Bool
+$cmax :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+max :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+$cmin :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+min :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679445884"><span id="local-6989586621679445888"><span id="local-6989586621679445892"><span id="local-6989586621679445896"><span id="local-6989586621679445900"><span id="local-6989586621679445904"><span id="local-6989586621679445908"><span class="annot"><span class="annottext">Integer -&gt; MajorVersion
+MajorVersion -&gt; MajorVersion
+MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+(MajorVersion -&gt; MajorVersion -&gt; MajorVersion)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; MajorVersion)
+-&gt; (MajorVersion -&gt; MajorVersion -&gt; MajorVersion)
+-&gt; (MajorVersion -&gt; MajorVersion)
+-&gt; (MajorVersion -&gt; MajorVersion)
+-&gt; (MajorVersion -&gt; MajorVersion)
+-&gt; (Integer -&gt; MajorVersion)
+-&gt; Num MajorVersion
+forall a.
+(a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Integer -&gt; a)
+-&gt; Num a
+$c+ :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
++ :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+$c- :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+- :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+$c* :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+* :: MajorVersion -&gt; MajorVersion -&gt; MajorVersion
+$cnegate :: MajorVersion -&gt; MajorVersion
+negate :: MajorVersion -&gt; MajorVersion
+$cabs :: MajorVersion -&gt; MajorVersion
+abs :: MajorVersion -&gt; MajorVersion
+$csignum :: MajorVersion -&gt; MajorVersion
+signum :: MajorVersion -&gt; MajorVersion
+$cfromInteger :: Integer -&gt; MajorVersion
+fromInteger :: Integer -&gt; MajorVersion
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Num</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679445918"><span id="local-6989586621679445922"><span id="local-6989586621679445926"><span class="annot"><span class="annottext">Int -&gt; MajorVersion -&gt; ShowS
+[MajorVersion] -&gt; ShowS
+MajorVersion -&gt; String
+(Int -&gt; MajorVersion -&gt; ShowS)
+-&gt; (MajorVersion -&gt; String)
+-&gt; ([MajorVersion] -&gt; ShowS)
+-&gt; Show MajorVersion
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MajorVersion -&gt; ShowS
+showsPrec :: Int -&gt; MajorVersion -&gt; ShowS
+$cshow :: MajorVersion -&gt; String
+show :: MajorVersion -&gt; String
+$cshowList :: [MajorVersion] -&gt; ShowS
+showList :: [MajorVersion] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">newtype</span><span> </span><span id="MinorVersion"><span class="annot"><a href="JVM.Data.JVMVersion.html#MinorVersion"><span class="hs-identifier hs-var">MinorVersion</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MinorVersion"><span class="annot"><a href="JVM.Data.JVMVersion.html#MinorVersion"><span class="hs-identifier hs-var">MinorVersion</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679445930"><span id="local-6989586621679445934"><span class="annot"><span class="annottext">MinorVersion -&gt; MinorVersion -&gt; Bool
+(MinorVersion -&gt; MinorVersion -&gt; Bool)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; Bool) -&gt; Eq MinorVersion
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MinorVersion -&gt; MinorVersion -&gt; Bool
+== :: MinorVersion -&gt; MinorVersion -&gt; Bool
+$c/= :: MinorVersion -&gt; MinorVersion -&gt; Bool
+/= :: MinorVersion -&gt; MinorVersion -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679445941"><span id="local-6989586621679445945"><span id="local-6989586621679445949"><span id="local-6989586621679445953"><span id="local-6989586621679445957"><span id="local-6989586621679445961"><span id="local-6989586621679445965"><span class="annot"><span class="annottext">Eq MinorVersion
+Eq MinorVersion =&gt;
+(MinorVersion -&gt; MinorVersion -&gt; Ordering)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; Bool)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; Bool)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; Bool)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; Bool)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; MinorVersion)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; MinorVersion)
+-&gt; Ord MinorVersion
+MinorVersion -&gt; MinorVersion -&gt; Bool
+MinorVersion -&gt; MinorVersion -&gt; Ordering
+MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: MinorVersion -&gt; MinorVersion -&gt; Ordering
+compare :: MinorVersion -&gt; MinorVersion -&gt; Ordering
+$c&lt; :: MinorVersion -&gt; MinorVersion -&gt; Bool
+&lt; :: MinorVersion -&gt; MinorVersion -&gt; Bool
+$c&lt;= :: MinorVersion -&gt; MinorVersion -&gt; Bool
+&lt;= :: MinorVersion -&gt; MinorVersion -&gt; Bool
+$c&gt; :: MinorVersion -&gt; MinorVersion -&gt; Bool
+&gt; :: MinorVersion -&gt; MinorVersion -&gt; Bool
+$c&gt;= :: MinorVersion -&gt; MinorVersion -&gt; Bool
+&gt;= :: MinorVersion -&gt; MinorVersion -&gt; Bool
+$cmax :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+max :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+$cmin :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+min :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679445970"><span id="local-6989586621679445974"><span id="local-6989586621679445978"><span id="local-6989586621679445982"><span id="local-6989586621679445986"><span id="local-6989586621679445990"><span id="local-6989586621679445994"><span class="annot"><span class="annottext">Integer -&gt; MinorVersion
+MinorVersion -&gt; MinorVersion
+MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+(MinorVersion -&gt; MinorVersion -&gt; MinorVersion)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; MinorVersion)
+-&gt; (MinorVersion -&gt; MinorVersion -&gt; MinorVersion)
+-&gt; (MinorVersion -&gt; MinorVersion)
+-&gt; (MinorVersion -&gt; MinorVersion)
+-&gt; (MinorVersion -&gt; MinorVersion)
+-&gt; (Integer -&gt; MinorVersion)
+-&gt; Num MinorVersion
+forall a.
+(a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Integer -&gt; a)
+-&gt; Num a
+$c+ :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
++ :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+$c- :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+- :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+$c* :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+* :: MinorVersion -&gt; MinorVersion -&gt; MinorVersion
+$cnegate :: MinorVersion -&gt; MinorVersion
+negate :: MinorVersion -&gt; MinorVersion
+$cabs :: MinorVersion -&gt; MinorVersion
+abs :: MinorVersion -&gt; MinorVersion
+$csignum :: MinorVersion -&gt; MinorVersion
+signum :: MinorVersion -&gt; MinorVersion
+$cfromInteger :: Integer -&gt; MinorVersion
+fromInteger :: Integer -&gt; MinorVersion
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Num</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679445999"><span id="local-6989586621679446003"><span id="local-6989586621679446007"><span class="annot"><span class="annottext">Int -&gt; MinorVersion -&gt; ShowS
+[MinorVersion] -&gt; ShowS
+MinorVersion -&gt; String
+(Int -&gt; MinorVersion -&gt; ShowS)
+-&gt; (MinorVersion -&gt; String)
+-&gt; ([MinorVersion] -&gt; ShowS)
+-&gt; Show MinorVersion
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MinorVersion -&gt; ShowS
+showsPrec :: Int -&gt; MinorVersion -&gt; ShowS
+$cshow :: MinorVersion -&gt; String
+show :: MinorVersion -&gt; String
+$cshowList :: [MinorVersion] -&gt; ShowS
+showList :: [MinorVersion] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#unwrapMajor"><span class="hs-identifier hs-type">unwrapMajor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#MajorVersion"><span class="hs-identifier hs-type">MajorVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-15"></span><span id="unwrapMajor"><span class="annot"><span class="annottext">unwrapMajor :: MajorVersion -&gt; Word16
+</span><a href="JVM.Data.JVMVersion.html#unwrapMajor"><span class="hs-identifier hs-var hs-var">unwrapMajor</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.JVMVersion.html#MajorVersion"><span class="hs-identifier hs-type">MajorVersion</span></a></span><span> </span><span id="local-6989586621679446010"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446010"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446010"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#unwrapMinor"><span class="hs-identifier hs-type">unwrapMinor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#MinorVersion"><span class="hs-identifier hs-type">MinorVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-18"></span><span id="unwrapMinor"><span class="annot"><span class="annottext">unwrapMinor :: MinorVersion -&gt; Word16
+</span><a href="JVM.Data.JVMVersion.html#unwrapMinor"><span class="hs-identifier hs-var hs-var">unwrapMinor</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.JVMVersion.html#MinorVersion"><span class="hs-identifier hs-type">MinorVersion</span></a></span><span> </span><span id="local-6989586621679446012"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446012"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446012"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#getMajor"><span class="hs-identifier hs-type">getMajor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#MajorVersion"><span class="hs-identifier hs-type">MajorVersion</span></a></span><span>
+</span><span id="line-21"></span><span id="getMajor"><span class="annot"><span class="annottext">getMajor :: JVMVersion -&gt; MajorVersion
+</span><a href="JVM.Data.JVMVersion.html#getMajor"><span class="hs-identifier hs-var hs-var">getMajor</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span> </span><span id="local-6989586621679446014"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446014"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; MajorVersion
+</span><a href="JVM.Data.JVMVersion.html#MajorVersion"><span class="hs-identifier hs-var">MajorVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446014"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#getMinor"><span class="hs-identifier hs-type">getMinor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#MinorVersion"><span class="hs-identifier hs-type">MinorVersion</span></a></span><span>
+</span><span id="line-24"></span><span id="getMinor"><span class="annot"><span class="annottext">getMinor :: JVMVersion -&gt; MinorVersion
+</span><a href="JVM.Data.JVMVersion.html#getMinor"><span class="hs-identifier hs-var hs-var">getMinor</span></a></span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; MinorVersion
+</span><a href="JVM.Data.JVMVersion.html#MinorVersion"><span class="hs-identifier hs-var">MinorVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-comment">-- currently all JVM versions are 0</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java6"><span class="hs-identifier hs-type">java6</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-27"></span><span id="java6"><span class="annot"><span class="annottext">java6 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java6"><span class="hs-identifier hs-var hs-var">java6</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">50</span></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java7"><span class="hs-identifier hs-type">java7</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-30"></span><span id="java7"><span class="annot"><span class="annottext">java7 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java7"><span class="hs-identifier hs-var hs-var">java7</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">51</span></span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java8"><span class="hs-identifier hs-type">java8</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-33"></span><span id="java8"><span class="annot"><span class="annottext">java8 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java8"><span class="hs-identifier hs-var hs-var">java8</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">52</span></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java9"><span class="hs-identifier hs-type">java9</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-36"></span><span id="java9"><span class="annot"><span class="annottext">java9 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java9"><span class="hs-identifier hs-var hs-var">java9</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">53</span></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java10"><span class="hs-identifier hs-type">java10</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-39"></span><span id="java10"><span class="annot"><span class="annottext">java10 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java10"><span class="hs-identifier hs-var hs-var">java10</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">54</span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java11"><span class="hs-identifier hs-type">java11</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-42"></span><span id="java11"><span class="annot"><span class="annottext">java11 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java11"><span class="hs-identifier hs-var hs-var">java11</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">55</span></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java12"><span class="hs-identifier hs-type">java12</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-45"></span><span id="java12"><span class="annot"><span class="annottext">java12 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java12"><span class="hs-identifier hs-var hs-var">java12</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">56</span></span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java13"><span class="hs-identifier hs-type">java13</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-48"></span><span id="java13"><span class="annot"><span class="annottext">java13 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java13"><span class="hs-identifier hs-var hs-var">java13</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">57</span></span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java14"><span class="hs-identifier hs-type">java14</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-51"></span><span id="java14"><span class="annot"><span class="annottext">java14 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java14"><span class="hs-identifier hs-var hs-var">java14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">58</span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java15"><span class="hs-identifier hs-type">java15</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-54"></span><span id="java15"><span class="annot"><span class="annottext">java15 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java15"><span class="hs-identifier hs-var hs-var">java15</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">59</span></span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java16"><span class="hs-identifier hs-type">java16</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-57"></span><span id="java16"><span class="annot"><span class="annottext">java16 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java16"><span class="hs-identifier hs-var hs-var">java16</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">60</span></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java17"><span class="hs-identifier hs-type">java17</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-60"></span><span id="java17"><span class="annot"><span class="annottext">java17 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java17"><span class="hs-identifier hs-var hs-var">java17</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">61</span></span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java18"><span class="hs-identifier hs-type">java18</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-63"></span><span id="java18"><span class="annot"><span class="annottext">java18 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java18"><span class="hs-identifier hs-var hs-var">java18</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">62</span></span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java19"><span class="hs-identifier hs-type">java19</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-66"></span><span id="java19"><span class="annot"><span class="annottext">java19 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java19"><span class="hs-identifier hs-var hs-var">java19</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">63</span></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java20"><span class="hs-identifier hs-type">java20</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-69"></span><span id="java20"><span class="annot"><span class="annottext">java20 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java20"><span class="hs-identifier hs-var hs-var">java20</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">64</span></span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#java21"><span class="hs-identifier hs-type">java21</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-72"></span><span id="java21"><span class="annot"><span class="annottext">java21 :: JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java21"><span class="hs-identifier hs-var hs-var">java21</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-var">JVMVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">65</span></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isLTS"><span class="hs-identifier hs-type">isLTS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-75"></span><span id="isLTS"><span class="annot"><span class="annottext">isLTS :: JVMVersion -&gt; Bool
+</span><a href="JVM.Data.JVMVersion.html#isLTS"><span class="hs-identifier hs-var hs-var">isLTS</span></a></span></span><span> </span><span id="local-6989586621679446033"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446033"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446033"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java8"><span class="hs-identifier hs-var">java8</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-76"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isLTS"><span class="hs-identifier hs-var">isLTS</span></a></span><span> </span><span id="local-6989586621679446034"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446034"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446034"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java11"><span class="hs-identifier hs-var">java11</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-77"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isLTS"><span class="hs-identifier hs-var">isLTS</span></a></span><span> </span><span id="local-6989586621679446035"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446035"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446035"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java17"><span class="hs-identifier hs-var">java17</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-78"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isLTS"><span class="hs-identifier hs-var">isLTS</span></a></span><span> </span><span id="local-6989586621679446036"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446036"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446036"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java21"><span class="hs-identifier hs-var">java21</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-79"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isLTS"><span class="hs-identifier hs-var">isLTS</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="annot"><span class="hs-comment">{- | Returns true if the JVM version is EOL at the time of writing (April 2023)
+This is for OpenJDK, other vendors may have different EOL dates
+-}</span></span><span>
+</span><span id="line-84"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-type">isEOL</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-85"></span><span id="isEOL"><span class="annot"><span class="annottext">isEOL :: JVMVersion -&gt; Bool
+</span><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var hs-var">isEOL</span></a></span></span><span> </span><span id="local-6989586621679446038"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446038"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446038"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java7"><span class="hs-identifier hs-var">java7</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-86"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446039"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446039"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446039"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java9"><span class="hs-identifier hs-var">java9</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-87"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446040"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446040"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446040"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java10"><span class="hs-identifier hs-var">java10</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446041"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446041"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446041"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java12"><span class="hs-identifier hs-var">java12</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-89"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446042"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446042"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446042"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java13"><span class="hs-identifier hs-var">java13</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-90"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446043"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446043"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446043"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java14"><span class="hs-identifier hs-var">java14</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-91"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446044"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446044"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446044"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java15"><span class="hs-identifier hs-var">java15</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-92"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446045"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446045"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446045"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java16"><span class="hs-identifier hs-var">java16</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-93"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446046"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446046"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446046"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java18"><span class="hs-identifier hs-var">java18</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-94"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span id="local-6989586621679446047"><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446047"><span class="hs-identifier hs-var">jvm</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679446047"><span class="hs-identifier hs-var">jvm</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion -&gt; JVMVersion -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="JVM.Data.JVMVersion.html#java19"><span class="hs-identifier hs-var">java19</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-95"></span><span class="annot"><a href="JVM.Data.JVMVersion.html#isEOL"><span class="hs-identifier hs-var">isEOL</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679446050"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-98"></span><span>    </span><span id="local-6989586621679446108"><span class="annot"><span class="annottext">pretty :: forall ann. JVMVersion -&gt; Doc ann
+</span><a href="#local-6989586621679446108"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span> </span><span id="local-6989586621679446110"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446110"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446110"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-99"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">50</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 6&quot;</span></span><span>
+</span><span id="line-100"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">51</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 7&quot;</span></span><span>
+</span><span id="line-101"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">52</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 8&quot;</span></span><span>
+</span><span id="line-102"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">53</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 9&quot;</span></span><span>
+</span><span id="line-103"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">54</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 10&quot;</span></span><span>
+</span><span id="line-104"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">55</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 11&quot;</span></span><span>
+</span><span id="line-105"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">56</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 12&quot;</span></span><span>
+</span><span id="line-106"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">57</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 13&quot;</span></span><span>
+</span><span id="line-107"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">58</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 14&quot;</span></span><span>
+</span><span id="line-108"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">59</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 15&quot;</span></span><span>
+</span><span id="line-109"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">60</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 16&quot;</span></span><span>
+</span><span id="line-110"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">61</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 17&quot;</span></span><span>
+</span><span id="line-111"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">62</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 18&quot;</span></span><span>
+</span><span id="line-112"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">63</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 19&quot;</span></span><span>
+</span><span id="line-113"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 20&quot;</span></span><span>
+</span><span id="line-114"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">65</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Java 21&quot;</span></span><span>
+</span><span id="line-115"></span><span>        </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Unknown Version &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Doc ann
+forall ann. Word16 -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679446110"><span class="hs-identifier hs-var">v</span></a></span></pre></body></html>

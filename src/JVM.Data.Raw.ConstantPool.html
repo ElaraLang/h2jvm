@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html"><span class="hs-identifier">JVM.Data.Raw.ConstantPool</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary.Put</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Binary.Write.html"><span class="hs-identifier">Data.Binary.Write</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Binary.Write.html#WriteBinary"><span class="hs-identifier">WriteBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier">writeBinary</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BS</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.MagicNumbers.html"><span class="hs-identifier">JVM.Data.Raw.MagicNumbers</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">MagicNumbers</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html"><span class="hs-identifier">JVM.Data.Raw.Types</span></a></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">data</span><span> </span><span id="ConstantPoolInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#ConstantPoolInfo"><span class="hs-identifier hs-var">ConstantPoolInfo</span></a></span></span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-comment">-- | https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4.1</span></span><span>
+</span><span id="line-16"></span><span>      </span><span id="ClassInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#ClassInfo"><span class="hs-identifier hs-var">ClassInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="nameIndex"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#nameIndex"><span class="hs-identifier hs-var hs-var">nameIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FieldRefInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#FieldRefInfo"><span class="hs-identifier hs-var">FieldRefInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="classIndex"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#classIndex"><span class="hs-identifier hs-var hs-var">classIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">,</span><span> </span><span id="nameAndTypeIndex"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#nameAndTypeIndex"><span class="hs-identifier hs-var hs-var">nameAndTypeIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MethodRefInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#MethodRefInfo"><span class="hs-identifier hs-var">MethodRefInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="classIndex"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#classIndex"><span class="hs-identifier hs-var">classIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">,</span><span> </span><span id="nameAndTypeIndex"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#nameAndTypeIndex"><span class="hs-identifier hs-var">nameAndTypeIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="InterfaceMethodRefInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#InterfaceMethodRefInfo"><span class="hs-identifier hs-var">InterfaceMethodRefInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="classIndex"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#classIndex"><span class="hs-identifier hs-var">classIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">,</span><span> </span><span id="nameAndTypeIndex"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#nameAndTypeIndex"><span class="hs-identifier hs-var">nameAndTypeIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="StringInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#StringInfo"><span class="hs-identifier hs-var">StringInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="stringIndex"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#stringIndex"><span class="hs-identifier hs-var hs-var">stringIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="IntegerInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#IntegerInfo"><span class="hs-identifier hs-var">IntegerInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="bytes"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U4
+</span><a href="JVM.Data.Raw.ConstantPool.html#bytes"><span class="hs-identifier hs-var hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U4"><span class="hs-identifier hs-type">U4</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FloatInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#FloatInfo"><span class="hs-identifier hs-var">FloatInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="bytes"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#bytes"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U4"><span class="hs-identifier hs-type">U4</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="LongInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#LongInfo"><span class="hs-identifier hs-var">LongInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="highBytes"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U4
+</span><a href="JVM.Data.Raw.ConstantPool.html#highBytes"><span class="hs-identifier hs-var hs-var">highBytes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U4"><span class="hs-identifier hs-type">U4</span></a></span><span class="hs-special">,</span><span> </span><span id="lowBytes"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U4
+</span><a href="JVM.Data.Raw.ConstantPool.html#lowBytes"><span class="hs-identifier hs-var hs-var">lowBytes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U4"><span class="hs-identifier hs-type">U4</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="DoubleInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#DoubleInfo"><span class="hs-identifier hs-var">DoubleInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="highBytes"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#highBytes"><span class="hs-identifier hs-var">highBytes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U4"><span class="hs-identifier hs-type">U4</span></a></span><span class="hs-special">,</span><span> </span><span id="lowBytes"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#lowBytes"><span class="hs-identifier hs-var">lowBytes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U4"><span class="hs-identifier hs-type">U4</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="NameAndTypeInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#NameAndTypeInfo"><span class="hs-identifier hs-var">NameAndTypeInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="nameIndex"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#nameIndex"><span class="hs-identifier hs-var">nameIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">,</span><span> </span><span id="descriptorIndex"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#descriptorIndex"><span class="hs-identifier hs-var hs-var">descriptorIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="UTF8Info"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#UTF8Info"><span class="hs-identifier hs-var">UTF8Info</span></a></span></span><span> </span><span class="hs-special">{</span><span id="utfBytes"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; ByteString
+</span><a href="JVM.Data.Raw.ConstantPool.html#utfBytes"><span class="hs-identifier hs-var hs-var">utfBytes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span class="hs-special">}</span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MethodHandleInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#MethodHandleInfo"><span class="hs-identifier hs-var">MethodHandleInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="referenceKind"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U1
+</span><a href="JVM.Data.Raw.ConstantPool.html#referenceKind"><span class="hs-identifier hs-var hs-var">referenceKind</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-type">U1</span></a></span><span class="hs-special">,</span><span> </span><span id="referenceIndex"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#referenceIndex"><span class="hs-identifier hs-var hs-var">referenceIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MethodTypeInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#MethodTypeInfo"><span class="hs-identifier hs-var">MethodTypeInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="descriptorIndex"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#descriptorIndex"><span class="hs-identifier hs-var">descriptorIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="InvokeDynamicInfo"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#InvokeDynamicInfo"><span class="hs-identifier hs-var">InvokeDynamicInfo</span></a></span></span><span> </span><span class="hs-special">{</span><span id="bootstrapMethodAttrIndex"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#bootstrapMethodAttrIndex"><span class="hs-identifier hs-var hs-var">bootstrapMethodAttrIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">,</span><span> </span><span id="nameAndTypeIndex"><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#nameAndTypeIndex"><span class="hs-identifier hs-var">nameAndTypeIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452025"><span id="local-6989586621679452068"><span id="local-6989586621679452072"><span class="annot"><span class="annottext">Int -&gt; ConstantPoolInfo -&gt; ShowS
+[ConstantPoolInfo] -&gt; ShowS
+ConstantPoolInfo -&gt; String
+(Int -&gt; ConstantPoolInfo -&gt; ShowS)
+-&gt; (ConstantPoolInfo -&gt; String)
+-&gt; ([ConstantPoolInfo] -&gt; ShowS)
+-&gt; Show ConstantPoolInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ConstantPoolInfo -&gt; ShowS
+showsPrec :: Int -&gt; ConstantPoolInfo -&gt; ShowS
+$cshow :: ConstantPoolInfo -&gt; String
+show :: ConstantPoolInfo -&gt; String
+$cshowList :: [ConstantPoolInfo] -&gt; ShowS
+showList :: [ConstantPoolInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679452077"><span id="local-6989586621679452108"><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+(ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool)
+-&gt; (ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool)
+-&gt; Eq ConstantPoolInfo
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+== :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+$c/= :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+/= :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679452115"><span id="local-6989586621679452153"><span id="local-6989586621679452157"><span id="local-6989586621679452160"><span id="local-6989586621679452163"><span id="local-6989586621679452166"><span id="local-6989586621679452169"><span class="annot"><span class="annottext">Eq ConstantPoolInfo
+Eq ConstantPoolInfo =&gt;
+(ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Ordering)
+-&gt; (ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool)
+-&gt; (ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool)
+-&gt; (ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool)
+-&gt; (ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool)
+-&gt; (ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; ConstantPoolInfo)
+-&gt; (ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; ConstantPoolInfo)
+-&gt; Ord ConstantPoolInfo
+ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Ordering
+ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; ConstantPoolInfo
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Ordering
+compare :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Ordering
+$c&lt; :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+&lt; :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+$c&lt;= :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+&lt;= :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+$c&gt; :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+&gt; :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+$c&gt;= :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+&gt;= :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; Bool
+$cmax :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; ConstantPoolInfo
+max :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; ConstantPoolInfo
+$cmin :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; ConstantPoolInfo
+min :: ConstantPoolInfo -&gt; ConstantPoolInfo -&gt; ConstantPoolInfo
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.Binary.Write.html#WriteBinary"><span class="hs-identifier hs-type">WriteBinary</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#ConstantPoolInfo"><span class="hs-identifier hs-type">ConstantPoolInfo</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-33"></span><span>    </span><span id="local-6989586621679452204"><span class="annot"><span class="annottext">writeBinary :: ConstantPoolInfo -&gt; Put
+</span><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var hs-var hs-var">writeBinary</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#ClassInfo"><span class="hs-identifier hs-type">ClassInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452205"><span class="annot"><span class="annottext">U2
+nameIndex :: ConstantPoolInfo -&gt; U2
+nameIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#nameIndex"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-34"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_Class"><span class="hs-identifier hs-var">MagicNumbers.constant_Class</span></a></span><span>
+</span><span id="line-35"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452205"><span class="hs-identifier hs-var">nameIndex</span></a></span><span>
+</span><span id="line-36"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#FieldRefInfo"><span class="hs-identifier hs-type">FieldRefInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452209"><span id="local-6989586621679452210"><span class="annot"><span class="annottext">U2
+classIndex :: ConstantPoolInfo -&gt; U2
+nameAndTypeIndex :: ConstantPoolInfo -&gt; U2
+classIndex :: U2
+nameAndTypeIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#classIndex"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-37"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_Fieldref"><span class="hs-identifier hs-var">MagicNumbers.constant_Fieldref</span></a></span><span>
+</span><span id="line-38"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452209"><span class="hs-identifier hs-var">classIndex</span></a></span><span>
+</span><span id="line-39"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452210"><span class="hs-identifier hs-var">nameAndTypeIndex</span></a></span><span>
+</span><span id="line-40"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#MethodRefInfo"><span class="hs-identifier hs-type">MethodRefInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452212"><span id="local-6989586621679452213"><span class="annot"><span class="annottext">U2
+classIndex :: ConstantPoolInfo -&gt; U2
+nameAndTypeIndex :: ConstantPoolInfo -&gt; U2
+classIndex :: U2
+nameAndTypeIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#classIndex"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-41"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_Methodref"><span class="hs-identifier hs-var">MagicNumbers.constant_Methodref</span></a></span><span>
+</span><span id="line-42"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452212"><span class="hs-identifier hs-var">classIndex</span></a></span><span>
+</span><span id="line-43"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452213"><span class="hs-identifier hs-var">nameAndTypeIndex</span></a></span><span>
+</span><span id="line-44"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#InterfaceMethodRefInfo"><span class="hs-identifier hs-type">InterfaceMethodRefInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452215"><span id="local-6989586621679452216"><span class="annot"><span class="annottext">U2
+classIndex :: ConstantPoolInfo -&gt; U2
+nameAndTypeIndex :: ConstantPoolInfo -&gt; U2
+classIndex :: U2
+nameAndTypeIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#classIndex"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-45"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_InterfaceMethodref"><span class="hs-identifier hs-var">MagicNumbers.constant_InterfaceMethodref</span></a></span><span>
+</span><span id="line-46"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452215"><span class="hs-identifier hs-var">classIndex</span></a></span><span>
+</span><span id="line-47"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452216"><span class="hs-identifier hs-var">nameAndTypeIndex</span></a></span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#StringInfo"><span class="hs-identifier hs-type">StringInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452218"><span class="annot"><span class="annottext">U2
+stringIndex :: ConstantPoolInfo -&gt; U2
+stringIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#stringIndex"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-49"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_String"><span class="hs-identifier hs-var">MagicNumbers.constant_String</span></a></span><span>
+</span><span id="line-50"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452218"><span class="hs-identifier hs-var">stringIndex</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#IntegerInfo"><span class="hs-identifier hs-type">IntegerInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452220"><span class="annot"><span class="annottext">U4
+bytes :: ConstantPoolInfo -&gt; U4
+bytes :: U4
+</span><a href="JVM.Data.Raw.ConstantPool.html#bytes"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-52"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_Integer"><span class="hs-identifier hs-var">MagicNumbers.constant_Integer</span></a></span><span>
+</span><span id="line-53"></span><span>        </span><span class="annot"><span class="annottext">U4 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">U4
+</span><a href="#local-6989586621679452220"><span class="hs-identifier hs-var">bytes</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#FloatInfo"><span class="hs-identifier hs-type">FloatInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452223"><span class="annot"><span class="annottext">U4
+bytes :: ConstantPoolInfo -&gt; U4
+bytes :: U4
+</span><a href="JVM.Data.Raw.ConstantPool.html#bytes"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-55"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_Float"><span class="hs-identifier hs-var">MagicNumbers.constant_Float</span></a></span><span>
+</span><span id="line-56"></span><span>        </span><span class="annot"><span class="annottext">U4 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">U4
+</span><a href="#local-6989586621679452223"><span class="hs-identifier hs-var">bytes</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#LongInfo"><span class="hs-identifier hs-type">LongInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452225"><span id="local-6989586621679452226"><span class="annot"><span class="annottext">U4
+highBytes :: ConstantPoolInfo -&gt; U4
+lowBytes :: ConstantPoolInfo -&gt; U4
+highBytes :: U4
+lowBytes :: U4
+</span><a href="JVM.Data.Raw.ConstantPool.html#highBytes"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-58"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_Long"><span class="hs-identifier hs-var">MagicNumbers.constant_Long</span></a></span><span>
+</span><span id="line-59"></span><span>        </span><span class="annot"><span class="annottext">U4 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">U4
+</span><a href="#local-6989586621679452225"><span class="hs-identifier hs-var">highBytes</span></a></span><span>
+</span><span id="line-60"></span><span>        </span><span class="annot"><span class="annottext">U4 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">U4
+</span><a href="#local-6989586621679452226"><span class="hs-identifier hs-var">lowBytes</span></a></span><span>
+</span><span id="line-61"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#DoubleInfo"><span class="hs-identifier hs-type">DoubleInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452228"><span id="local-6989586621679452229"><span class="annot"><span class="annottext">U4
+highBytes :: ConstantPoolInfo -&gt; U4
+lowBytes :: ConstantPoolInfo -&gt; U4
+highBytes :: U4
+lowBytes :: U4
+</span><a href="JVM.Data.Raw.ConstantPool.html#highBytes"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-62"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_Double"><span class="hs-identifier hs-var">MagicNumbers.constant_Double</span></a></span><span>
+</span><span id="line-63"></span><span>        </span><span class="annot"><span class="annottext">U4 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">U4
+</span><a href="#local-6989586621679452228"><span class="hs-identifier hs-var">highBytes</span></a></span><span>
+</span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">U4 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">U4
+</span><a href="#local-6989586621679452229"><span class="hs-identifier hs-var">lowBytes</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#NameAndTypeInfo"><span class="hs-identifier hs-type">NameAndTypeInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452231"><span id="local-6989586621679452232"><span class="annot"><span class="annottext">U2
+nameIndex :: ConstantPoolInfo -&gt; U2
+descriptorIndex :: ConstantPoolInfo -&gt; U2
+nameIndex :: U2
+descriptorIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#nameIndex"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-66"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_NameAndType"><span class="hs-identifier hs-var">MagicNumbers.constant_NameAndType</span></a></span><span>
+</span><span id="line-67"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452231"><span class="hs-identifier hs-var">nameIndex</span></a></span><span>
+</span><span id="line-68"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452232"><span class="hs-identifier hs-var">descriptorIndex</span></a></span><span>
+</span><span id="line-69"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#UTF8Info"><span class="hs-identifier hs-type">UTF8Info</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452234"><span class="annot"><span class="annottext">ByteString
+utfBytes :: ConstantPoolInfo -&gt; ByteString
+utfBytes :: ByteString
+</span><a href="JVM.Data.Raw.ConstantPool.html#utfBytes"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-70"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_Utf8"><span class="hs-identifier hs-var">MagicNumbers.constant_Utf8</span></a></span><span>
+</span><span id="line-71"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; U2
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; U2) -&gt; Int -&gt; U2
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Int
+</span><span class="hs-identifier hs-var">BS.length</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679452234"><span class="hs-identifier hs-var">utfBytes</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>        </span><span class="annot"><span class="annottext">ByteString -&gt; Put
+</span><span class="hs-identifier hs-var">putByteString</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679452234"><span class="hs-identifier hs-var">utfBytes</span></a></span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#MethodHandleInfo"><span class="hs-identifier hs-type">MethodHandleInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452238"><span id="local-6989586621679452239"><span class="annot"><span class="annottext">U1
+U2
+referenceKind :: ConstantPoolInfo -&gt; U1
+referenceIndex :: ConstantPoolInfo -&gt; U2
+referenceKind :: U1
+referenceIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#referenceKind"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-74"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_MethodHandle"><span class="hs-identifier hs-var">MagicNumbers.constant_MethodHandle</span></a></span><span>
+</span><span id="line-75"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="#local-6989586621679452238"><span class="hs-identifier hs-var">referenceKind</span></a></span><span>
+</span><span id="line-76"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452239"><span class="hs-identifier hs-var">referenceIndex</span></a></span><span>
+</span><span id="line-77"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#MethodTypeInfo"><span class="hs-identifier hs-type">MethodTypeInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452241"><span class="annot"><span class="annottext">U2
+descriptorIndex :: ConstantPoolInfo -&gt; U2
+descriptorIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#descriptorIndex"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-78"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_MethodType"><span class="hs-identifier hs-var">MagicNumbers.constant_MethodType</span></a></span><span>
+</span><span id="line-79"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452241"><span class="hs-identifier hs-var">descriptorIndex</span></a></span><span>
+</span><span id="line-80"></span><span>    </span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#InvokeDynamicInfo"><span class="hs-identifier hs-type">InvokeDynamicInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452243"><span id="local-6989586621679452244"><span class="annot"><span class="annottext">U2
+nameAndTypeIndex :: ConstantPoolInfo -&gt; U2
+bootstrapMethodAttrIndex :: ConstantPoolInfo -&gt; U2
+bootstrapMethodAttrIndex :: U2
+nameAndTypeIndex :: U2
+</span><a href="JVM.Data.Raw.ConstantPool.html#nameAndTypeIndex"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-81"></span><span>        </span><span class="annot"><span class="annottext">U1 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="JVM.Data.Raw.MagicNumbers.html#constant_InvokeDynamic"><span class="hs-identifier hs-var">MagicNumbers.constant_InvokeDynamic</span></a></span><span>
+</span><span id="line-82"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452243"><span class="hs-identifier hs-var">bootstrapMethodAttrIndex</span></a></span><span>
+</span><span id="line-83"></span><span>        </span><span class="annot"><span class="annottext">U2 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679452244"><span class="hs-identifier hs-var">nameAndTypeIndex</span></a></span><span>
+</span><span id="line-84"></span></pre></body></html>

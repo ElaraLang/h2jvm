@@ -1,0 +1,2022 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679455745"><span id="local-6989586621679455746"><span id="local-6989586621679455747"><span id="local-6989586621679455748"><span id="local-6989586621679455749"><span id="local-6989586621679455750"><span id="local-6989586621679455751"><span id="local-6989586621679455752"><span id="local-6989586621679455753"><span id="local-6989586621679455754"><span id="local-6989586621679455755"><span id="local-6989586621679455756"><span id="local-6989586621679455757"><span id="local-6989586621679455758"><span id="local-6989586621679455759"><span id="local-6989586621679455760"><span id="local-6989586621679455761"><span id="local-6989586621679455762"><span id="local-6989586621679455763"><span id="local-6989586621679455764"><span id="local-6989586621679455765"><span id="local-6989586621679455766"><span id="local-6989586621679455767"><span id="local-6989586621679455768"><span id="local-6989586621679455769"><span id="local-6989586621679455770"><span id="local-6989586621679455771"></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.Method</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.AccessFlags</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MethodAccessFlag"><span class="hs-identifier">MethodAccessFlag</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html"><span class="hs-identifier">JVM.Data.Abstract.Descriptor</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier">MethodDescriptor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Data</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html"><span class="hs-identifier">Data.TypeMergingList</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.TypeMergingList.html#DataMergeable"><span class="hs-identifier">DataMergeable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier">merge</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#TypeMergingList"><span class="hs-identifier">TypeMergingList</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#errorDifferentConstructors"><span class="hs-identifier">errorDifferentConstructors</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html"><span class="hs-identifier">JVM.Data.Abstract.Builder.Label</span></a></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Instruction.html"><span class="hs-identifier">JVM.Data.Abstract.Instruction</span></a></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html"><span class="hs-identifier">JVM.Data.Abstract.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier">ClassInfoType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Pretty.html"><span class="hs-identifier">JVM.Data.Pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier">Pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier">pretty</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html"><span class="hs-identifier">JVM.Data.Raw.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier">U1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier">U2</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="ClassFileMethod"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ClassFileMethod"><span class="hs-identifier hs-var">ClassFileMethod</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ClassFileMethod"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ClassFileMethod"><span class="hs-identifier hs-var">ClassFileMethod</span></a></span></span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="methodAccessFlags"><span class="annot"><span class="annottext">ClassFileMethod -&gt; [MethodAccessFlag]
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#methodAccessFlags"><span class="hs-identifier hs-var hs-var">methodAccessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MethodAccessFlag"><span class="hs-identifier hs-type">MethodAccessFlag</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="methodName"><span class="annot"><span class="annottext">ClassFileMethod -&gt; Text
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#methodName"><span class="hs-identifier hs-var hs-var">methodName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="methodDescriptor"><span class="annot"><span class="annottext">ClassFileMethod -&gt; MethodDescriptor
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#methodDescriptor"><span class="hs-identifier hs-var hs-var">methodDescriptor</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="methodAttributes"><span class="annot"><span class="annottext">ClassFileMethod -&gt; TypeMergingList MethodAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#methodAttributes"><span class="hs-identifier hs-var hs-var">methodAttributes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#TypeMergingList"><span class="hs-identifier hs-type">TypeMergingList</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#MethodAttribute"><span class="hs-identifier hs-type">MethodAttribute</span></a></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679455781"><span id="local-6989586621679455795"><span id="local-6989586621679455799"><span class="annot"><span class="annottext">Int -&gt; ClassFileMethod -&gt; ShowS
+[ClassFileMethod] -&gt; ShowS
+ClassFileMethod -&gt; String
+(Int -&gt; ClassFileMethod -&gt; ShowS)
+-&gt; (ClassFileMethod -&gt; String)
+-&gt; ([ClassFileMethod] -&gt; ShowS)
+-&gt; Show ClassFileMethod
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ClassFileMethod -&gt; ShowS
+showsPrec :: Int -&gt; ClassFileMethod -&gt; ShowS
+$cshow :: ClassFileMethod -&gt; String
+show :: ClassFileMethod -&gt; String
+$cshowList :: [ClassFileMethod] -&gt; ShowS
+showList :: [ClassFileMethod] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">data</span><span> </span><span id="MethodAttribute"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#MethodAttribute"><span class="hs-identifier hs-var">MethodAttribute</span></a></span></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="Code"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#Code"><span class="hs-identifier hs-var">Code</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-type">CodeAttributeData</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679455807"><span id="local-6989586621679455812"><span id="local-6989586621679455815"><span class="annot"><span class="annottext">Int -&gt; MethodAttribute -&gt; ShowS
+[MethodAttribute] -&gt; ShowS
+MethodAttribute -&gt; String
+(Int -&gt; MethodAttribute -&gt; ShowS)
+-&gt; (MethodAttribute -&gt; String)
+-&gt; ([MethodAttribute] -&gt; ShowS)
+-&gt; Show MethodAttribute
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MethodAttribute -&gt; ShowS
+showsPrec :: Int -&gt; MethodAttribute -&gt; ShowS
+$cshow :: MethodAttribute -&gt; String
+show :: MethodAttribute -&gt; String
+$cshowList :: [MethodAttribute] -&gt; ShowS
+showList :: [MethodAttribute] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679455818"><span id="local-6989586621679455820"><span class="annot"><span class="annottext">(forall x. MethodAttribute -&gt; Rep MethodAttribute x)
+-&gt; (forall x. Rep MethodAttribute x -&gt; MethodAttribute)
+-&gt; Generic MethodAttribute
+forall x. Rep MethodAttribute x -&gt; MethodAttribute
+forall x. MethodAttribute -&gt; Rep MethodAttribute x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. MethodAttribute -&gt; Rep MethodAttribute x
+from :: forall x. MethodAttribute -&gt; Rep MethodAttribute x
+$cto :: forall x. Rep MethodAttribute x -&gt; MethodAttribute
+to :: forall x. Rep MethodAttribute x -&gt; MethodAttribute
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679455828"><span id="local-6989586621679455832"><span id="local-6989586621679455835"><span id="local-6989586621679455837"><span id="local-6989586621679455839"><span id="local-6989586621679455845"><span id="local-6989586621679455850"><span id="local-6989586621679455853"><span id="local-6989586621679455856"><span id="local-6989586621679455859"><span id="local-6989586621679455862"><span id="local-6989586621679455865"><span id="local-6989586621679455870"><span id="local-6989586621679455875"><span class="annot"><span class="annottext">Typeable MethodAttribute
+Typeable MethodAttribute =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; MethodAttribute -&gt; c MethodAttribute)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodAttribute)
+-&gt; (MethodAttribute -&gt; Constr)
+-&gt; (MethodAttribute -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodAttribute))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c MethodAttribute))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; MethodAttribute -&gt; MethodAttribute)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAttribute -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAttribute -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAttribute -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAttribute -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodAttribute -&gt; m MethodAttribute)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodAttribute -&gt; m MethodAttribute)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodAttribute -&gt; m MethodAttribute)
+-&gt; Data MethodAttribute
+MethodAttribute -&gt; Constr
+MethodAttribute -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; MethodAttribute -&gt; MethodAttribute
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAttribute -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAttribute -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAttribute -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAttribute -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAttribute -&gt; m MethodAttribute
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAttribute -&gt; m MethodAttribute
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodAttribute
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodAttribute -&gt; c MethodAttribute
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodAttribute)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodAttribute)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodAttribute -&gt; c MethodAttribute
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodAttribute -&gt; c MethodAttribute
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodAttribute
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodAttribute
+$ctoConstr :: MethodAttribute -&gt; Constr
+toConstr :: MethodAttribute -&gt; Constr
+$cdataTypeOf :: MethodAttribute -&gt; DataType
+dataTypeOf :: MethodAttribute -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodAttribute)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodAttribute)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodAttribute)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodAttribute)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; MethodAttribute -&gt; MethodAttribute
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; MethodAttribute -&gt; MethodAttribute
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAttribute -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAttribute -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAttribute -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodAttribute -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAttribute -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAttribute -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAttribute -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodAttribute -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAttribute -&gt; m MethodAttribute
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAttribute -&gt; m MethodAttribute
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAttribute -&gt; m MethodAttribute
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAttribute -&gt; m MethodAttribute
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAttribute -&gt; m MethodAttribute
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodAttribute -&gt; m MethodAttribute
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="CodeAttributeData"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-var">CodeAttributeData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CodeAttributeData"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-var">CodeAttributeData</span></a></span></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="maxStack"><span class="annot"><span class="annottext">CodeAttributeData -&gt; U2
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#maxStack"><span class="hs-identifier hs-var hs-var">maxStack</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="maxLocals"><span class="annot"><span class="annottext">CodeAttributeData -&gt; U2
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#maxLocals"><span class="hs-identifier hs-var hs-var">maxLocals</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="code"><span class="annot"><span class="annottext">CodeAttributeData -&gt; [Instruction]
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#code"><span class="hs-identifier hs-var hs-var">code</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="exceptionTable"><span class="annot"><span class="annottext">CodeAttributeData -&gt; [ExceptionTableEntry]
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#exceptionTable"><span class="hs-identifier hs-var hs-var">exceptionTable</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ExceptionTableEntry"><span class="hs-identifier hs-type">ExceptionTableEntry</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="codeAttributes"><span class="annot"><span class="annottext">CodeAttributeData -&gt; [CodeAttribute]
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#codeAttributes"><span class="hs-identifier hs-var hs-var">codeAttributes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttribute"><span class="hs-identifier hs-type">CodeAttribute</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679455891"><span id="local-6989586621679455903"><span id="local-6989586621679455906"><span class="annot"><span class="annottext">Int -&gt; CodeAttributeData -&gt; ShowS
+[CodeAttributeData] -&gt; ShowS
+CodeAttributeData -&gt; String
+(Int -&gt; CodeAttributeData -&gt; ShowS)
+-&gt; (CodeAttributeData -&gt; String)
+-&gt; ([CodeAttributeData] -&gt; ShowS)
+-&gt; Show CodeAttributeData
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CodeAttributeData -&gt; ShowS
+showsPrec :: Int -&gt; CodeAttributeData -&gt; ShowS
+$cshow :: CodeAttributeData -&gt; String
+show :: CodeAttributeData -&gt; String
+$cshowList :: [CodeAttributeData] -&gt; ShowS
+showList :: [CodeAttributeData] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679455916"><span id="local-6989586621679455928"><span id="local-6989586621679455938"><span id="local-6989586621679455940"><span id="local-6989586621679455942"><span id="local-6989586621679455947"><span id="local-6989586621679455952"><span id="local-6989586621679455955"><span id="local-6989586621679455958"><span id="local-6989586621679455961"><span id="local-6989586621679455964"><span id="local-6989586621679455967"><span id="local-6989586621679455972"><span id="local-6989586621679455977"><span class="annot"><span class="annottext">Typeable CodeAttributeData
+Typeable CodeAttributeData =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g)
+ -&gt; CodeAttributeData
+ -&gt; c CodeAttributeData)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c CodeAttributeData)
+-&gt; (CodeAttributeData -&gt; Constr)
+-&gt; (CodeAttributeData -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c CodeAttributeData))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c CodeAttributeData))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; CodeAttributeData -&gt; CodeAttributeData)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttributeData -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttributeData -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttributeData -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttributeData -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; CodeAttributeData -&gt; m CodeAttributeData)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; CodeAttributeData -&gt; m CodeAttributeData)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; CodeAttributeData -&gt; m CodeAttributeData)
+-&gt; Data CodeAttributeData
+CodeAttributeData -&gt; Constr
+CodeAttributeData -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; CodeAttributeData -&gt; CodeAttributeData
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttributeData -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttributeData -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttributeData -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttributeData -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; CodeAttributeData -&gt; m CodeAttributeData
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; CodeAttributeData -&gt; m CodeAttributeData
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c CodeAttributeData
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; CodeAttributeData -&gt; c CodeAttributeData
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c CodeAttributeData)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c CodeAttributeData)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; CodeAttributeData -&gt; c CodeAttributeData
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; CodeAttributeData -&gt; c CodeAttributeData
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c CodeAttributeData
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c CodeAttributeData
+$ctoConstr :: CodeAttributeData -&gt; Constr
+toConstr :: CodeAttributeData -&gt; Constr
+$cdataTypeOf :: CodeAttributeData -&gt; DataType
+dataTypeOf :: CodeAttributeData -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c CodeAttributeData)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c CodeAttributeData)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c CodeAttributeData)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c CodeAttributeData)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; CodeAttributeData -&gt; CodeAttributeData
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; CodeAttributeData -&gt; CodeAttributeData
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttributeData -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttributeData -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttributeData -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttributeData -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttributeData -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttributeData -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttributeData -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttributeData -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; CodeAttributeData -&gt; m CodeAttributeData
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; CodeAttributeData -&gt; m CodeAttributeData
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; CodeAttributeData -&gt; m CodeAttributeData
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; CodeAttributeData -&gt; m CodeAttributeData
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; CodeAttributeData -&gt; m CodeAttributeData
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; CodeAttributeData -&gt; m CodeAttributeData
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679455988"><span id="local-6989586621679455990"><span class="annot"><span class="annottext">(forall x. CodeAttributeData -&gt; Rep CodeAttributeData x)
+-&gt; (forall x. Rep CodeAttributeData x -&gt; CodeAttributeData)
+-&gt; Generic CodeAttributeData
+forall x. Rep CodeAttributeData x -&gt; CodeAttributeData
+forall x. CodeAttributeData -&gt; Rep CodeAttributeData x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. CodeAttributeData -&gt; Rep CodeAttributeData x
+from :: forall x. CodeAttributeData -&gt; Rep CodeAttributeData x
+$cto :: forall x. Rep CodeAttributeData x -&gt; CodeAttributeData
+to :: forall x. Rep CodeAttributeData x -&gt; CodeAttributeData
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">data</span><span> </span><span id="ExceptionTableEntry"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ExceptionTableEntry"><span class="hs-identifier hs-var">ExceptionTableEntry</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ExceptionTableEntry"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ExceptionTableEntry"><span class="hs-identifier hs-var">ExceptionTableEntry</span></a></span></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="startPc"><span class="annot"><span class="annottext">ExceptionTableEntry -&gt; Int
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#startPc"><span class="hs-identifier hs-var hs-var">startPc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="endPc"><span class="annot"><span class="annottext">ExceptionTableEntry -&gt; Int
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#endPc"><span class="hs-identifier hs-var hs-var">endPc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="handlerPc"><span class="annot"><span class="annottext">ExceptionTableEntry -&gt; Int
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#handlerPc"><span class="hs-identifier hs-var hs-var">handlerPc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="catchType"><span class="annot"><span class="annottext">ExceptionTableEntry -&gt; Maybe ClassInfoType
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#catchType"><span class="hs-identifier hs-var hs-var">catchType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier hs-type">ClassInfoType</span></a></span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679455998"><span id="local-6989586621679456008"><span id="local-6989586621679456011"><span class="annot"><span class="annottext">Int -&gt; ExceptionTableEntry -&gt; ShowS
+[ExceptionTableEntry] -&gt; ShowS
+ExceptionTableEntry -&gt; String
+(Int -&gt; ExceptionTableEntry -&gt; ShowS)
+-&gt; (ExceptionTableEntry -&gt; String)
+-&gt; ([ExceptionTableEntry] -&gt; ShowS)
+-&gt; Show ExceptionTableEntry
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ExceptionTableEntry -&gt; ShowS
+showsPrec :: Int -&gt; ExceptionTableEntry -&gt; ShowS
+$cshow :: ExceptionTableEntry -&gt; String
+show :: ExceptionTableEntry -&gt; String
+$cshowList :: [ExceptionTableEntry] -&gt; ShowS
+showList :: [ExceptionTableEntry] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456017"><span id="local-6989586621679456026"><span id="local-6989586621679456033"><span id="local-6989586621679456035"><span id="local-6989586621679456037"><span id="local-6989586621679456042"><span id="local-6989586621679456047"><span id="local-6989586621679456050"><span id="local-6989586621679456053"><span id="local-6989586621679456056"><span id="local-6989586621679456059"><span id="local-6989586621679456062"><span id="local-6989586621679456067"><span id="local-6989586621679456072"><span class="annot"><span class="annottext">Typeable ExceptionTableEntry
+Typeable ExceptionTableEntry =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g)
+ -&gt; ExceptionTableEntry
+ -&gt; c ExceptionTableEntry)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ExceptionTableEntry)
+-&gt; (ExceptionTableEntry -&gt; Constr)
+-&gt; (ExceptionTableEntry -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ExceptionTableEntry))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c ExceptionTableEntry))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; ExceptionTableEntry -&gt; ExceptionTableEntry)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ExceptionTableEntry -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ExceptionTableEntry -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; ExceptionTableEntry -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ExceptionTableEntry -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry)
+-&gt; Data ExceptionTableEntry
+ExceptionTableEntry -&gt; Constr
+ExceptionTableEntry -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; ExceptionTableEntry -&gt; ExceptionTableEntry
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ExceptionTableEntry -&gt; u
+forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; ExceptionTableEntry -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ExceptionTableEntry -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ExceptionTableEntry -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ExceptionTableEntry
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; ExceptionTableEntry
+-&gt; c ExceptionTableEntry
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ExceptionTableEntry)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ExceptionTableEntry)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; ExceptionTableEntry
+-&gt; c ExceptionTableEntry
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; ExceptionTableEntry
+-&gt; c ExceptionTableEntry
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ExceptionTableEntry
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ExceptionTableEntry
+$ctoConstr :: ExceptionTableEntry -&gt; Constr
+toConstr :: ExceptionTableEntry -&gt; Constr
+$cdataTypeOf :: ExceptionTableEntry -&gt; DataType
+dataTypeOf :: ExceptionTableEntry -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ExceptionTableEntry)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ExceptionTableEntry)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ExceptionTableEntry)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ExceptionTableEntry)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; ExceptionTableEntry -&gt; ExceptionTableEntry
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; ExceptionTableEntry -&gt; ExceptionTableEntry
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ExceptionTableEntry -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ExceptionTableEntry -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ExceptionTableEntry -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ExceptionTableEntry -&gt; r
+$cgmapQ :: forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; ExceptionTableEntry -&gt; [u]
+gmapQ :: forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; ExceptionTableEntry -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ExceptionTableEntry -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ExceptionTableEntry -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ExceptionTableEntry -&gt; m ExceptionTableEntry
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456078"><span id="local-6989586621679456080"><span class="annot"><span class="annottext">(forall x. ExceptionTableEntry -&gt; Rep ExceptionTableEntry x)
+-&gt; (forall x. Rep ExceptionTableEntry x -&gt; ExceptionTableEntry)
+-&gt; Generic ExceptionTableEntry
+forall x. Rep ExceptionTableEntry x -&gt; ExceptionTableEntry
+forall x. ExceptionTableEntry -&gt; Rep ExceptionTableEntry x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ExceptionTableEntry -&gt; Rep ExceptionTableEntry x
+from :: forall x. ExceptionTableEntry -&gt; Rep ExceptionTableEntry x
+$cto :: forall x. Rep ExceptionTableEntry x -&gt; ExceptionTableEntry
+to :: forall x. Rep ExceptionTableEntry x -&gt; ExceptionTableEntry
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">data</span><span> </span><span id="CodeAttribute"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttribute"><span class="hs-identifier hs-var">CodeAttribute</span></a></span></span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="LineNumberTable"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTable"><span class="hs-identifier hs-var">LineNumberTable</span></a></span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTableEntry"><span class="hs-identifier hs-type">LineNumberTableEntry</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="StackMapTable"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#StackMapTable"><span class="hs-identifier hs-var">StackMapTable</span></a></span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#StackMapFrame"><span class="hs-identifier hs-type">StackMapFrame</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679456085"><span id="local-6989586621679456093"><span id="local-6989586621679456096"><span class="annot"><span class="annottext">Int -&gt; CodeAttribute -&gt; ShowS
+[CodeAttribute] -&gt; ShowS
+CodeAttribute -&gt; String
+(Int -&gt; CodeAttribute -&gt; ShowS)
+-&gt; (CodeAttribute -&gt; String)
+-&gt; ([CodeAttribute] -&gt; ShowS)
+-&gt; Show CodeAttribute
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CodeAttribute -&gt; ShowS
+showsPrec :: Int -&gt; CodeAttribute -&gt; ShowS
+$cshow :: CodeAttribute -&gt; String
+show :: CodeAttribute -&gt; String
+$cshowList :: [CodeAttribute] -&gt; ShowS
+showList :: [CodeAttribute] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456101"><span id="local-6989586621679456111"><span class="annot"><span class="annottext">CodeAttribute -&gt; CodeAttribute -&gt; Bool
+(CodeAttribute -&gt; CodeAttribute -&gt; Bool)
+-&gt; (CodeAttribute -&gt; CodeAttribute -&gt; Bool) -&gt; Eq CodeAttribute
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CodeAttribute -&gt; CodeAttribute -&gt; Bool
+== :: CodeAttribute -&gt; CodeAttribute -&gt; Bool
+$c/= :: CodeAttribute -&gt; CodeAttribute -&gt; Bool
+/= :: CodeAttribute -&gt; CodeAttribute -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456120"><span id="local-6989586621679456126"><span id="local-6989586621679456132"><span id="local-6989586621679456134"><span id="local-6989586621679456136"><span id="local-6989586621679456141"><span id="local-6989586621679456146"><span id="local-6989586621679456149"><span id="local-6989586621679456152"><span id="local-6989586621679456155"><span id="local-6989586621679456158"><span id="local-6989586621679456161"><span id="local-6989586621679456166"><span id="local-6989586621679456171"><span class="annot"><span class="annottext">Typeable CodeAttribute
+Typeable CodeAttribute =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; CodeAttribute -&gt; c CodeAttribute)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c CodeAttribute)
+-&gt; (CodeAttribute -&gt; Constr)
+-&gt; (CodeAttribute -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c CodeAttribute))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c CodeAttribute))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; CodeAttribute -&gt; CodeAttribute)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttribute -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttribute -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttribute -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttribute -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute)
+-&gt; Data CodeAttribute
+CodeAttribute -&gt; Constr
+CodeAttribute -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; CodeAttribute -&gt; CodeAttribute
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttribute -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttribute -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttribute -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttribute -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c CodeAttribute
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; CodeAttribute -&gt; c CodeAttribute
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c CodeAttribute)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c CodeAttribute)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; CodeAttribute -&gt; c CodeAttribute
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; CodeAttribute -&gt; c CodeAttribute
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c CodeAttribute
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c CodeAttribute
+$ctoConstr :: CodeAttribute -&gt; Constr
+toConstr :: CodeAttribute -&gt; Constr
+$cdataTypeOf :: CodeAttribute -&gt; DataType
+dataTypeOf :: CodeAttribute -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c CodeAttribute)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c CodeAttribute)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c CodeAttribute)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c CodeAttribute)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; CodeAttribute -&gt; CodeAttribute
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; CodeAttribute -&gt; CodeAttribute
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttribute -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttribute -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttribute -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; CodeAttribute -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttribute -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttribute -&gt; [u]
+$cgmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttribute -&gt; u
+gmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; CodeAttribute -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; CodeAttribute -&gt; m CodeAttribute
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456178"><span id="local-6989586621679456180"><span class="annot"><span class="annottext">(forall x. CodeAttribute -&gt; Rep CodeAttribute x)
+-&gt; (forall x. Rep CodeAttribute x -&gt; CodeAttribute)
+-&gt; Generic CodeAttribute
+forall x. Rep CodeAttribute x -&gt; CodeAttribute
+forall x. CodeAttribute -&gt; Rep CodeAttribute x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. CodeAttribute -&gt; Rep CodeAttribute x
+from :: forall x. CodeAttribute -&gt; Rep CodeAttribute x
+$cto :: forall x. Rep CodeAttribute x -&gt; CodeAttribute
+to :: forall x. Rep CodeAttribute x -&gt; CodeAttribute
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#DataMergeable"><span class="hs-identifier hs-type">DataMergeable</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttribute"><span class="hs-identifier hs-type">CodeAttribute</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-51"></span><span>    </span><span id="local-6989586621679456191"><span class="annot"><span class="annottext">merge :: CodeAttribute -&gt; CodeAttribute -&gt; CodeAttribute
+</span><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var hs-var hs-var">merge</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTable"><span class="hs-identifier hs-type">LineNumberTable</span></a></span><span> </span><span id="local-6989586621679456192"><span class="annot"><span class="annottext">[LineNumberTableEntry]
+</span><a href="#local-6989586621679456192"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTable"><span class="hs-identifier hs-type">LineNumberTable</span></a></span><span> </span><span id="local-6989586621679456193"><span class="annot"><span class="annottext">[LineNumberTableEntry]
+</span><a href="#local-6989586621679456193"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[LineNumberTableEntry] -&gt; CodeAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTable"><span class="hs-identifier hs-var">LineNumberTable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[LineNumberTableEntry]
+</span><a href="#local-6989586621679456192"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">[LineNumberTableEntry]
+-&gt; [LineNumberTableEntry] -&gt; [LineNumberTableEntry]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[LineNumberTableEntry]
+</span><a href="#local-6989586621679456193"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#StackMapTable"><span class="hs-identifier hs-type">StackMapTable</span></a></span><span> </span><span id="local-6989586621679456194"><span class="annot"><span class="annottext">[StackMapFrame]
+</span><a href="#local-6989586621679456194"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#StackMapTable"><span class="hs-identifier hs-type">StackMapTable</span></a></span><span> </span><span id="local-6989586621679456195"><span class="annot"><span class="annottext">[StackMapFrame]
+</span><a href="#local-6989586621679456195"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[StackMapFrame] -&gt; CodeAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#StackMapTable"><span class="hs-identifier hs-var">StackMapTable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[StackMapFrame]
+</span><a href="#local-6989586621679456194"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">[StackMapFrame] -&gt; [StackMapFrame] -&gt; [StackMapFrame]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[StackMapFrame]
+</span><a href="#local-6989586621679456195"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span id="local-6989586621679456196"><span class="annot"><span class="annottext">CodeAttribute
+</span><a href="#local-6989586621679456196"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679456197"><span class="annot"><span class="annottext">CodeAttribute
+</span><a href="#local-6989586621679456197"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CodeAttribute -&gt; CodeAttribute -&gt; CodeAttribute
+forall a b. Data a =&gt; a -&gt; a -&gt; b
+</span><a href="Data.TypeMergingList.html#errorDifferentConstructors"><span class="hs-identifier hs-var">errorDifferentConstructors</span></a></span><span> </span><span class="annot"><span class="annottext">CodeAttribute
+</span><a href="#local-6989586621679456196"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">CodeAttribute
+</span><a href="#local-6989586621679456197"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#DataMergeable"><span class="hs-identifier hs-type">DataMergeable</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#MethodAttribute"><span class="hs-identifier hs-type">MethodAttribute</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-56"></span><span>    </span><span id="local-6989586621679456205"><span class="annot"><span class="annottext">merge :: MethodAttribute -&gt; MethodAttribute -&gt; MethodAttribute
+</span><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var hs-var hs-var">merge</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#Code"><span class="hs-identifier hs-type">Code</span></a></span><span> </span><span id="local-6989586621679456206"><span class="annot"><span class="annottext">CodeAttributeData
+</span><a href="#local-6989586621679456206"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#Code"><span class="hs-identifier hs-type">Code</span></a></span><span> </span><span id="local-6989586621679456207"><span class="annot"><span class="annottext">CodeAttributeData
+</span><a href="#local-6989586621679456207"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CodeAttributeData -&gt; MethodAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#Code"><span class="hs-identifier hs-var">Code</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CodeAttributeData -&gt; CodeAttributeData -&gt; CodeAttributeData
+forall a. DataMergeable a =&gt; a -&gt; a -&gt; a
+</span><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="annot"><span class="annottext">CodeAttributeData
+</span><a href="#local-6989586621679456206"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">CodeAttributeData
+</span><a href="#local-6989586621679456207"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span id="local-6989586621679456208"><span class="annot"><span class="annottext">MethodAttribute
+</span><a href="#local-6989586621679456208"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679456209"><span class="annot"><span class="annottext">MethodAttribute
+</span><a href="#local-6989586621679456209"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MethodAttribute -&gt; MethodAttribute -&gt; MethodAttribute
+forall a b. Data a =&gt; a -&gt; a -&gt; b
+</span><a href="Data.TypeMergingList.html#errorDifferentConstructors"><span class="hs-identifier hs-var">errorDifferentConstructors</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAttribute
+</span><a href="#local-6989586621679456208"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">MethodAttribute
+</span><a href="#local-6989586621679456209"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#DataMergeable"><span class="hs-identifier hs-type">DataMergeable</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-type">CodeAttributeData</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-60"></span><span>    </span><span id="local-6989586621679456219"><span class="annot"><span class="annottext">merge :: CodeAttributeData -&gt; CodeAttributeData -&gt; CodeAttributeData
+</span><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var hs-var hs-var">merge</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-type">CodeAttributeData</span></a></span><span> </span><span id="local-6989586621679456220"><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456220"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679456221"><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456221"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span id="local-6989586621679456222"><span class="annot"><span class="annottext">[Instruction]
+</span><a href="#local-6989586621679456222"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679456223"><span class="annot"><span class="annottext">[ExceptionTableEntry]
+</span><a href="#local-6989586621679456223"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span id="local-6989586621679456224"><span class="annot"><span class="annottext">[CodeAttribute]
+</span><a href="#local-6989586621679456224"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-type">CodeAttributeData</span></a></span><span> </span><span id="local-6989586621679456225"><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456225"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span id="local-6989586621679456226"><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456226"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span id="local-6989586621679456227"><span class="annot"><span class="annottext">[Instruction]
+</span><a href="#local-6989586621679456227"><span class="hs-identifier hs-var">c'</span></a></span></span><span> </span><span id="local-6989586621679456228"><span class="annot"><span class="annottext">[ExceptionTableEntry]
+</span><a href="#local-6989586621679456228"><span class="hs-identifier hs-var">d'</span></a></span></span><span> </span><span id="local-6989586621679456229"><span class="annot"><span class="annottext">[CodeAttribute]
+</span><a href="#local-6989586621679456229"><span class="hs-identifier hs-var">e'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-61"></span><span>        </span><span class="annot"><span class="annottext">U2
+-&gt; U2
+-&gt; [Instruction]
+-&gt; [ExceptionTableEntry]
+-&gt; [CodeAttribute]
+-&gt; CodeAttributeData
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-var">CodeAttributeData</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">U2 -&gt; U2 -&gt; U2
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456220"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456225"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">U2 -&gt; U2 -&gt; U2
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456221"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456226"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Instruction]
+</span><a href="#local-6989586621679456222"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[Instruction] -&gt; [Instruction] -&gt; [Instruction]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Instruction]
+</span><a href="#local-6989586621679456227"><span class="hs-identifier hs-var">c'</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[ExceptionTableEntry]
+</span><a href="#local-6989586621679456223"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">[ExceptionTableEntry]
+-&gt; [ExceptionTableEntry] -&gt; [ExceptionTableEntry]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[ExceptionTableEntry]
+</span><a href="#local-6989586621679456228"><span class="hs-identifier hs-var">d'</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[CodeAttribute]
+</span><a href="#local-6989586621679456224"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">[CodeAttribute] -&gt; [CodeAttribute] -&gt; [CodeAttribute]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[CodeAttribute]
+</span><a href="#local-6989586621679456229"><span class="hs-identifier hs-var">e'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="hs-keyword">data</span><span> </span><span id="StackMapFrame"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#StackMapFrame"><span class="hs-identifier hs-var">StackMapFrame</span></a></span></span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="SameFrame"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#SameFrame"><span class="hs-identifier hs-var">SameFrame</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html#Label"><span class="hs-identifier hs-type">Label</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ChopFrame"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ChopFrame"><span class="hs-identifier hs-var">ChopFrame</span></a></span></span><span>
+</span><span id="line-66"></span><span>        </span><span class="annot"><span class="hs-comment">-- | How many locals to chop</span></span><span>
+</span><span id="line-67"></span><span>        </span><span class="hs-glyph">!</span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-type">U1</span></a></span><span>
+</span><span id="line-68"></span><span>        </span><span class="annot"><span class="hs-comment">-- | The label of the next instruction</span></span><span>
+</span><span id="line-69"></span><span>        </span><span class="hs-glyph">!</span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html#Label"><span class="hs-identifier hs-type">Label</span></a></span><span>
+</span><span id="line-70"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="SameLocals1StackItemFrame"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#SameLocals1StackItemFrame"><span class="hs-identifier hs-var">SameLocals1StackItemFrame</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html#Label"><span class="hs-identifier hs-type">Label</span></a></span><span>
+</span><span id="line-71"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="AppendFrame"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#AppendFrame"><span class="hs-identifier hs-var">AppendFrame</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html#Label"><span class="hs-identifier hs-type">Label</span></a></span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FullFrame"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#FullFrame"><span class="hs-identifier hs-var">FullFrame</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html#Label"><span class="hs-identifier hs-type">Label</span></a></span><span>
+</span><span id="line-73"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679456237"><span id="local-6989586621679456256"><span id="local-6989586621679456259"><span class="annot"><span class="annottext">Int -&gt; StackMapFrame -&gt; ShowS
+[StackMapFrame] -&gt; ShowS
+StackMapFrame -&gt; String
+(Int -&gt; StackMapFrame -&gt; ShowS)
+-&gt; (StackMapFrame -&gt; String)
+-&gt; ([StackMapFrame] -&gt; ShowS)
+-&gt; Show StackMapFrame
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StackMapFrame -&gt; ShowS
+showsPrec :: Int -&gt; StackMapFrame -&gt; ShowS
+$cshow :: StackMapFrame -&gt; String
+show :: StackMapFrame -&gt; String
+$cshowList :: [StackMapFrame] -&gt; ShowS
+showList :: [StackMapFrame] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456264"><span id="local-6989586621679456278"><span id="local-6989586621679456290"><span id="local-6989586621679456292"><span id="local-6989586621679456294"><span id="local-6989586621679456299"><span id="local-6989586621679456304"><span id="local-6989586621679456307"><span id="local-6989586621679456310"><span id="local-6989586621679456313"><span id="local-6989586621679456316"><span id="local-6989586621679456319"><span id="local-6989586621679456324"><span id="local-6989586621679456329"><span class="annot"><span class="annottext">Typeable StackMapFrame
+Typeable StackMapFrame =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; StackMapFrame -&gt; c StackMapFrame)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c StackMapFrame)
+-&gt; (StackMapFrame -&gt; Constr)
+-&gt; (StackMapFrame -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c StackMapFrame))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c StackMapFrame))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; StackMapFrame -&gt; StackMapFrame)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; StackMapFrame -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; StackMapFrame -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; StackMapFrame -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; StackMapFrame -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame)
+-&gt; Data StackMapFrame
+StackMapFrame -&gt; Constr
+StackMapFrame -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; StackMapFrame -&gt; StackMapFrame
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; StackMapFrame -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; StackMapFrame -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; StackMapFrame -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; StackMapFrame -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c StackMapFrame
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; StackMapFrame -&gt; c StackMapFrame
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c StackMapFrame)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c StackMapFrame)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; StackMapFrame -&gt; c StackMapFrame
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; StackMapFrame -&gt; c StackMapFrame
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c StackMapFrame
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c StackMapFrame
+$ctoConstr :: StackMapFrame -&gt; Constr
+toConstr :: StackMapFrame -&gt; Constr
+$cdataTypeOf :: StackMapFrame -&gt; DataType
+dataTypeOf :: StackMapFrame -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c StackMapFrame)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c StackMapFrame)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c StackMapFrame)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c StackMapFrame)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; StackMapFrame -&gt; StackMapFrame
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; StackMapFrame -&gt; StackMapFrame
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; StackMapFrame -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; StackMapFrame -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; StackMapFrame -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; StackMapFrame -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; StackMapFrame -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; StackMapFrame -&gt; [u]
+$cgmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; StackMapFrame -&gt; u
+gmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; StackMapFrame -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; StackMapFrame -&gt; m StackMapFrame
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456334"><span id="local-6989586621679456351"><span class="annot"><span class="annottext">StackMapFrame -&gt; StackMapFrame -&gt; Bool
+(StackMapFrame -&gt; StackMapFrame -&gt; Bool)
+-&gt; (StackMapFrame -&gt; StackMapFrame -&gt; Bool) -&gt; Eq StackMapFrame
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StackMapFrame -&gt; StackMapFrame -&gt; Bool
+== :: StackMapFrame -&gt; StackMapFrame -&gt; Bool
+$c/= :: StackMapFrame -&gt; StackMapFrame -&gt; Bool
+/= :: StackMapFrame -&gt; StackMapFrame -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-keyword">data</span><span> </span><span id="VerificationTypeInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#VerificationTypeInfo"><span class="hs-identifier hs-var">VerificationTypeInfo</span></a></span></span><span>
+</span><span id="line-76"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="TopVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#TopVariableInfo"><span class="hs-identifier hs-var">TopVariableInfo</span></a></span></span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="IntegerVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#IntegerVariableInfo"><span class="hs-identifier hs-var">IntegerVariableInfo</span></a></span></span><span>
+</span><span id="line-78"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FloatVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#FloatVariableInfo"><span class="hs-identifier hs-var">FloatVariableInfo</span></a></span></span><span>
+</span><span id="line-79"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="LongVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LongVariableInfo"><span class="hs-identifier hs-var">LongVariableInfo</span></a></span></span><span>
+</span><span id="line-80"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="DoubleVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#DoubleVariableInfo"><span class="hs-identifier hs-var">DoubleVariableInfo</span></a></span></span><span>
+</span><span id="line-81"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="NullVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#NullVariableInfo"><span class="hs-identifier hs-var">NullVariableInfo</span></a></span></span><span>
+</span><span id="line-82"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="UninitializedThisVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#UninitializedThisVariableInfo"><span class="hs-identifier hs-var">UninitializedThisVariableInfo</span></a></span></span><span>
+</span><span id="line-83"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ObjectVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ObjectVariableInfo"><span class="hs-identifier hs-var">ObjectVariableInfo</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier hs-type">ClassInfoType</span></a></span><span>
+</span><span id="line-84"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="UninitializedVariableInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#UninitializedVariableInfo"><span class="hs-identifier hs-var">UninitializedVariableInfo</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html#Label"><span class="hs-identifier hs-type">Label</span></a></span><span>
+</span><span id="line-85"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679456363"><span id="local-6989586621679456369"><span id="local-6989586621679456372"><span class="annot"><span class="annottext">Int -&gt; VerificationTypeInfo -&gt; ShowS
+[VerificationTypeInfo] -&gt; ShowS
+VerificationTypeInfo -&gt; String
+(Int -&gt; VerificationTypeInfo -&gt; ShowS)
+-&gt; (VerificationTypeInfo -&gt; String)
+-&gt; ([VerificationTypeInfo] -&gt; ShowS)
+-&gt; Show VerificationTypeInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; VerificationTypeInfo -&gt; ShowS
+showsPrec :: Int -&gt; VerificationTypeInfo -&gt; ShowS
+$cshow :: VerificationTypeInfo -&gt; String
+show :: VerificationTypeInfo -&gt; String
+$cshowList :: [VerificationTypeInfo] -&gt; ShowS
+showList :: [VerificationTypeInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456377"><span id="local-6989586621679456381"><span id="local-6989586621679456385"><span id="local-6989586621679456387"><span id="local-6989586621679456389"><span id="local-6989586621679456394"><span id="local-6989586621679456399"><span id="local-6989586621679456402"><span id="local-6989586621679456405"><span id="local-6989586621679456408"><span id="local-6989586621679456411"><span id="local-6989586621679456414"><span id="local-6989586621679456419"><span id="local-6989586621679456424"><span class="annot"><span class="annottext">Typeable VerificationTypeInfo
+Typeable VerificationTypeInfo =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g)
+ -&gt; VerificationTypeInfo
+ -&gt; c VerificationTypeInfo)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c VerificationTypeInfo)
+-&gt; (VerificationTypeInfo -&gt; Constr)
+-&gt; (VerificationTypeInfo -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c VerificationTypeInfo))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c VerificationTypeInfo))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; VerificationTypeInfo -&gt; VerificationTypeInfo)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; VerificationTypeInfo -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; VerificationTypeInfo -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; VerificationTypeInfo -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; VerificationTypeInfo -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo)
+-&gt; Data VerificationTypeInfo
+VerificationTypeInfo -&gt; Constr
+VerificationTypeInfo -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; VerificationTypeInfo -&gt; VerificationTypeInfo
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; VerificationTypeInfo -&gt; u
+forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; VerificationTypeInfo -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; VerificationTypeInfo -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; VerificationTypeInfo -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c VerificationTypeInfo
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; VerificationTypeInfo
+-&gt; c VerificationTypeInfo
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c VerificationTypeInfo)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c VerificationTypeInfo)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; VerificationTypeInfo
+-&gt; c VerificationTypeInfo
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; VerificationTypeInfo
+-&gt; c VerificationTypeInfo
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c VerificationTypeInfo
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c VerificationTypeInfo
+$ctoConstr :: VerificationTypeInfo -&gt; Constr
+toConstr :: VerificationTypeInfo -&gt; Constr
+$cdataTypeOf :: VerificationTypeInfo -&gt; DataType
+dataTypeOf :: VerificationTypeInfo -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c VerificationTypeInfo)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c VerificationTypeInfo)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c VerificationTypeInfo)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c VerificationTypeInfo)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; VerificationTypeInfo -&gt; VerificationTypeInfo
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; VerificationTypeInfo -&gt; VerificationTypeInfo
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; VerificationTypeInfo -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; VerificationTypeInfo -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; VerificationTypeInfo -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; VerificationTypeInfo -&gt; r
+$cgmapQ :: forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; VerificationTypeInfo -&gt; [u]
+gmapQ :: forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; VerificationTypeInfo -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; VerificationTypeInfo -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; VerificationTypeInfo -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; VerificationTypeInfo -&gt; m VerificationTypeInfo
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456429"><span id="local-6989586621679456436"><span class="annot"><span class="annottext">VerificationTypeInfo -&gt; VerificationTypeInfo -&gt; Bool
+(VerificationTypeInfo -&gt; VerificationTypeInfo -&gt; Bool)
+-&gt; (VerificationTypeInfo -&gt; VerificationTypeInfo -&gt; Bool)
+-&gt; Eq VerificationTypeInfo
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: VerificationTypeInfo -&gt; VerificationTypeInfo -&gt; Bool
+== :: VerificationTypeInfo -&gt; VerificationTypeInfo -&gt; Bool
+$c/= :: VerificationTypeInfo -&gt; VerificationTypeInfo -&gt; Bool
+/= :: VerificationTypeInfo -&gt; VerificationTypeInfo -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="hs-keyword">data</span><span> </span><span id="LineNumberTableEntry"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTableEntry"><span class="hs-identifier hs-var">LineNumberTableEntry</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LineNumberTableEntry"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTableEntry"><span class="hs-identifier hs-var">LineNumberTableEntry</span></a></span></span><span>
+</span><span id="line-88"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="lineNumberTableEntryStartPc"><span class="annot"><span class="annottext">LineNumberTableEntry -&gt; U2
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#lineNumberTableEntryStartPc"><span class="hs-identifier hs-var hs-var">lineNumberTableEntryStartPc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-89"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="lineNumberTableEntryLineNumber"><span class="annot"><span class="annottext">LineNumberTableEntry -&gt; U2
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#lineNumberTableEntryLineNumber"><span class="hs-identifier hs-var hs-var">lineNumberTableEntryLineNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-90"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-91"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679456442"><span id="local-6989586621679456447"><span id="local-6989586621679456450"><span class="annot"><span class="annottext">Int -&gt; LineNumberTableEntry -&gt; ShowS
+[LineNumberTableEntry] -&gt; ShowS
+LineNumberTableEntry -&gt; String
+(Int -&gt; LineNumberTableEntry -&gt; ShowS)
+-&gt; (LineNumberTableEntry -&gt; String)
+-&gt; ([LineNumberTableEntry] -&gt; ShowS)
+-&gt; Show LineNumberTableEntry
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LineNumberTableEntry -&gt; ShowS
+showsPrec :: Int -&gt; LineNumberTableEntry -&gt; ShowS
+$cshow :: LineNumberTableEntry -&gt; String
+show :: LineNumberTableEntry -&gt; String
+$cshowList :: [LineNumberTableEntry] -&gt; ShowS
+showList :: [LineNumberTableEntry] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456455"><span id="local-6989586621679456459"><span id="local-6989586621679456463"><span id="local-6989586621679456465"><span id="local-6989586621679456467"><span id="local-6989586621679456472"><span id="local-6989586621679456477"><span id="local-6989586621679456480"><span id="local-6989586621679456483"><span id="local-6989586621679456486"><span id="local-6989586621679456489"><span id="local-6989586621679456492"><span id="local-6989586621679456497"><span id="local-6989586621679456502"><span class="annot"><span class="annottext">Typeable LineNumberTableEntry
+Typeable LineNumberTableEntry =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g)
+ -&gt; LineNumberTableEntry
+ -&gt; c LineNumberTableEntry)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c LineNumberTableEntry)
+-&gt; (LineNumberTableEntry -&gt; Constr)
+-&gt; (LineNumberTableEntry -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c LineNumberTableEntry))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c LineNumberTableEntry))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; LineNumberTableEntry -&gt; LineNumberTableEntry)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; LineNumberTableEntry -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; LineNumberTableEntry -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; LineNumberTableEntry -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; LineNumberTableEntry -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry)
+-&gt; Data LineNumberTableEntry
+LineNumberTableEntry -&gt; Constr
+LineNumberTableEntry -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; LineNumberTableEntry -&gt; LineNumberTableEntry
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; LineNumberTableEntry -&gt; u
+forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; LineNumberTableEntry -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; LineNumberTableEntry -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; LineNumberTableEntry -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c LineNumberTableEntry
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; LineNumberTableEntry
+-&gt; c LineNumberTableEntry
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c LineNumberTableEntry)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c LineNumberTableEntry)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; LineNumberTableEntry
+-&gt; c LineNumberTableEntry
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; LineNumberTableEntry
+-&gt; c LineNumberTableEntry
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c LineNumberTableEntry
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c LineNumberTableEntry
+$ctoConstr :: LineNumberTableEntry -&gt; Constr
+toConstr :: LineNumberTableEntry -&gt; Constr
+$cdataTypeOf :: LineNumberTableEntry -&gt; DataType
+dataTypeOf :: LineNumberTableEntry -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c LineNumberTableEntry)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c LineNumberTableEntry)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c LineNumberTableEntry)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c LineNumberTableEntry)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; LineNumberTableEntry -&gt; LineNumberTableEntry
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; LineNumberTableEntry -&gt; LineNumberTableEntry
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; LineNumberTableEntry -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; LineNumberTableEntry -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; LineNumberTableEntry -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; LineNumberTableEntry -&gt; r
+$cgmapQ :: forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; LineNumberTableEntry -&gt; [u]
+gmapQ :: forall u.
+(forall d. Data d =&gt; d -&gt; u) -&gt; LineNumberTableEntry -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; LineNumberTableEntry -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; LineNumberTableEntry -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; LineNumberTableEntry -&gt; m LineNumberTableEntry
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456507"><span id="local-6989586621679456512"><span class="annot"><span class="annottext">LineNumberTableEntry -&gt; LineNumberTableEntry -&gt; Bool
+(LineNumberTableEntry -&gt; LineNumberTableEntry -&gt; Bool)
+-&gt; (LineNumberTableEntry -&gt; LineNumberTableEntry -&gt; Bool)
+-&gt; Eq LineNumberTableEntry
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LineNumberTableEntry -&gt; LineNumberTableEntry -&gt; Bool
+== :: LineNumberTableEntry -&gt; LineNumberTableEntry -&gt; Bool
+$c/= :: LineNumberTableEntry -&gt; LineNumberTableEntry -&gt; Bool
+/= :: LineNumberTableEntry -&gt; LineNumberTableEntry -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679456516"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ClassFileMethod"><span class="hs-identifier hs-type">ClassFileMethod</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-94"></span><span>    </span><span id="local-6989586621679456543"><span class="annot"><span class="annottext">pretty :: forall ann. ClassFileMethod -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ClassFileMethod"><span class="hs-identifier hs-type">ClassFileMethod</span></a></span><span> </span><span id="local-6989586621679456544"><span class="annot"><span class="annottext">[MethodAccessFlag]
+</span><a href="#local-6989586621679456544"><span class="hs-identifier hs-var">accessFlags</span></a></span></span><span> </span><span id="local-6989586621679456545"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679456545"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679456546"><span class="annot"><span class="annottext">MethodDescriptor
+</span><a href="#local-6989586621679456546"><span class="hs-identifier hs-var">descriptor</span></a></span></span><span> </span><span id="local-6989586621679456547"><span class="annot"><span class="annottext">TypeMergingList MethodAttribute
+</span><a href="#local-6989586621679456547"><span class="hs-identifier hs-var">attributes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-95"></span><span>        </span><span class="annot"><span class="annottext">[MethodAccessFlag] -&gt; Doc ann
+forall ann. [MethodAccessFlag] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[MethodAccessFlag]
+</span><a href="#local-6989586621679456544"><span class="hs-identifier hs-var">accessFlags</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">MethodDescriptor -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodDescriptor -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodDescriptor
+</span><a href="#local-6989586621679456546"><span class="hs-identifier hs-var">descriptor</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679456545"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">TypeMergingList MethodAttribute -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. TypeMergingList MethodAttribute -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">TypeMergingList MethodAttribute
+</span><a href="#local-6989586621679456547"><span class="hs-identifier hs-var">attributes</span></a></span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679456550"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#MethodAttribute"><span class="hs-identifier hs-type">MethodAttribute</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-98"></span><span>    </span><span id="local-6989586621679456556"><span class="annot"><span class="annottext">pretty :: forall ann. MethodAttribute -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#Code"><span class="hs-identifier hs-type">Code</span></a></span><span> </span><span id="local-6989586621679456557"><span class="annot"><span class="annottext">CodeAttributeData
+</span><a href="#local-6989586621679456557"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Code &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">CodeAttributeData -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. CodeAttributeData -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">CodeAttributeData
+</span><a href="#local-6989586621679456557"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-99"></span><span>
+</span><span id="line-100"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679456560"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-type">CodeAttributeData</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-101"></span><span>    </span><span id="local-6989586621679456590"><span class="annot"><span class="annottext">pretty :: forall ann. CodeAttributeData -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttributeData"><span class="hs-identifier hs-type">CodeAttributeData</span></a></span><span class="hs-special">{</span><span id="local-6989586621679456591"><span class="annot"><span class="annottext">U2
+maxStack :: CodeAttributeData -&gt; U2
+maxStack :: U2
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#maxStack"><span class="hs-identifier hs-var hs-var">maxStack</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456592"><span class="annot"><span class="annottext">U2
+maxLocals :: CodeAttributeData -&gt; U2
+maxLocals :: U2
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#maxLocals"><span class="hs-identifier hs-var hs-var">maxLocals</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456593"><span class="annot"><span class="annottext">[Instruction]
+code :: CodeAttributeData -&gt; [Instruction]
+code :: [Instruction]
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#code"><span class="hs-identifier hs-var hs-var">code</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456594"><span class="annot"><span class="annottext">[ExceptionTableEntry]
+exceptionTable :: CodeAttributeData -&gt; [ExceptionTableEntry]
+exceptionTable :: [ExceptionTableEntry]
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#exceptionTable"><span class="hs-identifier hs-var hs-var">exceptionTable</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456595"><span class="annot"><span class="annottext">[CodeAttribute]
+codeAttributes :: CodeAttributeData -&gt; [CodeAttribute]
+codeAttributes :: [CodeAttribute]
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#codeAttributes"><span class="hs-identifier hs-var hs-var">codeAttributes</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-102"></span><span>        </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;CodeAttributeData &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">U2 -&gt; Doc ann
+forall ann. U2 -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456591"><span class="hs-identifier hs-var">maxStack</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">U2 -&gt; Doc ann
+forall ann. U2 -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456592"><span class="hs-identifier hs-var">maxLocals</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Instruction] -&gt; Doc ann
+forall ann. [Instruction] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[Instruction]
+</span><a href="#local-6989586621679456593"><span class="hs-identifier hs-var">code</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[ExceptionTableEntry] -&gt; Doc ann
+forall ann. [ExceptionTableEntry] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[ExceptionTableEntry]
+</span><a href="#local-6989586621679456594"><span class="hs-identifier hs-var">exceptionTable</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[CodeAttribute] -&gt; Doc ann
+forall ann. [CodeAttribute] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[CodeAttribute]
+</span><a href="#local-6989586621679456595"><span class="hs-identifier hs-var">codeAttributes</span></a></span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679456598"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ExceptionTableEntry"><span class="hs-identifier hs-type">ExceptionTableEntry</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-105"></span><span>    </span><span id="local-6989586621679456619"><span class="annot"><span class="annottext">pretty :: forall ann. ExceptionTableEntry -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ExceptionTableEntry"><span class="hs-identifier hs-type">ExceptionTableEntry</span></a></span><span class="hs-special">{</span><span id="local-6989586621679456620"><span class="annot"><span class="annottext">Int
+startPc :: ExceptionTableEntry -&gt; Int
+startPc :: Int
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#startPc"><span class="hs-identifier hs-var hs-var">startPc</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456621"><span class="annot"><span class="annottext">Int
+endPc :: ExceptionTableEntry -&gt; Int
+endPc :: Int
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#endPc"><span class="hs-identifier hs-var hs-var">endPc</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456622"><span class="annot"><span class="annottext">Int
+handlerPc :: ExceptionTableEntry -&gt; Int
+handlerPc :: Int
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#handlerPc"><span class="hs-identifier hs-var hs-var">handlerPc</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456623"><span class="annot"><span class="annottext">Maybe ClassInfoType
+catchType :: ExceptionTableEntry -&gt; Maybe ClassInfoType
+catchType :: Maybe ClassInfoType
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#catchType"><span class="hs-identifier hs-var hs-var">catchType</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-106"></span><span>        </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ExceptionTableEntry &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc ann
+forall ann. Int -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679456620"><span class="hs-identifier hs-var">startPc</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc ann
+forall ann. Int -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679456621"><span class="hs-identifier hs-var">endPc</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc ann
+forall ann. Int -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679456622"><span class="hs-identifier hs-var">handlerPc</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Maybe ClassInfoType -&gt; Doc ann
+forall ann. Maybe ClassInfoType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe ClassInfoType
+</span><a href="#local-6989586621679456623"><span class="hs-identifier hs-var">catchType</span></a></span><span>
+</span><span id="line-107"></span><span>
+</span><span id="line-108"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679456626"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#CodeAttribute"><span class="hs-identifier hs-type">CodeAttribute</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-109"></span><span>    </span><span id="local-6989586621679456638"><span class="annot"><span class="annottext">pretty :: forall ann. CodeAttribute -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTable"><span class="hs-identifier hs-type">LineNumberTable</span></a></span><span> </span><span id="local-6989586621679456639"><span class="annot"><span class="annottext">[LineNumberTableEntry]
+</span><a href="#local-6989586621679456639"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;LineNumberTable &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[LineNumberTableEntry] -&gt; Doc ann
+forall ann. [LineNumberTableEntry] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[LineNumberTableEntry]
+</span><a href="#local-6989586621679456639"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-110"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#StackMapTable"><span class="hs-identifier hs-type">StackMapTable</span></a></span><span> </span><span id="local-6989586621679456640"><span class="annot"><span class="annottext">[StackMapFrame]
+</span><a href="#local-6989586621679456640"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;StackMapTable &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[StackMapFrame] -&gt; Doc ann
+forall ann. [StackMapFrame] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[StackMapFrame]
+</span><a href="#local-6989586621679456640"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-111"></span><span>
+</span><span id="line-112"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679456643"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#StackMapFrame"><span class="hs-identifier hs-type">StackMapFrame</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-113"></span><span>    </span><span id="local-6989586621679456682"><span class="annot"><span class="annottext">pretty :: forall ann. StackMapFrame -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#SameFrame"><span class="hs-identifier hs-type">SameFrame</span></a></span><span> </span><span id="local-6989586621679456683"><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456683"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;SameFrame &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Label -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Label -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456683"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-114"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ChopFrame"><span class="hs-identifier hs-type">ChopFrame</span></a></span><span> </span><span id="local-6989586621679456684"><span class="annot"><span class="annottext">U1
+</span><a href="#local-6989586621679456684"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679456685"><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456685"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ChopFrame &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">U1 -&gt; Doc ann
+forall ann. U1 -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">U1
+</span><a href="#local-6989586621679456684"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Label -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Label -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456685"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-115"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#SameLocals1StackItemFrame"><span class="hs-identifier hs-type">SameLocals1StackItemFrame</span></a></span><span> </span><span id="local-6989586621679456686"><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="#local-6989586621679456686"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679456687"><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456687"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;SameLocals1StackItemFrame &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. VerificationTypeInfo -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="#local-6989586621679456686"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Label -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Label -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456687"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-116"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#AppendFrame"><span class="hs-identifier hs-type">AppendFrame</span></a></span><span> </span><span id="local-6989586621679456688"><span class="annot"><span class="annottext">[VerificationTypeInfo]
+</span><a href="#local-6989586621679456688"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679456689"><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456689"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;AppendFrame &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[VerificationTypeInfo] -&gt; Doc ann
+forall ann. [VerificationTypeInfo] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[VerificationTypeInfo]
+</span><a href="#local-6989586621679456688"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Label -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Label -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456689"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-117"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#FullFrame"><span class="hs-identifier hs-type">FullFrame</span></a></span><span> </span><span id="local-6989586621679456690"><span class="annot"><span class="annottext">[VerificationTypeInfo]
+</span><a href="#local-6989586621679456690"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679456691"><span class="annot"><span class="annottext">[VerificationTypeInfo]
+</span><a href="#local-6989586621679456691"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span id="local-6989586621679456692"><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456692"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;FullFrame &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[VerificationTypeInfo] -&gt; Doc ann
+forall ann. [VerificationTypeInfo] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[VerificationTypeInfo]
+</span><a href="#local-6989586621679456690"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[VerificationTypeInfo] -&gt; Doc ann
+forall ann. [VerificationTypeInfo] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[VerificationTypeInfo]
+</span><a href="#local-6989586621679456691"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Label -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Label -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456692"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-118"></span><span>
+</span><span id="line-119"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679456695"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-120"></span><span>    </span><span id="local-6989586621679456710"><span class="annot"><span class="annottext">pretty :: forall ann. VerificationTypeInfo -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#TopVariableInfo"><span class="hs-identifier hs-var">TopVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;TopVariableInfo&quot;</span></span><span>
+</span><span id="line-121"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#IntegerVariableInfo"><span class="hs-identifier hs-var">IntegerVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;IntegerVariableInfo&quot;</span></span><span>
+</span><span id="line-122"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#FloatVariableInfo"><span class="hs-identifier hs-var">FloatVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;FloatVariableInfo&quot;</span></span><span>
+</span><span id="line-123"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#LongVariableInfo"><span class="hs-identifier hs-var">LongVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;LongVariableInfo&quot;</span></span><span>
+</span><span id="line-124"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#DoubleVariableInfo"><span class="hs-identifier hs-var">DoubleVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;DoubleVariableInfo&quot;</span></span><span>
+</span><span id="line-125"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#NullVariableInfo"><span class="hs-identifier hs-var">NullVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;NullVariableInfo&quot;</span></span><span>
+</span><span id="line-126"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#UninitializedThisVariableInfo"><span class="hs-identifier hs-var">UninitializedThisVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;UninitializedThisVariableInfo&quot;</span></span><span>
+</span><span id="line-127"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ObjectVariableInfo"><span class="hs-identifier hs-type">ObjectVariableInfo</span></a></span><span> </span><span id="local-6989586621679456711"><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679456711"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ObjectVariableInfo &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">ClassInfoType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ClassInfoType -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679456711"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-128"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#UninitializedVariableInfo"><span class="hs-identifier hs-type">UninitializedVariableInfo</span></a></span><span> </span><span id="local-6989586621679456712"><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456712"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;UninitializedVariableInfo &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Label -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Label -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Label
+</span><a href="#local-6989586621679456712"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-129"></span><span>
+</span><span id="line-130"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679456715"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTableEntry"><span class="hs-identifier hs-type">LineNumberTableEntry</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-131"></span><span>    </span><span id="local-6989586621679456724"><span class="annot"><span class="annottext">pretty :: forall ann. LineNumberTableEntry -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#LineNumberTableEntry"><span class="hs-identifier hs-type">LineNumberTableEntry</span></a></span><span class="hs-special">{</span><span id="local-6989586621679456725"><span class="annot"><span class="annottext">U2
+lineNumberTableEntryStartPc :: LineNumberTableEntry -&gt; U2
+lineNumberTableEntryStartPc :: U2
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#lineNumberTableEntryStartPc"><span class="hs-identifier hs-var hs-var">lineNumberTableEntryStartPc</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679456726"><span class="annot"><span class="annottext">U2
+lineNumberTableEntryLineNumber :: LineNumberTableEntry -&gt; U2
+lineNumberTableEntryLineNumber :: U2
+</span><a href="JVM.Data.Abstract.ClassFile.Method.html#lineNumberTableEntryLineNumber"><span class="hs-identifier hs-var hs-var">lineNumberTableEntryLineNumber</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-132"></span><span>        </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;LineNumberTableEntry &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">U2 -&gt; Doc ann
+forall ann. U2 -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456725"><span class="hs-identifier hs-var">lineNumberTableEntryStartPc</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">U2 -&gt; Doc ann
+forall ann. U2 -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">U2
+</span><a href="#local-6989586621679456726"><span class="hs-identifier hs-var">lineNumberTableEntryLineNumber</span></a></span><span>
+</span><span id="line-133"></span></pre></body></html>

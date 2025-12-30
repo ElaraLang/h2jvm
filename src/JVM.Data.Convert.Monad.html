@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE ConstraintKinds #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Convert.Monad.html"><span class="hs-identifier">JVM.Data.Convert.Monad</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Word16</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.html"><span class="hs-identifier">Effectful</span></a></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.Error.Static.html"><span class="hs-identifier">Effectful.Error.Static</span></a></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html"><span class="hs-identifier">JVM.Data.Abstract.Builder.Label</span></a></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Convert.ConstantPool.html"><span class="hs-identifier">JVM.Data.Convert.ConstantPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Convert.ConstantPool.html#ConstantPool"><span class="hs-identifier">ConstantPool</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Convert.ConstantPool.html#ConstantPoolState"><span class="hs-identifier">ConstantPoolState</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Convert.ConstantPool.html#runConstantPool"><span class="hs-identifier">runConstantPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">type</span><span> </span><span id="ConvertEff"><span class="annot"><a href="JVM.Data.Convert.Monad.html#ConvertEff"><span class="hs-identifier hs-var">ConvertEff</span></a></span></span><span> </span><span id="local-6989586621679453758"><span class="annot"><a href="#local-6989586621679453758"><span class="hs-identifier hs-type">r</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Convert.ConstantPool.html#ConstantPool"><span class="hs-identifier hs-type">ConstantPool</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.Internal.Effect.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679453758"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.Error.Static.html#Error"><span class="hs-identifier hs-type">Error</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Convert.Monad.html#CodeConverterError"><span class="hs-identifier hs-type">CodeConverterError</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.Internal.Effect.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679453758"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span id="local-6989586621679453729"><span id="local-6989586621679453730"><span class="annot"><a href="JVM.Data.Convert.Monad.html#runConvertM"><span class="hs-identifier hs-type">runConvertM</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.Internal.Monad.html#Eff"><span class="hs-identifier hs-type">Eff</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Convert.ConstantPool.html#ConstantPool"><span class="hs-identifier hs-type">ConstantPool</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.Error.Static.html#Error"><span class="hs-identifier hs-type">Error</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Convert.Monad.html#CodeConverterError"><span class="hs-identifier hs-type">CodeConverterError</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><a href="#local-6989586621679453729"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679453730"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.Internal.Monad.html#Eff"><span class="hs-identifier hs-type">Eff</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679453729"><span class="hs-identifier hs-type">r</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="JVM.Data.Convert.Monad.html#CodeConverterError"><span class="hs-identifier hs-type">CodeConverterError</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679453730"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Convert.ConstantPool.html#ConstantPoolState"><span class="hs-identifier hs-type">ConstantPoolState</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-14"></span><span id="runConvertM"><span class="annot"><span class="annottext">runConvertM :: forall (r :: [(* -&gt; *) -&gt; * -&gt; *]) a.
+Eff (ConstantPool : Error CodeConverterError : r) a
+-&gt; Eff r (Either CodeConverterError (a, ConstantPoolState))
+</span><a href="JVM.Data.Convert.Monad.html#runConvertM"><span class="hs-identifier hs-var hs-var">runConvertM</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Either (CallStack, CodeConverterError) (a, ConstantPoolState)
+ -&gt; Either CodeConverterError (a, ConstantPoolState))
+-&gt; Eff
+     r (Either (CallStack, CodeConverterError) (a, ConstantPoolState))
+-&gt; Eff r (Either CodeConverterError (a, ConstantPoolState))
+forall a b. (a -&gt; b) -&gt; Eff r a -&gt; Eff r b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Either (CallStack, CodeConverterError) (a, ConstantPoolState)
+-&gt; Either CodeConverterError (a, ConstantPoolState)
+forall {a} {a} {b}. Either (a, a) b -&gt; Either a b
+</span><a href="#local-6989586621679453765"><span class="hs-identifier hs-var">mapLeft</span></a></span><span> </span><span class="annot"><span class="annottext">(Eff
+   r (Either (CallStack, CodeConverterError) (a, ConstantPoolState))
+ -&gt; Eff r (Either CodeConverterError (a, ConstantPoolState)))
+-&gt; (Eff (ConstantPool : Error CodeConverterError : r) a
+    -&gt; Eff
+         r (Either (CallStack, CodeConverterError) (a, ConstantPoolState)))
+-&gt; Eff (ConstantPool : Error CodeConverterError : r) a
+-&gt; Eff r (Either CodeConverterError (a, ConstantPoolState))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Eff (Error CodeConverterError : r) (a, ConstantPoolState)
+-&gt; Eff
+     r (Either (CallStack, CodeConverterError) (a, ConstantPoolState))
+forall e (es :: [(* -&gt; *) -&gt; * -&gt; *]) a.
+HasCallStack =&gt;
+Eff (Error e : es) a -&gt; Eff es (Either (CallStack, e) a)
+</span><a href="file:///nix/store/0paykgqig9fvsxqr1qva6mhdi2ydy70l-effectful-core-2.6.1.0-doc/share/doc/effectful-core-2.6.1.0/html/src/Effectful.Error.Static.html#runError"><span class="hs-identifier hs-var">runError</span></a></span><span> </span><span class="annot"><span class="annottext">(Eff (Error CodeConverterError : r) (a, ConstantPoolState)
+ -&gt; Eff
+      r (Either (CallStack, CodeConverterError) (a, ConstantPoolState)))
+-&gt; (Eff (ConstantPool : Error CodeConverterError : r) a
+    -&gt; Eff (Error CodeConverterError : r) (a, ConstantPoolState))
+-&gt; Eff (ConstantPool : Error CodeConverterError : r) a
+-&gt; Eff
+     r (Either (CallStack, CodeConverterError) (a, ConstantPoolState))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Eff (ConstantPool : Error CodeConverterError : r) a
+-&gt; Eff (Error CodeConverterError : r) (a, ConstantPoolState)
+forall (r :: [(* -&gt; *) -&gt; * -&gt; *]) a.
+Eff (ConstantPool : r) a -&gt; Eff r (a, ConstantPoolState)
+</span><a href="JVM.Data.Convert.ConstantPool.html#runConstantPool"><span class="hs-identifier hs-var">runConstantPool</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-16"></span><span>    </span><span id="local-6989586621679453765"><span class="annot"><span class="annottext">mapLeft :: Either (a, a) b -&gt; Either a b
+</span><a href="#local-6989586621679453765"><span class="hs-identifier hs-var hs-var">mapLeft</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679453768"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679453768"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; Either a b
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679453768"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><a href="#local-6989586621679453765"><span class="hs-identifier hs-var">mapLeft</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679453769"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679453769"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b -&gt; Either a b
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679453769"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="CodeConverterError"><span class="annot"><a href="JVM.Data.Convert.Monad.html#CodeConverterError"><span class="hs-identifier hs-var">CodeConverterError</span></a></span></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="DuplicateLabel"><span class="annot"><a href="JVM.Data.Convert.Monad.html#DuplicateLabel"><span class="hs-identifier hs-var">DuplicateLabel</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html#Label"><span class="hs-identifier hs-type">Label</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="UnmarkedLabel"><span class="annot"><a href="JVM.Data.Convert.Monad.html#UnmarkedLabel"><span class="hs-identifier hs-var">UnmarkedLabel</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Builder.Label.html#Label"><span class="hs-identifier hs-type">Label</span></a></span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679453773"><span id="local-6989586621679453783"><span id="local-6989586621679453787"><span class="annot"><span class="annottext">Int -&gt; CodeConverterError -&gt; ShowS
+[CodeConverterError] -&gt; ShowS
+CodeConverterError -&gt; String
+(Int -&gt; CodeConverterError -&gt; ShowS)
+-&gt; (CodeConverterError -&gt; String)
+-&gt; ([CodeConverterError] -&gt; ShowS)
+-&gt; Show CodeConverterError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CodeConverterError -&gt; ShowS
+showsPrec :: Int -&gt; CodeConverterError -&gt; ShowS
+$cshow :: CodeConverterError -&gt; String
+show :: CodeConverterError -&gt; String
+$cshowList :: [CodeConverterError] -&gt; ShowS
+showList :: [CodeConverterError] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span></pre></body></html>

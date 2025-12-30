@@ -1,0 +1,798 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679458962"><span id="local-6989586621679458963"><span id="local-6989586621679458964"><span id="local-6989586621679458965"><span id="local-6989586621679458966"><span id="local-6989586621679458967"><span id="local-6989586621679458968"><span id="local-6989586621679458969"><span id="local-6989586621679458970"><span id="local-6989586621679458971"><span id="local-6989586621679458972"><span id="local-6989586621679458973"><span id="local-6989586621679458974"></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">-- | High level representation of a class file</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Data</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html"><span class="hs-identifier">Data.TypeMergingList</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.TypeMergingList.html#DataMergeable"><span class="hs-identifier">DataMergeable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier">merge</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#TypeMergingList"><span class="hs-identifier">TypeMergingList</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#errorDifferentConstructors"><span class="hs-identifier">errorDifferentConstructors</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#toList"><span class="hs-identifier">toList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.AccessFlags</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#ClassAccessFlag"><span class="hs-identifier">ClassAccessFlag</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.Field</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ClassFileField"><span class="hs-identifier">ClassFileField</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.Method</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ClassFileMethod"><span class="hs-identifier">ClassFileMethod</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html"><span class="hs-identifier">JVM.Data.Abstract.ConstantPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapMethod"><span class="hs-identifier">BootstrapMethod</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html"><span class="hs-identifier">JVM.Data.Abstract.Name</span></a></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html"><span class="hs-identifier">JVM.Data.JVMVersion</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier">JVMVersion</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Pretty.html"><span class="hs-identifier">JVM.Data.Pretty</span></a></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.html"><span class="hs-identifier">Prettyprinter</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#encloseSep"><span class="hs-identifier">encloseSep</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#line"><span class="hs-identifier">line</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Symbols.Ascii.html#parens"><span class="hs-identifier">parens</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="ClassFile"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#ClassFile"><span class="hs-identifier hs-var">ClassFile</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ClassFile"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#ClassFile"><span class="hs-identifier hs-var">ClassFile</span></a></span></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="name"><span class="annot"><span class="annottext">ClassFile -&gt; QualifiedClassName
+</span><a href="JVM.Data.Abstract.ClassFile.html#name"><span class="hs-identifier hs-var hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="version"><span class="annot"><span class="annottext">ClassFile -&gt; JVMVersion
+</span><a href="JVM.Data.Abstract.ClassFile.html#version"><span class="hs-identifier hs-var hs-var">version</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#JVMVersion"><span class="hs-identifier hs-type">JVMVersion</span></a></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="accessFlags"><span class="annot"><span class="annottext">ClassFile -&gt; [ClassAccessFlag]
+</span><a href="JVM.Data.Abstract.ClassFile.html#accessFlags"><span class="hs-identifier hs-var hs-var">accessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#ClassAccessFlag"><span class="hs-identifier hs-type">ClassAccessFlag</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="superClass"><span class="annot"><span class="annottext">ClassFile -&gt; Maybe QualifiedClassName
+</span><a href="JVM.Data.Abstract.ClassFile.html#superClass"><span class="hs-identifier hs-var hs-var">superClass</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="interfaces"><span class="annot"><span class="annottext">ClassFile -&gt; [QualifiedClassName]
+</span><a href="JVM.Data.Abstract.ClassFile.html#interfaces"><span class="hs-identifier hs-var hs-var">interfaces</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="fields"><span class="annot"><span class="annottext">ClassFile -&gt; [ClassFileField]
+</span><a href="JVM.Data.Abstract.ClassFile.html#fields"><span class="hs-identifier hs-var hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ClassFileField"><span class="hs-identifier hs-type">ClassFileField</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="methods"><span class="annot"><span class="annottext">ClassFile -&gt; [ClassFileMethod]
+</span><a href="JVM.Data.Abstract.ClassFile.html#methods"><span class="hs-identifier hs-var hs-var">methods</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Method.html#ClassFileMethod"><span class="hs-identifier hs-type">ClassFileMethod</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="attributes"><span class="annot"><span class="annottext">ClassFile -&gt; TypeMergingList ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#attributes"><span class="hs-identifier hs-var hs-var">attributes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#TypeMergingList"><span class="hs-identifier hs-type">TypeMergingList</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#ClassFileAttribute"><span class="hs-identifier hs-type">ClassFileAttribute</span></a></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679458991"><span id="local-6989586621679459012"><span id="local-6989586621679459016"><span class="annot"><span class="annottext">Int -&gt; ClassFile -&gt; ShowS
+[ClassFile] -&gt; ShowS
+ClassFile -&gt; String
+(Int -&gt; ClassFile -&gt; ShowS)
+-&gt; (ClassFile -&gt; String)
+-&gt; ([ClassFile] -&gt; ShowS)
+-&gt; Show ClassFile
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ClassFile -&gt; ShowS
+showsPrec :: Int -&gt; ClassFile -&gt; ShowS
+$cshow :: ClassFile -&gt; String
+show :: ClassFile -&gt; String
+$cshowList :: [ClassFile] -&gt; ShowS
+showList :: [ClassFile] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="ClassFileAttribute"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#ClassFileAttribute"><span class="hs-identifier hs-var">ClassFileAttribute</span></a></span></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="InnerClasses"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClasses"><span class="hs-identifier hs-var">InnerClasses</span></a></span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-type">InnerClassInfo</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="EnclosingMethod"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#EnclosingMethod"><span class="hs-identifier hs-var">EnclosingMethod</span></a></span></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Synthetic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Signature"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#Signature"><span class="hs-identifier hs-var">Signature</span></a></span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="SourceFile"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#SourceFile"><span class="hs-identifier hs-var">SourceFile</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="SourceDebugExtension"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#SourceDebugExtension"><span class="hs-identifier hs-var">SourceDebugExtension</span></a></span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Deprecated"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#Deprecated"><span class="hs-identifier hs-var">Deprecated</span></a></span></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="RuntimeVisibleAnnotations"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#RuntimeVisibleAnnotations"><span class="hs-identifier hs-var">RuntimeVisibleAnnotations</span></a></span></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="RuntimeInvisibleAnnotations"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#RuntimeInvisibleAnnotations"><span class="hs-identifier hs-var">RuntimeInvisibleAnnotations</span></a></span></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="BootstrapMethods"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#BootstrapMethods"><span class="hs-identifier hs-var">BootstrapMethods</span></a></span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapMethod"><span class="hs-identifier hs-type">BootstrapMethod</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679459035"><span id="local-6989586621679459046"><span id="local-6989586621679459049"><span class="annot"><span class="annottext">Int -&gt; ClassFileAttribute -&gt; ShowS
+[ClassFileAttribute] -&gt; ShowS
+ClassFileAttribute -&gt; String
+(Int -&gt; ClassFileAttribute -&gt; ShowS)
+-&gt; (ClassFileAttribute -&gt; String)
+-&gt; ([ClassFileAttribute] -&gt; ShowS)
+-&gt; Show ClassFileAttribute
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ClassFileAttribute -&gt; ShowS
+showsPrec :: Int -&gt; ClassFileAttribute -&gt; ShowS
+$cshow :: ClassFileAttribute -&gt; String
+show :: ClassFileAttribute -&gt; String
+$cshowList :: [ClassFileAttribute] -&gt; ShowS
+showList :: [ClassFileAttribute] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459054"><span id="local-6989586621679459066"><span class="annot"><span class="annottext">ClassFileAttribute -&gt; ClassFileAttribute -&gt; Bool
+(ClassFileAttribute -&gt; ClassFileAttribute -&gt; Bool)
+-&gt; (ClassFileAttribute -&gt; ClassFileAttribute -&gt; Bool)
+-&gt; Eq ClassFileAttribute
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ClassFileAttribute -&gt; ClassFileAttribute -&gt; Bool
+== :: ClassFileAttribute -&gt; ClassFileAttribute -&gt; Bool
+$c/= :: ClassFileAttribute -&gt; ClassFileAttribute -&gt; Bool
+/= :: ClassFileAttribute -&gt; ClassFileAttribute -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459075"><span id="local-6989586621679459084"><span id="local-6989586621679459091"><span id="local-6989586621679459093"><span id="local-6989586621679459095"><span id="local-6989586621679459101"><span id="local-6989586621679459106"><span id="local-6989586621679459109"><span id="local-6989586621679459112"><span id="local-6989586621679459115"><span id="local-6989586621679459118"><span id="local-6989586621679459121"><span id="local-6989586621679459126"><span id="local-6989586621679459131"><span class="annot"><span class="annottext">Typeable ClassFileAttribute
+Typeable ClassFileAttribute =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g)
+ -&gt; ClassFileAttribute
+ -&gt; c ClassFileAttribute)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassFileAttribute)
+-&gt; (ClassFileAttribute -&gt; Constr)
+-&gt; (ClassFileAttribute -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassFileAttribute))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c ClassFileAttribute))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; ClassFileAttribute -&gt; ClassFileAttribute)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassFileAttribute -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassFileAttribute -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; ClassFileAttribute -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassFileAttribute -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ClassFileAttribute -&gt; m ClassFileAttribute)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ClassFileAttribute -&gt; m ClassFileAttribute)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ClassFileAttribute -&gt; m ClassFileAttribute)
+-&gt; Data ClassFileAttribute
+ClassFileAttribute -&gt; Constr
+ClassFileAttribute -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; ClassFileAttribute -&gt; ClassFileAttribute
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassFileAttribute -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassFileAttribute -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassFileAttribute -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassFileAttribute -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassFileAttribute -&gt; m ClassFileAttribute
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassFileAttribute -&gt; m ClassFileAttribute
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassFileAttribute
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; ClassFileAttribute
+-&gt; c ClassFileAttribute
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassFileAttribute)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ClassFileAttribute)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; ClassFileAttribute
+-&gt; c ClassFileAttribute
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; ClassFileAttribute
+-&gt; c ClassFileAttribute
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassFileAttribute
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassFileAttribute
+$ctoConstr :: ClassFileAttribute -&gt; Constr
+toConstr :: ClassFileAttribute -&gt; Constr
+$cdataTypeOf :: ClassFileAttribute -&gt; DataType
+dataTypeOf :: ClassFileAttribute -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassFileAttribute)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassFileAttribute)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ClassFileAttribute)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ClassFileAttribute)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; ClassFileAttribute -&gt; ClassFileAttribute
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; ClassFileAttribute -&gt; ClassFileAttribute
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassFileAttribute -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassFileAttribute -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassFileAttribute -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassFileAttribute -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassFileAttribute -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassFileAttribute -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassFileAttribute -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassFileAttribute -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassFileAttribute -&gt; m ClassFileAttribute
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassFileAttribute -&gt; m ClassFileAttribute
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassFileAttribute -&gt; m ClassFileAttribute
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassFileAttribute -&gt; m ClassFileAttribute
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassFileAttribute -&gt; m ClassFileAttribute
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ClassFileAttribute -&gt; m ClassFileAttribute
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.TypeMergingList.html#DataMergeable"><span class="hs-identifier hs-type">DataMergeable</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#ClassFileAttribute"><span class="hs-identifier hs-type">ClassFileAttribute</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-44"></span><span>    </span><span id="local-6989586621679459153"><span class="annot"><span class="annottext">merge :: ClassFileAttribute -&gt; ClassFileAttribute -&gt; ClassFileAttribute
+</span><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var hs-var hs-var">merge</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClasses"><span class="hs-identifier hs-type">InnerClasses</span></a></span><span> </span><span id="local-6989586621679459154"><span class="annot"><span class="annottext">[InnerClassInfo]
+</span><a href="#local-6989586621679459154"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClasses"><span class="hs-identifier hs-type">InnerClasses</span></a></span><span> </span><span id="local-6989586621679459155"><span class="annot"><span class="annottext">[InnerClassInfo]
+</span><a href="#local-6989586621679459155"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[InnerClassInfo] -&gt; ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#InnerClasses"><span class="hs-identifier hs-var">InnerClasses</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[InnerClassInfo]
+</span><a href="#local-6989586621679459154"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">[InnerClassInfo] -&gt; [InnerClassInfo] -&gt; [InnerClassInfo]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[InnerClassInfo]
+</span><a href="#local-6989586621679459155"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#EnclosingMethod"><span class="hs-identifier hs-var">EnclosingMethod</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#EnclosingMethod"><span class="hs-identifier hs-var">EnclosingMethod</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#EnclosingMethod"><span class="hs-identifier hs-var">EnclosingMethod</span></a></span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Signature"><span class="hs-identifier hs-var">Signature</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Signature"><span class="hs-identifier hs-var">Signature</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Signature"><span class="hs-identifier hs-var">Signature</span></a></span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#SourceFile"><span class="hs-identifier hs-type">SourceFile</span></a></span><span> </span><span id="local-6989586621679459156"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679459156"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#SourceFile"><span class="hs-identifier hs-type">SourceFile</span></a></span><span> </span><span id="local-6989586621679459157"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679459157"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#SourceFile"><span class="hs-identifier hs-var">SourceFile</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679459156"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679459157"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#SourceDebugExtension"><span class="hs-identifier hs-var">SourceDebugExtension</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#SourceDebugExtension"><span class="hs-identifier hs-var">SourceDebugExtension</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#SourceDebugExtension"><span class="hs-identifier hs-var">SourceDebugExtension</span></a></span><span>
+</span><span id="line-50"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Deprecated"><span class="hs-identifier hs-var">Deprecated</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Deprecated"><span class="hs-identifier hs-var">Deprecated</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Deprecated"><span class="hs-identifier hs-var">Deprecated</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#RuntimeVisibleAnnotations"><span class="hs-identifier hs-var">RuntimeVisibleAnnotations</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#RuntimeVisibleAnnotations"><span class="hs-identifier hs-var">RuntimeVisibleAnnotations</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#RuntimeVisibleAnnotations"><span class="hs-identifier hs-var">RuntimeVisibleAnnotations</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#RuntimeInvisibleAnnotations"><span class="hs-identifier hs-var">RuntimeInvisibleAnnotations</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#RuntimeInvisibleAnnotations"><span class="hs-identifier hs-var">RuntimeInvisibleAnnotations</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#RuntimeInvisibleAnnotations"><span class="hs-identifier hs-var">RuntimeInvisibleAnnotations</span></a></span><span>
+</span><span id="line-53"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#BootstrapMethods"><span class="hs-identifier hs-type">BootstrapMethods</span></a></span><span> </span><span id="local-6989586621679459158"><span class="annot"><span class="annottext">[BootstrapMethod]
+</span><a href="#local-6989586621679459158"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#BootstrapMethods"><span class="hs-identifier hs-type">BootstrapMethods</span></a></span><span> </span><span id="local-6989586621679459159"><span class="annot"><span class="annottext">[BootstrapMethod]
+</span><a href="#local-6989586621679459159"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[BootstrapMethod] -&gt; ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#BootstrapMethods"><span class="hs-identifier hs-var">BootstrapMethods</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[BootstrapMethod]
+</span><a href="#local-6989586621679459158"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">[BootstrapMethod] -&gt; [BootstrapMethod] -&gt; [BootstrapMethod]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[BootstrapMethod]
+</span><a href="#local-6989586621679459159"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>    </span><span class="annot"><a href="Data.TypeMergingList.html#merge"><span class="hs-identifier hs-var">merge</span></a></span><span> </span><span id="local-6989586621679459160"><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="#local-6989586621679459160"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679459161"><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="#local-6989586621679459161"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute -&gt; ClassFileAttribute -&gt; ClassFileAttribute
+forall a b. Data a =&gt; a -&gt; a -&gt; b
+</span><a href="Data.TypeMergingList.html#errorDifferentConstructors"><span class="hs-identifier hs-var">errorDifferentConstructors</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="#local-6989586621679459160"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="#local-6989586621679459161"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">data</span><span> </span><span id="InnerClassInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-var">InnerClassInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="InnerClassInfo"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-var">InnerClassInfo</span></a></span></span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="innerClassInfo"><span class="annot"><span class="annottext">InnerClassInfo -&gt; QualifiedClassName
+</span><a href="JVM.Data.Abstract.ClassFile.html#innerClassInfo"><span class="hs-identifier hs-var hs-var">innerClassInfo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span>
+</span><span id="line-58"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="outerClassInfo"><span class="annot"><span class="annottext">InnerClassInfo -&gt; QualifiedClassName
+</span><a href="JVM.Data.Abstract.ClassFile.html#outerClassInfo"><span class="hs-identifier hs-var hs-var">outerClassInfo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="innerName"><span class="annot"><span class="annottext">InnerClassInfo -&gt; Text
+</span><a href="JVM.Data.Abstract.ClassFile.html#innerName"><span class="hs-identifier hs-var hs-var">innerName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-60"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="accessFlags"><span class="annot"><span class="annottext">InnerClassInfo -&gt; [ClassAccessFlag]
+</span><a href="JVM.Data.Abstract.ClassFile.html#accessFlags"><span class="hs-identifier hs-var hs-var">accessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#ClassAccessFlag"><span class="hs-identifier hs-type">ClassAccessFlag</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-62"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679459168"><span id="local-6989586621679459176"><span id="local-6989586621679459179"><span class="annot"><span class="annottext">Int -&gt; InnerClassInfo -&gt; ShowS
+[InnerClassInfo] -&gt; ShowS
+InnerClassInfo -&gt; String
+(Int -&gt; InnerClassInfo -&gt; ShowS)
+-&gt; (InnerClassInfo -&gt; String)
+-&gt; ([InnerClassInfo] -&gt; ShowS)
+-&gt; Show InnerClassInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; InnerClassInfo -&gt; ShowS
+showsPrec :: Int -&gt; InnerClassInfo -&gt; ShowS
+$cshow :: InnerClassInfo -&gt; String
+show :: InnerClassInfo -&gt; String
+$cshowList :: [InnerClassInfo] -&gt; ShowS
+showList :: [InnerClassInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459182"><span id="local-6989586621679459190"><span class="annot"><span class="annottext">InnerClassInfo -&gt; InnerClassInfo -&gt; Bool
+(InnerClassInfo -&gt; InnerClassInfo -&gt; Bool)
+-&gt; (InnerClassInfo -&gt; InnerClassInfo -&gt; Bool) -&gt; Eq InnerClassInfo
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: InnerClassInfo -&gt; InnerClassInfo -&gt; Bool
+== :: InnerClassInfo -&gt; InnerClassInfo -&gt; Bool
+$c/= :: InnerClassInfo -&gt; InnerClassInfo -&gt; Bool
+/= :: InnerClassInfo -&gt; InnerClassInfo -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459196"><span id="local-6989586621679459204"><span id="local-6989586621679459211"><span id="local-6989586621679459213"><span id="local-6989586621679459215"><span id="local-6989586621679459220"><span id="local-6989586621679459225"><span id="local-6989586621679459228"><span id="local-6989586621679459231"><span id="local-6989586621679459234"><span id="local-6989586621679459237"><span id="local-6989586621679459240"><span id="local-6989586621679459245"><span id="local-6989586621679459250"><span class="annot"><span class="annottext">Typeable InnerClassInfo
+Typeable InnerClassInfo =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; InnerClassInfo -&gt; c InnerClassInfo)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c InnerClassInfo)
+-&gt; (InnerClassInfo -&gt; Constr)
+-&gt; (InnerClassInfo -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c InnerClassInfo))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c InnerClassInfo))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; InnerClassInfo -&gt; InnerClassInfo)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; InnerClassInfo -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; InnerClassInfo -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; InnerClassInfo -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; InnerClassInfo -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; InnerClassInfo -&gt; m InnerClassInfo)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; InnerClassInfo -&gt; m InnerClassInfo)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; InnerClassInfo -&gt; m InnerClassInfo)
+-&gt; Data InnerClassInfo
+InnerClassInfo -&gt; Constr
+InnerClassInfo -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; InnerClassInfo -&gt; InnerClassInfo
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; InnerClassInfo -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; InnerClassInfo -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; InnerClassInfo -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; InnerClassInfo -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; InnerClassInfo -&gt; m InnerClassInfo
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; InnerClassInfo -&gt; m InnerClassInfo
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c InnerClassInfo
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; InnerClassInfo -&gt; c InnerClassInfo
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c InnerClassInfo)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c InnerClassInfo)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; InnerClassInfo -&gt; c InnerClassInfo
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; InnerClassInfo -&gt; c InnerClassInfo
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c InnerClassInfo
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c InnerClassInfo
+$ctoConstr :: InnerClassInfo -&gt; Constr
+toConstr :: InnerClassInfo -&gt; Constr
+$cdataTypeOf :: InnerClassInfo -&gt; DataType
+dataTypeOf :: InnerClassInfo -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c InnerClassInfo)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c InnerClassInfo)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c InnerClassInfo)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c InnerClassInfo)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; InnerClassInfo -&gt; InnerClassInfo
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; InnerClassInfo -&gt; InnerClassInfo
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; InnerClassInfo -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; InnerClassInfo -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; InnerClassInfo -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; InnerClassInfo -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; InnerClassInfo -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; InnerClassInfo -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; InnerClassInfo -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; InnerClassInfo -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; InnerClassInfo -&gt; m InnerClassInfo
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; InnerClassInfo -&gt; m InnerClassInfo
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; InnerClassInfo -&gt; m InnerClassInfo
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; InnerClassInfo -&gt; m InnerClassInfo
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; InnerClassInfo -&gt; m InnerClassInfo
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; InnerClassInfo -&gt; m InnerClassInfo
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679459257"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#ClassFile"><span class="hs-identifier hs-type">ClassFile</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-65"></span><span>    </span><span id="local-6989586621679459286"><span class="annot"><span class="annottext">pretty :: forall ann. ClassFile -&gt; Doc ann
+</span><a href="#local-6989586621679459286"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#ClassFile"><span class="hs-identifier hs-type">ClassFile</span></a></span><span class="hs-special">{</span><span id="local-6989586621679459288"><span class="annot"><span class="annottext">QualifiedClassName
+name :: ClassFile -&gt; QualifiedClassName
+name :: QualifiedClassName
+</span><a href="JVM.Data.Abstract.ClassFile.html#name"><span class="hs-identifier hs-var hs-var">name</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459289"><span class="annot"><span class="annottext">JVMVersion
+version :: ClassFile -&gt; JVMVersion
+version :: JVMVersion
+</span><a href="JVM.Data.Abstract.ClassFile.html#version"><span class="hs-identifier hs-var hs-var">version</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459290"><span class="annot"><span class="annottext">[ClassAccessFlag]
+accessFlags :: ClassFile -&gt; [ClassAccessFlag]
+accessFlags :: [ClassAccessFlag]
+</span><a href="JVM.Data.Abstract.ClassFile.html#accessFlags"><span class="hs-identifier hs-var hs-var">accessFlags</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459291"><span class="annot"><span class="annottext">Maybe QualifiedClassName
+superClass :: ClassFile -&gt; Maybe QualifiedClassName
+superClass :: Maybe QualifiedClassName
+</span><a href="JVM.Data.Abstract.ClassFile.html#superClass"><span class="hs-identifier hs-var hs-var">superClass</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459292"><span class="annot"><span class="annottext">[QualifiedClassName]
+interfaces :: ClassFile -&gt; [QualifiedClassName]
+interfaces :: [QualifiedClassName]
+</span><a href="JVM.Data.Abstract.ClassFile.html#interfaces"><span class="hs-identifier hs-var hs-var">interfaces</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459293"><span class="annot"><span class="annottext">[ClassFileField]
+fields :: ClassFile -&gt; [ClassFileField]
+fields :: [ClassFileField]
+</span><a href="JVM.Data.Abstract.ClassFile.html#fields"><span class="hs-identifier hs-var hs-var">fields</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459294"><span class="annot"><span class="annottext">[ClassFileMethod]
+methods :: ClassFile -&gt; [ClassFileMethod]
+methods :: [ClassFileMethod]
+</span><a href="JVM.Data.Abstract.ClassFile.html#methods"><span class="hs-identifier hs-var hs-var">methods</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459295"><span class="annot"><span class="annottext">TypeMergingList ClassFileAttribute
+attributes :: ClassFile -&gt; TypeMergingList ClassFileAttribute
+attributes :: TypeMergingList ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#attributes"><span class="hs-identifier hs-var hs-var">attributes</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-66"></span><span>        </span><span class="annot"><span class="annottext">[Doc ann] -&gt; Doc ann
+forall ann. [Doc ann] -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#hsep"><span class="hs-identifier hs-var">hsep</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ClassAccessFlag -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ClassAccessFlag -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">(ClassAccessFlag -&gt; Doc ann) -&gt; [ClassAccessFlag] -&gt; [Doc ann]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[ClassAccessFlag]
+</span><a href="#local-6989586621679459290"><span class="hs-identifier hs-var">accessFlags</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>            </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;class&quot;</span></span><span>
+</span><span id="line-68"></span><span>            </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. QualifiedClassName -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName
+</span><a href="#local-6989586621679459288"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-69"></span><span>            </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Symbols.Ascii.html#parens"><span class="hs-identifier hs-var">parens</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">JVMVersion -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. JVMVersion -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">JVMVersion
+</span><a href="#local-6989586621679459289"><span class="hs-identifier hs-var">version</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>            </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+-&gt; (QualifiedClassName -&gt; Doc ann)
+-&gt; Maybe QualifiedClassName
+-&gt; Doc ann
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;extends&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Doc ann -&gt; Doc ann)
+-&gt; (QualifiedClassName -&gt; Doc ann) -&gt; QualifiedClassName -&gt; Doc ann
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. QualifiedClassName -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe QualifiedClassName
+</span><a href="#local-6989586621679459291"><span class="hs-identifier hs-var">superClass</span></a></span><span>
+</span><span id="line-71"></span><span>            </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">[QualifiedClassName] -&gt; Bool
+forall a. [a] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">[QualifiedClassName]
+</span><a href="#local-6989586621679459292"><span class="hs-identifier hs-var">interfaces</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;implements&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[QualifiedClassName] -&gt; Doc ann
+forall ann. [QualifiedClassName] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[QualifiedClassName]
+</span><a href="#local-6989586621679459292"><span class="hs-identifier hs-var">interfaces</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>            </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><a href="#local-6989586621679459302"><span class="hs-identifier hs-var">body</span></a></span><span>
+</span><span id="line-73"></span><span>      </span><span class="hs-keyword">where</span><span>
+</span><span id="line-74"></span><span>        </span><span id="local-6989586621679459302"><span class="annot"><span class="annottext">body :: Doc ann
+</span><a href="#local-6989586621679459302"><span class="hs-identifier hs-var hs-var">body</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann -&gt; [Doc ann] -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann -&gt; [Doc ann] -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#encloseSep"><span class="hs-identifier hs-var">encloseSep</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><a href="#local-6989586621679459303"><span class="hs-identifier hs-var">open</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><a href="#local-6989586621679459304"><span class="hs-identifier hs-var">close</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+forall {ann}. Doc ann
+</span><a href="#local-6989586621679459305"><span class="hs-identifier hs-var">sep</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(ClassFileField -&gt; Doc ann) -&gt; [ClassFileField] -&gt; [Doc ann]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">ClassFileField -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ClassFileField -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[ClassFileField]
+</span><a href="#local-6989586621679459293"><span class="hs-identifier hs-var">fields</span></a></span><span> </span><span class="annot"><span class="annottext">[Doc ann] -&gt; [Doc ann] -&gt; [Doc ann]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">(ClassFileMethod -&gt; Doc ann) -&gt; [ClassFileMethod] -&gt; [Doc ann]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">ClassFileMethod -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ClassFileMethod -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[ClassFileMethod]
+</span><a href="#local-6989586621679459294"><span class="hs-identifier hs-var">methods</span></a></span><span> </span><span class="annot"><span class="annottext">[Doc ann] -&gt; [Doc ann] -&gt; [Doc ann]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">(ClassFileAttribute -&gt; Doc ann)
+-&gt; [ClassFileAttribute] -&gt; [Doc ann]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ClassFileAttribute -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TypeMergingList ClassFileAttribute -&gt; [ClassFileAttribute]
+forall a. TypeMergingList a -&gt; [a]
+</span><a href="Data.TypeMergingList.html#toList"><span class="hs-identifier hs-var">toList</span></a></span><span> </span><span class="annot"><span class="annottext">TypeMergingList ClassFileAttribute
+</span><a href="#local-6989586621679459295"><span class="hs-identifier hs-var">attributes</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>        </span><span id="local-6989586621679459303"><span class="annot"><span class="annottext">open :: Doc ann
+</span><a href="#local-6989586621679459303"><span class="hs-identifier hs-var hs-var">open</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;{&quot;</span></span><span>
+</span><span id="line-76"></span><span>        </span><span id="local-6989586621679459304"><span class="annot"><span class="annottext">close :: Doc ann
+</span><a href="#local-6989586621679459304"><span class="hs-identifier hs-var hs-var">close</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;}&quot;</span></span><span>
+</span><span id="line-77"></span><span>        </span><span id="local-6989586621679459305"><span class="annot"><span class="annottext">sep :: Doc ann
+</span><a href="#local-6989586621679459305"><span class="hs-identifier hs-var hs-var">sep</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+forall {ann}. Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#line"><span class="hs-identifier hs-var">line</span></a></span><span>
+</span><span id="line-78"></span><span>
+</span><span id="line-79"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679459310"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#ClassFileAttribute"><span class="hs-identifier hs-type">ClassFileAttribute</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-80"></span><span>    </span><span id="local-6989586621679459330"><span class="annot"><span class="annottext">pretty :: forall ann. ClassFileAttribute -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClasses"><span class="hs-identifier hs-type">InnerClasses</span></a></span><span> </span><span id="local-6989586621679459331"><span class="annot"><span class="annottext">[InnerClassInfo]
+</span><a href="#local-6989586621679459331"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;InnerClasses&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[InnerClassInfo] -&gt; Doc ann
+forall ann. [InnerClassInfo] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[InnerClassInfo]
+</span><a href="#local-6989586621679459331"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-81"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#EnclosingMethod"><span class="hs-identifier hs-var">EnclosingMethod</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;EnclosingMethod&quot;</span></span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Synthetic&quot;</span></span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Signature"><span class="hs-identifier hs-var">Signature</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Signature&quot;</span></span><span>
+</span><span id="line-84"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#SourceFile"><span class="hs-identifier hs-type">SourceFile</span></a></span><span> </span><span id="local-6989586621679459332"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679459332"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;SourceFile&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679459332"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-85"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#SourceDebugExtension"><span class="hs-identifier hs-var">SourceDebugExtension</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;SourceDebugExtension&quot;</span></span><span>
+</span><span id="line-86"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#Deprecated"><span class="hs-identifier hs-var">Deprecated</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Deprecated&quot;</span></span><span>
+</span><span id="line-87"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#RuntimeVisibleAnnotations"><span class="hs-identifier hs-var">RuntimeVisibleAnnotations</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;RuntimeVisibleAnnotations&quot;</span></span><span>
+</span><span id="line-88"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassFileAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.html#RuntimeInvisibleAnnotations"><span class="hs-identifier hs-var">RuntimeInvisibleAnnotations</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;RuntimeInvisibleAnnotations&quot;</span></span><span>
+</span><span id="line-89"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#BootstrapMethods"><span class="hs-identifier hs-type">BootstrapMethods</span></a></span><span> </span><span id="local-6989586621679459333"><span class="annot"><span class="annottext">[BootstrapMethod]
+</span><a href="#local-6989586621679459333"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;BootstrapMethods&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[BootstrapMethod] -&gt; Doc ann
+forall ann. [BootstrapMethod] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[BootstrapMethod]
+</span><a href="#local-6989586621679459333"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679459336"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-type">InnerClassInfo</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-92"></span><span>    </span><span id="local-6989586621679459346"><span class="annot"><span class="annottext">pretty :: forall ann. InnerClassInfo -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-type">InnerClassInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679459347"><span class="annot"><span class="annottext">QualifiedClassName
+innerClassInfo :: InnerClassInfo -&gt; QualifiedClassName
+innerClassInfo :: QualifiedClassName
+</span><a href="JVM.Data.Abstract.ClassFile.html#innerClassInfo"><span class="hs-identifier hs-var hs-var">innerClassInfo</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459348"><span class="annot"><span class="annottext">QualifiedClassName
+outerClassInfo :: InnerClassInfo -&gt; QualifiedClassName
+outerClassInfo :: QualifiedClassName
+</span><a href="JVM.Data.Abstract.ClassFile.html#outerClassInfo"><span class="hs-identifier hs-var hs-var">outerClassInfo</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459349"><span class="annot"><span class="annottext">Text
+innerName :: InnerClassInfo -&gt; Text
+innerName :: Text
+</span><a href="JVM.Data.Abstract.ClassFile.html#innerName"><span class="hs-identifier hs-var hs-var">innerName</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679459350"><span class="annot"><span class="annottext">[ClassAccessFlag]
+accessFlags :: InnerClassInfo -&gt; [ClassAccessFlag]
+accessFlags :: [ClassAccessFlag]
+</span><a href="JVM.Data.Abstract.ClassFile.html#accessFlags"><span class="hs-identifier hs-var hs-var">accessFlags</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-93"></span><span>        </span><span class="annot"><span class="annottext">[ClassAccessFlag] -&gt; Doc ann
+forall ann. [ClassAccessFlag] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[ClassAccessFlag]
+</span><a href="#local-6989586621679459350"><span class="hs-identifier hs-var">accessFlags</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;inner class&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. QualifiedClassName -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName
+</span><a href="#local-6989586621679459347"><span class="hs-identifier hs-var">innerClassInfo</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;in&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. QualifiedClassName -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName
+</span><a href="#local-6989586621679459348"><span class="hs-identifier hs-var">outerClassInfo</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;named&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679459349"><span class="hs-identifier hs-var">innerName</span></a></span></pre></body></html>

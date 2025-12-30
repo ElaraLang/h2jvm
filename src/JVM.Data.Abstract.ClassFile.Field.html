@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.Field</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.AccessFlags</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FieldAccessFlag"><span class="hs-identifier">FieldAccessFlag</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html"><span class="hs-identifier">JVM.Data.Abstract.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier">FieldType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Pretty.html"><span class="hs-identifier">JVM.Data.Pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier">Pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier">pretty</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#hsep"><span class="hs-identifier">hsep</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator">(&lt;+&gt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html"><span class="hs-identifier">JVM.Data.Raw.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMDouble"><span class="hs-identifier">JVMDouble</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMFloat"><span class="hs-identifier">JVMFloat</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMInt"><span class="hs-identifier">JVMInt</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMLong"><span class="hs-identifier">JVMLong</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMString"><span class="hs-identifier">JVMString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="ClassFileField"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ClassFileField"><span class="hs-identifier hs-var">ClassFileField</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ClassFileField"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ClassFileField"><span class="hs-identifier hs-var">ClassFileField</span></a></span></span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="fieldAccessFlags"><span class="annot"><span class="annottext">ClassFileField -&gt; [FieldAccessFlag]
+</span><a href="JVM.Data.Abstract.ClassFile.Field.html#fieldAccessFlags"><span class="hs-identifier hs-var hs-var">fieldAccessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FieldAccessFlag"><span class="hs-identifier hs-type">FieldAccessFlag</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="fieldName"><span class="annot"><span class="annottext">ClassFileField -&gt; Text
+</span><a href="JVM.Data.Abstract.ClassFile.Field.html#fieldName"><span class="hs-identifier hs-var hs-var">fieldName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-12"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="fieldType"><span class="annot"><span class="annottext">ClassFileField -&gt; FieldType
+</span><a href="JVM.Data.Abstract.ClassFile.Field.html#fieldType"><span class="hs-identifier hs-var hs-var">fieldType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier hs-type">FieldType</span></a></span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="fieldAttributes"><span class="annot"><span class="annottext">ClassFileField -&gt; [FieldAttribute]
+</span><a href="JVM.Data.Abstract.ClassFile.Field.html#fieldAttributes"><span class="hs-identifier hs-var hs-var">fieldAttributes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#FieldAttribute"><span class="hs-identifier hs-type">FieldAttribute</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679458552"><span id="local-6989586621679458565"><span id="local-6989586621679458569"><span class="annot"><span class="annottext">Int -&gt; ClassFileField -&gt; ShowS
+[ClassFileField] -&gt; ShowS
+ClassFileField -&gt; String
+(Int -&gt; ClassFileField -&gt; ShowS)
+-&gt; (ClassFileField -&gt; String)
+-&gt; ([ClassFileField] -&gt; ShowS)
+-&gt; Show ClassFileField
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ClassFileField -&gt; ShowS
+showsPrec :: Int -&gt; ClassFileField -&gt; ShowS
+$cshow :: ClassFileField -&gt; String
+show :: ClassFileField -&gt; String
+$cshowList :: [ClassFileField] -&gt; ShowS
+showList :: [ClassFileField] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="FieldAttribute"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#FieldAttribute"><span class="hs-identifier hs-var">FieldAttribute</span></a></span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="ConstantValue"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantValue"><span class="hs-identifier hs-var">ConstantValue</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantValue"><span class="hs-identifier hs-type">ConstantValue</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Synthetic"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679458578"><span id="local-6989586621679458583"><span id="local-6989586621679458586"><span class="annot"><span class="annottext">Int -&gt; FieldAttribute -&gt; ShowS
+[FieldAttribute] -&gt; ShowS
+FieldAttribute -&gt; String
+(Int -&gt; FieldAttribute -&gt; ShowS)
+-&gt; (FieldAttribute -&gt; String)
+-&gt; ([FieldAttribute] -&gt; ShowS)
+-&gt; Show FieldAttribute
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; FieldAttribute -&gt; ShowS
+showsPrec :: Int -&gt; FieldAttribute -&gt; ShowS
+$cshow :: FieldAttribute -&gt; String
+show :: FieldAttribute -&gt; String
+$cshowList :: [FieldAttribute] -&gt; ShowS
+showList :: [FieldAttribute] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="ConstantValue"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantValue"><span class="hs-identifier hs-var">ConstantValue</span></a></span></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="ConstantLong"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantLong"><span class="hs-identifier hs-var">ConstantLong</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMLong"><span class="hs-identifier hs-type">JVMLong</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ConstantFloat"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantFloat"><span class="hs-identifier hs-var">ConstantFloat</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMFloat"><span class="hs-identifier hs-type">JVMFloat</span></a></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ConstantDouble"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantDouble"><span class="hs-identifier hs-var">ConstantDouble</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMDouble"><span class="hs-identifier hs-type">JVMDouble</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ConstantInteger"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantInteger"><span class="hs-identifier hs-var">ConstantInteger</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMInt"><span class="hs-identifier hs-type">JVMInt</span></a></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ConstantString"><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantString"><span class="hs-identifier hs-var">ConstantString</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMString"><span class="hs-identifier hs-type">JVMString</span></a></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679458594"><span id="local-6989586621679458610"><span id="local-6989586621679458613"><span class="annot"><span class="annottext">Int -&gt; ConstantValue -&gt; ShowS
+[ConstantValue] -&gt; ShowS
+ConstantValue -&gt; String
+(Int -&gt; ConstantValue -&gt; ShowS)
+-&gt; (ConstantValue -&gt; String)
+-&gt; ([ConstantValue] -&gt; ShowS)
+-&gt; Show ConstantValue
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ConstantValue -&gt; ShowS
+showsPrec :: Int -&gt; ConstantValue -&gt; ShowS
+$cshow :: ConstantValue -&gt; String
+show :: ConstantValue -&gt; String
+$cshowList :: [ConstantValue] -&gt; ShowS
+showList :: [ConstantValue] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679458617"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ClassFileField"><span class="hs-identifier hs-type">ClassFileField</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-31"></span><span>    </span><span id="local-6989586621679458641"><span class="annot"><span class="annottext">pretty :: forall ann. ClassFileField -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ClassFileField"><span class="hs-identifier hs-type">ClassFileField</span></a></span><span> </span><span id="local-6989586621679458642"><span class="annot"><span class="annottext">[FieldAccessFlag]
+</span><a href="#local-6989586621679458642"><span class="hs-identifier hs-var">accessFlags</span></a></span></span><span> </span><span id="local-6989586621679458643"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679458643"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679458644"><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679458644"><span class="hs-identifier hs-var">fieldType</span></a></span></span><span> </span><span id="local-6989586621679458645"><span class="annot"><span class="annottext">[FieldAttribute]
+</span><a href="#local-6989586621679458645"><span class="hs-identifier hs-var">attributes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-32"></span><span>        </span><span class="annot"><span class="annottext">[Doc ann] -&gt; Doc ann
+forall ann. [Doc ann] -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#hsep"><span class="hs-identifier hs-var">hsep</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FieldAccessFlag -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldAccessFlag -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">(FieldAccessFlag -&gt; Doc ann) -&gt; [FieldAccessFlag] -&gt; [Doc ann]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[FieldAccessFlag]
+</span><a href="#local-6989586621679458642"><span class="hs-identifier hs-var">accessFlags</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">FieldType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldType -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679458644"><span class="hs-identifier hs-var">fieldType</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679458643"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[FieldAttribute] -&gt; Doc ann
+forall ann. [FieldAttribute] -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[FieldAttribute]
+</span><a href="#local-6989586621679458645"><span class="hs-identifier hs-var">attributes</span></a></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679458649"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#FieldAttribute"><span class="hs-identifier hs-type">FieldAttribute</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-35"></span><span>    </span><span id="local-6989586621679458656"><span class="annot"><span class="annottext">pretty :: forall ann. FieldAttribute -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantValue"><span class="hs-identifier hs-type">ConstantValue</span></a></span><span> </span><span id="local-6989586621679458657"><span class="annot"><span class="annottext">ConstantValue
+</span><a href="#local-6989586621679458657"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ConstantValue &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConstantValue -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ConstantValue -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ConstantValue
+</span><a href="#local-6989586621679458657"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-36"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldAttribute
+</span><a href="JVM.Data.Abstract.ClassFile.Field.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;Synthetic&quot;</span></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679458660"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantValue"><span class="hs-identifier hs-type">ConstantValue</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-39"></span><span>    </span><span id="local-6989586621679458681"><span class="annot"><span class="annottext">pretty :: forall ann. ConstantValue -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantLong"><span class="hs-identifier hs-type">ConstantLong</span></a></span><span> </span><span id="local-6989586621679458682"><span class="annot"><span class="annottext">JVMLong
+</span><a href="#local-6989586621679458682"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ConstantLong &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">JVMLong -&gt; Doc ann
+forall ann. JVMLong -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">JVMLong
+</span><a href="#local-6989586621679458682"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-40"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantFloat"><span class="hs-identifier hs-type">ConstantFloat</span></a></span><span> </span><span id="local-6989586621679458683"><span class="annot"><span class="annottext">JVMFloat
+</span><a href="#local-6989586621679458683"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ConstantFloat &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">JVMFloat -&gt; Doc ann
+forall ann. JVMFloat -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">JVMFloat
+</span><a href="#local-6989586621679458683"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-41"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantDouble"><span class="hs-identifier hs-type">ConstantDouble</span></a></span><span> </span><span id="local-6989586621679458684"><span class="annot"><span class="annottext">JVMDouble
+</span><a href="#local-6989586621679458684"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ConstantDouble &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">JVMDouble -&gt; Doc ann
+forall ann. JVMDouble -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">JVMDouble
+</span><a href="#local-6989586621679458684"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-42"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantInteger"><span class="hs-identifier hs-type">ConstantInteger</span></a></span><span> </span><span id="local-6989586621679458685"><span class="annot"><span class="annottext">JVMInt
+</span><a href="#local-6989586621679458685"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ConstantInteger &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">JVMInt -&gt; Doc ann
+forall ann. JVMInt -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">JVMInt
+</span><a href="#local-6989586621679458685"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-43"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.Field.html#ConstantString"><span class="hs-identifier hs-type">ConstantString</span></a></span><span> </span><span id="local-6989586621679458686"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679458686"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;ConstantString &quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679458686"><span class="hs-identifier hs-var">v</span></a></span></pre></body></html>

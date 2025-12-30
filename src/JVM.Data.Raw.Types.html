@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Types and type synonyms for raw JVM data</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html"><span class="hs-identifier">JVM.Data.Raw.Types</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary</span></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Bits</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">shiftR</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">type</span><span> </span><span id="U1"><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-var">U1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word8</span></span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">type</span><span> </span><span id="U2"><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-var">U2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">type</span><span> </span><span id="U4"><span class="annot"><a href="JVM.Data.Raw.Types.html#U4"><span class="hs-identifier hs-var">U4</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">type</span><span> </span><span id="U8"><span class="annot"><a href="JVM.Data.Raw.Types.html#U8"><span class="hs-identifier hs-var">U8</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">type</span><span> </span><span id="JVMInt"><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMInt"><span class="hs-identifier hs-var">JVMInt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U4"><span class="hs-identifier hs-type">U4</span></a></span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">type</span><span> </span><span id="JVMFloat"><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMFloat"><span class="hs-identifier hs-var">JVMFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">type</span><span> </span><span id="JVMLong"><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMLong"><span class="hs-identifier hs-var">JVMLong</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U8"><span class="hs-identifier hs-type">U8</span></a></span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">type</span><span> </span><span id="JVMDouble"><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMDouble"><span class="hs-identifier hs-var">JVMDouble</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">type</span><span> </span><span id="JVMString"><span class="annot"><a href="JVM.Data.Raw.Types.html#JVMString"><span class="hs-identifier hs-var">JVMString</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="annot"><span class="hs-comment">-- | An offset for an instruction, used for jumps</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">type</span><span> </span><span id="InstOffsetBytes"><span class="annot"><a href="JVM.Data.Raw.Types.html#InstOffsetBytes"><span class="hs-identifier hs-var">InstOffsetBytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">{- | Converts an 'InstOffsetBytes' to a pair of bytes, encoding it a way that the JVM will correctly interpret it
+ In other words, this function does the opposite of @(branchbyte1 &lt;&lt; 8) | branchbyte2@
+ &gt;&gt;&gt; instOffsetBytesToU2 39
+ (0,39)
+-}</span></span><span>
+</span><span id="line-34"></span><span class="annot"><a href="JVM.Data.Raw.Types.html#instOffsetBytesToU2"><span class="hs-identifier hs-type">instOffsetBytesToU2</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#InstOffsetBytes"><span class="hs-identifier hs-type">InstOffsetBytes</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-type">U1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-type">U1</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span id="instOffsetBytesToU2"><span class="annot"><span class="annottext">instOffsetBytesToU2 :: InstOffsetBytes -&gt; (U1, U1)
+</span><a href="JVM.Data.Raw.Types.html#instOffsetBytesToU2"><span class="hs-identifier hs-var hs-var">instOffsetBytesToU2</span></a></span></span><span> </span><span id="local-6989586621679451218"><span class="annot"><span class="annottext">InstOffsetBytes
+</span><a href="#local-6989586621679451218"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">InstOffsetBytes -&gt; U1
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">InstOffsetBytes
+</span><a href="#local-6989586621679451218"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="annot"><span class="annottext">InstOffsetBytes -&gt; Int -&gt; InstOffsetBytes
+forall a. Bits a =&gt; a -&gt; Int -&gt; a
+</span><span class="hs-operator hs-var">`shiftR`</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">8</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">InstOffsetBytes -&gt; U1
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">InstOffsetBytes
+</span><a href="#local-6989586621679451218"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | A constant pool index</span></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">type</span><span> </span><span id="ConstantPoolIndex"><span class="annot"><a href="JVM.Data.Raw.Types.html#ConstantPoolIndex"><span class="hs-identifier hs-var">ConstantPoolIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><span class="hs-comment">-- | An &quot;array type code&quot; for the `newarray` instruction</span></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">type</span><span> </span><span id="ArrayType"><span class="annot"><a href="JVM.Data.Raw.Types.html#ArrayType"><span class="hs-identifier hs-var">ArrayType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-type">U1</span></a></span><span>
+</span><span id="line-42"></span></pre></body></html>

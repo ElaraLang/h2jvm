@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Convert.AccessFlag.html"><span class="hs-identifier">JVM.Data.Convert.AccessFlag</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Bits</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(.|.)</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Word16</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html"><span class="hs-identifier">JVM.Data.Abstract.ClassFile.AccessFlags</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#ClassAccessFlag"><span class="hs-identifier">ClassAccessFlag</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FieldAccessFlag"><span class="hs-identifier">FieldAccessFlag</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MethodAccessFlag"><span class="hs-identifier">MethodAccessFlag</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.AccessFlags.html"><span class="hs-identifier">JVM.Data.Raw.AccessFlags</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.AccessFlags.html#accessFlagValue"><span class="hs-identifier">accessFlagValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.AccessFlags.html"><span class="hs-identifier">JVM.Data.Raw.AccessFlags</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Raw</span></span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">class</span><span> </span><span id="ConvertAccessFlag"><span class="annot"><a href="JVM.Data.Convert.AccessFlag.html#ConvertAccessFlag"><span class="hs-identifier hs-var">ConvertAccessFlag</span></a></span></span><span> </span><span id="local-6989586621679451112"><span class="annot"><a href="#local-6989586621679451112"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-12"></span><span>    </span><span id="convertAccessFlag"><span class="annot"><a href="JVM.Data.Convert.AccessFlag.html#convertAccessFlag"><span class="hs-identifier hs-type">convertAccessFlag</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679451112"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="JVM.Data.Raw.AccessFlags.html#AccessFlag"><span class="hs-identifier hs-type">Raw.AccessFlag</span></a></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span id="local-6989586621679451103"><span class="annot"><a href="JVM.Data.Convert.AccessFlag.html#accessFlagsToWord16"><span class="hs-identifier hs-type">accessFlagsToWord16</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Convert.AccessFlag.html#ConvertAccessFlag"><span class="hs-identifier hs-type">ConvertAccessFlag</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679451103"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679451103"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span></span><span>
+</span><span id="line-15"></span><span id="accessFlagsToWord16"><span class="annot"><span class="annottext">accessFlagsToWord16 :: forall a. ConvertAccessFlag a =&gt; [a] -&gt; Word16
+</span><a href="JVM.Data.Convert.AccessFlag.html#accessFlagsToWord16"><span class="hs-identifier hs-var hs-var">accessFlagsToWord16</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; Word16 -&gt; Word16) -&gt; Word16 -&gt; [a] -&gt; Word16
+forall a b. (a -&gt; b -&gt; b) -&gt; b -&gt; [a] -&gt; b
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldr</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679451130"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679451130"><span class="hs-identifier hs-var">flag</span></a></span></span><span> </span><span id="local-6989586621679451131"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679451131"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679451131"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Word16 -&gt; Word16
+forall a. Bits a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">.|.</span></span><span> </span><span class="annot"><span class="annottext">AccessFlag -&gt; Word16
+</span><a href="JVM.Data.Raw.AccessFlags.html#accessFlagValue"><span class="hs-identifier hs-var">accessFlagValue</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; AccessFlag
+forall a. ConvertAccessFlag a =&gt; a -&gt; AccessFlag
+</span><a href="JVM.Data.Convert.AccessFlag.html#convertAccessFlag"><span class="hs-identifier hs-var">convertAccessFlag</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679451130"><span class="hs-identifier hs-var">flag</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="JVM.Data.Convert.AccessFlag.html#ConvertAccessFlag"><span class="hs-identifier hs-type">ConvertAccessFlag</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#ClassAccessFlag"><span class="hs-identifier hs-type">ClassAccessFlag</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>    </span><span id="local-6989586621679451135"><span class="annot"><span class="annottext">convertAccessFlag :: ClassAccessFlag -&gt; AccessFlag
+</span><a href="JVM.Data.Convert.AccessFlag.html#convertAccessFlag"><span class="hs-identifier hs-var hs-var hs-var">convertAccessFlag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-19"></span><span>        </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Public"><span class="hs-identifier hs-var">Public</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_PUBLIC"><span class="hs-identifier hs-var">Raw.ACC_PUBLIC</span></a></span><span>
+</span><span id="line-20"></span><span>        </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Final"><span class="hs-identifier hs-var">Final</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_FINAL"><span class="hs-identifier hs-var">Raw.ACC_FINAL</span></a></span><span>
+</span><span id="line-21"></span><span>        </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Super"><span class="hs-identifier hs-var">Super</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_SUPER"><span class="hs-identifier hs-var">Raw.ACC_SUPER</span></a></span><span>
+</span><span id="line-22"></span><span>        </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Interface"><span class="hs-identifier hs-var">Interface</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_INTERFACE"><span class="hs-identifier hs-var">Raw.ACC_INTERFACE</span></a></span><span>
+</span><span id="line-23"></span><span>        </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Abstract"><span class="hs-identifier hs-var">Abstract</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_ABSTRACT"><span class="hs-identifier hs-var">Raw.ACC_ABSTRACT</span></a></span><span>
+</span><span id="line-24"></span><span>        </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Synthetic"><span class="hs-identifier hs-var">Synthetic</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_SYNTHETIC"><span class="hs-identifier hs-var">Raw.ACC_SYNTHETIC</span></a></span><span>
+</span><span id="line-25"></span><span>        </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Annotation"><span class="hs-identifier hs-var">Annotation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_ANNOTATION"><span class="hs-identifier hs-var">Raw.ACC_ANNOTATION</span></a></span><span>
+</span><span id="line-26"></span><span>        </span><span class="annot"><span class="annottext">ClassAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#Enum"><span class="hs-identifier hs-var">Enum</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_ENUM"><span class="hs-identifier hs-var">Raw.ACC_ENUM</span></a></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="JVM.Data.Convert.AccessFlag.html#ConvertAccessFlag"><span class="hs-identifier hs-type">ConvertAccessFlag</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FieldAccessFlag"><span class="hs-identifier hs-type">FieldAccessFlag</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-29"></span><span>    </span><span id="local-6989586621679451154"><span class="annot"><span class="annottext">convertAccessFlag :: FieldAccessFlag -&gt; AccessFlag
+</span><a href="JVM.Data.Convert.AccessFlag.html#convertAccessFlag"><span class="hs-identifier hs-var hs-var hs-var">convertAccessFlag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-30"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FPublic"><span class="hs-identifier hs-var">FPublic</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_PUBLIC"><span class="hs-identifier hs-var">Raw.ACC_PUBLIC</span></a></span><span>
+</span><span id="line-31"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FPrivate"><span class="hs-identifier hs-var">FPrivate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_PRIVATE"><span class="hs-identifier hs-var">Raw.ACC_PRIVATE</span></a></span><span>
+</span><span id="line-32"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FProtected"><span class="hs-identifier hs-var">FProtected</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_PROTECTED"><span class="hs-identifier hs-var">Raw.ACC_PROTECTED</span></a></span><span>
+</span><span id="line-33"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FStatic"><span class="hs-identifier hs-var">FStatic</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_STATIC"><span class="hs-identifier hs-var">Raw.ACC_STATIC</span></a></span><span>
+</span><span id="line-34"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FFinal"><span class="hs-identifier hs-var">FFinal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_FINAL"><span class="hs-identifier hs-var">Raw.ACC_FINAL</span></a></span><span>
+</span><span id="line-35"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FVolatile"><span class="hs-identifier hs-var">FVolatile</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_VOLATILE"><span class="hs-identifier hs-var">Raw.ACC_VOLATILE</span></a></span><span>
+</span><span id="line-36"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FTransient"><span class="hs-identifier hs-var">FTransient</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_TRANSIENT"><span class="hs-identifier hs-var">Raw.ACC_TRANSIENT</span></a></span><span>
+</span><span id="line-37"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FSynthetic"><span class="hs-identifier hs-var">FSynthetic</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_SYNTHETIC"><span class="hs-identifier hs-var">Raw.ACC_SYNTHETIC</span></a></span><span>
+</span><span id="line-38"></span><span>        </span><span class="annot"><span class="annottext">FieldAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#FEnum"><span class="hs-identifier hs-var">FEnum</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_ENUM"><span class="hs-identifier hs-var">Raw.ACC_ENUM</span></a></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="JVM.Data.Convert.AccessFlag.html#ConvertAccessFlag"><span class="hs-identifier hs-type">ConvertAccessFlag</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MethodAccessFlag"><span class="hs-identifier hs-type">MethodAccessFlag</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span>    </span><span id="local-6989586621679451171"><span class="annot"><span class="annottext">convertAccessFlag :: MethodAccessFlag -&gt; AccessFlag
+</span><a href="JVM.Data.Convert.AccessFlag.html#convertAccessFlag"><span class="hs-identifier hs-var hs-var hs-var">convertAccessFlag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-42"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MPublic"><span class="hs-identifier hs-var">MPublic</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_PUBLIC"><span class="hs-identifier hs-var">Raw.ACC_PUBLIC</span></a></span><span>
+</span><span id="line-43"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MPrivate"><span class="hs-identifier hs-var">MPrivate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_PRIVATE"><span class="hs-identifier hs-var">Raw.ACC_PRIVATE</span></a></span><span>
+</span><span id="line-44"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MProtected"><span class="hs-identifier hs-var">MProtected</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_PROTECTED"><span class="hs-identifier hs-var">Raw.ACC_PROTECTED</span></a></span><span>
+</span><span id="line-45"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MStatic"><span class="hs-identifier hs-var">MStatic</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_STATIC"><span class="hs-identifier hs-var">Raw.ACC_STATIC</span></a></span><span>
+</span><span id="line-46"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MFinal"><span class="hs-identifier hs-var">MFinal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_FINAL"><span class="hs-identifier hs-var">Raw.ACC_FINAL</span></a></span><span>
+</span><span id="line-47"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MSynchronized"><span class="hs-identifier hs-var">MSynchronized</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_SYNCHRONIZED"><span class="hs-identifier hs-var">Raw.ACC_SYNCHRONIZED</span></a></span><span>
+</span><span id="line-48"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MBridge"><span class="hs-identifier hs-var">MBridge</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_BRIDGE"><span class="hs-identifier hs-var">Raw.ACC_BRIDGE</span></a></span><span>
+</span><span id="line-49"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MVarargs"><span class="hs-identifier hs-var">MVarargs</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_VARARGS"><span class="hs-identifier hs-var">Raw.ACC_VARARGS</span></a></span><span>
+</span><span id="line-50"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MNative"><span class="hs-identifier hs-var">MNative</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_NATIVE"><span class="hs-identifier hs-var">Raw.ACC_NATIVE</span></a></span><span>
+</span><span id="line-51"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MAbstract"><span class="hs-identifier hs-var">MAbstract</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_ABSTRACT"><span class="hs-identifier hs-var">Raw.ACC_ABSTRACT</span></a></span><span>
+</span><span id="line-52"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MStrict"><span class="hs-identifier hs-var">MStrict</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_STRICT"><span class="hs-identifier hs-var">Raw.ACC_STRICT</span></a></span><span>
+</span><span id="line-53"></span><span>        </span><span class="annot"><span class="annottext">MethodAccessFlag
+</span><a href="JVM.Data.Abstract.ClassFile.AccessFlags.html#MSynthetic"><span class="hs-identifier hs-var">MSynthetic</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccessFlag
+</span><a href="JVM.Data.Raw.AccessFlags.html#ACC_SYNTHETIC"><span class="hs-identifier hs-var">Raw.ACC_SYNTHETIC</span></a></span><span>
+</span><span id="line-54"></span></pre></body></html>

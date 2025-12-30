@@ -1,0 +1,1048 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html"><span class="hs-identifier">JVM.Data.Raw.ClassFile</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary.Builder</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">toLazyByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary.Put</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Binary.Write.html"><span class="hs-identifier">Data.Binary.Write</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Binary.Write.html#WriteBinary"><span class="hs-identifier">WriteBinary</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier">writeBinary</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Binary.Write.html#writeList"><span class="hs-identifier">writeList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">B</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Vector</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Vector</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">V</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html"><span class="hs-identifier">JVM.Data.JVMVersion</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.JVMVersion.html#MajorVersion"><span class="hs-identifier">MajorVersion</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#MinorVersion"><span class="hs-identifier">MinorVersion</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#unwrapMajor"><span class="hs-identifier">unwrapMajor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#unwrapMinor"><span class="hs-identifier">unwrapMinor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html"><span class="hs-identifier">JVM.Data.Raw.ConstantPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#ConstantPoolInfo"><span class="hs-identifier">ConstantPoolInfo</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Instruction.html"><span class="hs-identifier">JVM.Data.Raw.Instruction</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.Instruction.html#Instruction"><span class="hs-identifier">Instruction</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.MagicNumbers.html"><span class="hs-identifier">JVM.Data.Raw.MagicNumbers</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">MagicNumbers</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html"><span class="hs-identifier">JVM.Data.Raw.Types</span></a></span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-comment">{-
+ClassFile {
+    u4             magic;
+    u2             minor_version;
+    u2             major_version;
+    u2             constant_pool_count;
+    cp_info        constant_pool[constant_pool_count-1];
+    u2             access_flags;
+    u2             this_class;
+    u2             super_class;
+    u2             interfaces_count;
+    u2             interfaces[interfaces_count];
+    u2             fields_count;
+    field_info     fields[fields_count];
+    u2             methods_count;
+    method_info    methods[methods_count];
+    u2             attributes_count;
+    attribute_info attributes[attributes_count];
+}
+-}</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><span class="hs-comment">{- | Low level representation of the class file format.
+This is the closest representation to the actual format of the class file, that makes only a few compromises for convenience,
+such as omitting the explicit x_count fields, instead calculating them from the length of the corresponding vectors.
+This has the added bonus of making it impossible to construct an invalid class file (in this regard anyway)
+-}</span></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">data</span><span> </span><span id="ClassFile"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ClassFile"><span class="hs-identifier hs-var">ClassFile</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ClassFile"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ClassFile"><span class="hs-identifier hs-var">ClassFile</span></a></span></span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="magic"><span class="annot"><span class="annottext">ClassFile -&gt; Word32
+</span><a href="JVM.Data.Raw.ClassFile.html#magic"><span class="hs-identifier hs-var hs-var">magic</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="minorVersion"><span class="annot"><span class="annottext">ClassFile -&gt; MinorVersion
+</span><a href="JVM.Data.Raw.ClassFile.html#minorVersion"><span class="hs-identifier hs-var hs-var">minorVersion</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#MinorVersion"><span class="hs-identifier hs-type">MinorVersion</span></a></span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="majorVersion"><span class="annot"><span class="annottext">ClassFile -&gt; MajorVersion
+</span><a href="JVM.Data.Raw.ClassFile.html#majorVersion"><span class="hs-identifier hs-var hs-var">majorVersion</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.JVMVersion.html#MajorVersion"><span class="hs-identifier hs-type">MajorVersion</span></a></span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="constantPool"><span class="annot"><span class="annottext">ClassFile -&gt; Vector ConstantPoolInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#constantPool"><span class="hs-identifier hs-var hs-var">constantPool</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#ConstantPoolInfo"><span class="hs-identifier hs-type">ConstantPoolInfo</span></a></span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="accessFlags"><span class="annot"><span class="annottext">ClassFile -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#accessFlags"><span class="hs-identifier hs-var hs-var">accessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="thisClass"><span class="annot"><span class="annottext">ClassFile -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#thisClass"><span class="hs-identifier hs-var hs-var">thisClass</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="superClass"><span class="annot"><span class="annottext">ClassFile -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#superClass"><span class="hs-identifier hs-var hs-var">superClass</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="interfaces"><span class="annot"><span class="annottext">ClassFile -&gt; Vector Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#interfaces"><span class="hs-identifier hs-var hs-var">interfaces</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="fields"><span class="annot"><span class="annottext">ClassFile -&gt; Vector FieldInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#fields"><span class="hs-identifier hs-var hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FieldInfo"><span class="hs-identifier hs-type">FieldInfo</span></a></span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="methods"><span class="annot"><span class="annottext">ClassFile -&gt; Vector MethodInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#methods"><span class="hs-identifier hs-var hs-var">methods</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#MethodInfo"><span class="hs-identifier hs-type">MethodInfo</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="attributes"><span class="annot"><span class="annottext">ClassFile -&gt; Vector AttributeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#attributes"><span class="hs-identifier hs-var hs-var">attributes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-type">AttributeInfo</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-58"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452455"><span id="local-6989586621679452479"><span id="local-6989586621679452483"><span class="annot"><span class="annottext">Int -&gt; ClassFile -&gt; ShowS
+[ClassFile] -&gt; ShowS
+ClassFile -&gt; String
+(Int -&gt; ClassFile -&gt; ShowS)
+-&gt; (ClassFile -&gt; String)
+-&gt; ([ClassFile] -&gt; ShowS)
+-&gt; Show ClassFile
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ClassFile -&gt; ShowS
+showsPrec :: Int -&gt; ClassFile -&gt; ShowS
+$cshow :: ClassFile -&gt; String
+show :: ClassFile -&gt; String
+$cshowList :: [ClassFile] -&gt; ShowS
+showList :: [ClassFile] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-keyword">data</span><span> </span><span id="FieldInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FieldInfo"><span class="hs-identifier hs-var">FieldInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="FieldInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FieldInfo"><span class="hs-identifier hs-var">FieldInfo</span></a></span></span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="accessFlags"><span class="annot"><span class="annottext">FieldInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#accessFlags"><span class="hs-identifier hs-var hs-var">accessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-62"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="nameIndex"><span class="annot"><span class="annottext">FieldInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#nameIndex"><span class="hs-identifier hs-var hs-var">nameIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-63"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="descriptorIndex"><span class="annot"><span class="annottext">FieldInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#descriptorIndex"><span class="hs-identifier hs-var hs-var">descriptorIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="attributes"><span class="annot"><span class="annottext">FieldInfo -&gt; Vector AttributeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#attributes"><span class="hs-identifier hs-var hs-var">attributes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-type">AttributeInfo</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-66"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452497"><span id="local-6989586621679452505"><span id="local-6989586621679452508"><span class="annot"><span class="annottext">Int -&gt; FieldInfo -&gt; ShowS
+[FieldInfo] -&gt; ShowS
+FieldInfo -&gt; String
+(Int -&gt; FieldInfo -&gt; ShowS)
+-&gt; (FieldInfo -&gt; String)
+-&gt; ([FieldInfo] -&gt; ShowS)
+-&gt; Show FieldInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; FieldInfo -&gt; ShowS
+showsPrec :: Int -&gt; FieldInfo -&gt; ShowS
+$cshow :: FieldInfo -&gt; String
+show :: FieldInfo -&gt; String
+$cshowList :: [FieldInfo] -&gt; ShowS
+showList :: [FieldInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="hs-keyword">data</span><span> </span><span id="AttributeInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-var">AttributeInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AttributeInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-var">AttributeInfo</span></a></span></span><span>
+</span><span id="line-69"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="nameIndex"><span class="annot"><span class="annottext">AttributeInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#nameIndex"><span class="hs-identifier hs-var hs-var">nameIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-70"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="info"><span class="annot"><span class="annottext">AttributeInfo -&gt; Attribute
+</span><a href="JVM.Data.Raw.ClassFile.html#info"><span class="hs-identifier hs-var hs-var">info</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#Attribute"><span class="hs-identifier hs-type">Attribute</span></a></span><span>
+</span><span id="line-71"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452514"><span id="local-6989586621679452520"><span id="local-6989586621679452523"><span class="annot"><span class="annottext">Int -&gt; AttributeInfo -&gt; ShowS
+[AttributeInfo] -&gt; ShowS
+AttributeInfo -&gt; String
+(Int -&gt; AttributeInfo -&gt; ShowS)
+-&gt; (AttributeInfo -&gt; String)
+-&gt; ([AttributeInfo] -&gt; ShowS)
+-&gt; Show AttributeInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AttributeInfo -&gt; ShowS
+showsPrec :: Int -&gt; AttributeInfo -&gt; ShowS
+$cshow :: AttributeInfo -&gt; String
+show :: AttributeInfo -&gt; String
+$cshowList :: [AttributeInfo] -&gt; ShowS
+showList :: [AttributeInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="hs-keyword">data</span><span> </span><span id="Attribute"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#Attribute"><span class="hs-identifier hs-var">Attribute</span></a></span></span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="CodeAttribute"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#CodeAttribute"><span class="hs-identifier hs-var">CodeAttribute</span></a></span></span><span>
+</span><span id="line-76"></span><span>        </span><span class="hs-special">{</span><span> </span><span id="maxStack"><span class="annot"><span class="annottext">Attribute -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#maxStack"><span class="hs-identifier hs-var hs-var">maxStack</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-77"></span><span>        </span><span class="hs-special">,</span><span> </span><span id="maxLocals"><span class="annot"><span class="annottext">Attribute -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#maxLocals"><span class="hs-identifier hs-var hs-var">maxLocals</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-78"></span><span>        </span><span class="hs-special">,</span><span> </span><span id="code"><span class="annot"><span class="annottext">Attribute -&gt; Vector Instruction
+</span><a href="JVM.Data.Raw.ClassFile.html#code"><span class="hs-identifier hs-var hs-var">code</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span>
+</span><span id="line-79"></span><span>        </span><span class="hs-special">,</span><span> </span><span id="exceptionTable"><span class="annot"><span class="annottext">Attribute -&gt; Vector ExceptionTableEntry
+</span><a href="JVM.Data.Raw.ClassFile.html#exceptionTable"><span class="hs-identifier hs-var hs-var">exceptionTable</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ExceptionTableEntry"><span class="hs-identifier hs-type">ExceptionTableEntry</span></a></span><span>
+</span><span id="line-80"></span><span>        </span><span class="hs-special">,</span><span> </span><span id="codeAttributes"><span class="annot"><span class="annottext">Attribute -&gt; Vector AttributeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#codeAttributes"><span class="hs-identifier hs-var hs-var">codeAttributes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-type">AttributeInfo</span></a></span><span>
+</span><span id="line-81"></span><span>        </span><span class="hs-special">}</span><span>
+</span><span id="line-82"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="InnerClassesAttribute"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#InnerClassesAttribute"><span class="hs-identifier hs-var">InnerClassesAttribute</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-type">InnerClassInfo</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="LineNumberTableAttribute"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#LineNumberTableAttribute"><span class="hs-identifier hs-var">LineNumberTableAttribute</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#LineNumberTableEntry"><span class="hs-identifier hs-type">LineNumberTableEntry</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="StackMapTableAttribute"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#StackMapTableAttribute"><span class="hs-identifier hs-var">StackMapTableAttribute</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#StackMapFrame"><span class="hs-identifier hs-type">StackMapFrame</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ConstantValueAttribute"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ConstantValueAttribute"><span class="hs-identifier hs-var">ConstantValueAttribute</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-86"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="SourceFileAttribute"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SourceFileAttribute"><span class="hs-identifier hs-var">SourceFileAttribute</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="BootstrapMethodsAttribute"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#BootstrapMethodsAttribute"><span class="hs-identifier hs-var">BootstrapMethodsAttribute</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#BootstrapMethod"><span class="hs-identifier hs-type">BootstrapMethod</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452538"><span id="local-6989586621679452565"><span id="local-6989586621679452568"><span class="annot"><span class="annottext">Int -&gt; Attribute -&gt; ShowS
+[Attribute] -&gt; ShowS
+Attribute -&gt; String
+(Int -&gt; Attribute -&gt; ShowS)
+-&gt; (Attribute -&gt; String)
+-&gt; ([Attribute] -&gt; ShowS)
+-&gt; Show Attribute
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Attribute -&gt; ShowS
+showsPrec :: Int -&gt; Attribute -&gt; ShowS
+$cshow :: Attribute -&gt; String
+show :: Attribute -&gt; String
+$cshowList :: [Attribute] -&gt; ShowS
+showList :: [Attribute] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="hs-keyword">data</span><span> </span><span id="InnerClassInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-var">InnerClassInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="InnerClassInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-var">InnerClassInfo</span></a></span></span><span>
+</span><span id="line-91"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="innerClassInfo"><span class="annot"><span class="annottext">InnerClassInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#innerClassInfo"><span class="hs-identifier hs-var hs-var">innerClassInfo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-92"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="outerClassInfo"><span class="annot"><span class="annottext">InnerClassInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#outerClassInfo"><span class="hs-identifier hs-var hs-var">outerClassInfo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-93"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="innerName"><span class="annot"><span class="annottext">InnerClassInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#innerName"><span class="hs-identifier hs-var hs-var">innerName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-94"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="accessFlags"><span class="annot"><span class="annottext">InnerClassInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#accessFlags"><span class="hs-identifier hs-var hs-var">accessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-95"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-96"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452582"><span id="local-6989586621679452589"><span id="local-6989586621679452592"><span class="annot"><span class="annottext">Int -&gt; InnerClassInfo -&gt; ShowS
+[InnerClassInfo] -&gt; ShowS
+InnerClassInfo -&gt; String
+(Int -&gt; InnerClassInfo -&gt; ShowS)
+-&gt; (InnerClassInfo -&gt; String)
+-&gt; ([InnerClassInfo] -&gt; ShowS)
+-&gt; Show InnerClassInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; InnerClassInfo -&gt; ShowS
+showsPrec :: Int -&gt; InnerClassInfo -&gt; ShowS
+$cshow :: InnerClassInfo -&gt; String
+show :: InnerClassInfo -&gt; String
+$cshowList :: [InnerClassInfo] -&gt; ShowS
+showList :: [InnerClassInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span class="hs-keyword">data</span><span> </span><span id="LineNumberTableEntry"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#LineNumberTableEntry"><span class="hs-identifier hs-var">LineNumberTableEntry</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LineNumberTableEntry"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#LineNumberTableEntry"><span class="hs-identifier hs-var">LineNumberTableEntry</span></a></span></span><span>
+</span><span id="line-99"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="startPc"><span class="annot"><span class="annottext">LineNumberTableEntry -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#startPc"><span class="hs-identifier hs-var hs-var">startPc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-100"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="lineNumber"><span class="annot"><span class="annottext">LineNumberTableEntry -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#lineNumber"><span class="hs-identifier hs-var hs-var">lineNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-101"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-102"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452599"><span id="local-6989586621679452604"><span id="local-6989586621679452607"><span class="annot"><span class="annottext">Int -&gt; LineNumberTableEntry -&gt; ShowS
+[LineNumberTableEntry] -&gt; ShowS
+LineNumberTableEntry -&gt; String
+(Int -&gt; LineNumberTableEntry -&gt; ShowS)
+-&gt; (LineNumberTableEntry -&gt; String)
+-&gt; ([LineNumberTableEntry] -&gt; ShowS)
+-&gt; Show LineNumberTableEntry
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LineNumberTableEntry -&gt; ShowS
+showsPrec :: Int -&gt; LineNumberTableEntry -&gt; ShowS
+$cshow :: LineNumberTableEntry -&gt; String
+show :: LineNumberTableEntry -&gt; String
+$cshowList :: [LineNumberTableEntry] -&gt; ShowS
+showList :: [LineNumberTableEntry] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="annot"><span class="hs-comment">{- | The stack map frame types are defined as follows:
+&gt; union stack_map_frame {
+&gt;    same_frame;
+&gt;    same_locals_1_stack_item_frame;
+&gt;    same_locals_1_stack_item_frame_extended;
+&gt;    chop_frame;
+&gt;    same_frame_extended;
+&gt;    append_frame;
+&gt;    full_frame;
+&gt;}
+-}</span></span><span>
+</span><span id="line-115"></span><span class="hs-keyword">data</span><span> </span><span id="StackMapFrame"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#StackMapFrame"><span class="hs-identifier hs-var">StackMapFrame</span></a></span></span><span>
+</span><span id="line-116"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-comment">-- | 0-63</span></span><span>
+</span><span id="line-117"></span><span>      </span><span id="SameFrame"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SameFrame"><span class="hs-identifier hs-var">SameFrame</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-type">U1</span></a></span><span>
+</span><span id="line-118"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- |</span><span>
+</span><span id="line-119"></span><span>      </span><span class="hs-comment">-- &gt;       same_locals_1_stack_item_frame {</span><span>
+</span><span id="line-120"></span><span>      </span><span class="hs-comment">-- &gt;          u1 frame_type = SAME_LOCALS_1_STACK_ITEM; /* 64-127 */</span><span>
+</span><span id="line-121"></span><span>      </span><span class="hs-comment">-- &gt;          verification_type_info stack[1];</span><span>
+</span><span id="line-122"></span><span>      </span><span class="hs-comment">-- &gt;      }</span><span>
+</span><span id="line-123"></span><span>      </span><span id="SameLocals1StackItemFrame"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SameLocals1StackItemFrame"><span class="hs-identifier hs-var">SameLocals1StackItemFrame</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-type">U1</span></a></span><span>
+</span><span id="line-124"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="SameLocals1StackItemFrameExtended"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SameLocals1StackItemFrameExtended"><span class="hs-identifier hs-var">SameLocals1StackItemFrameExtended</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-125"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="SameFrameExtended"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SameFrameExtended"><span class="hs-identifier hs-var">SameFrameExtended</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-126"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ChopFrame"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ChopFrame"><span class="hs-identifier hs-var">ChopFrame</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U1"><span class="hs-identifier hs-type">U1</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-127"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="AppendFrame"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AppendFrame"><span class="hs-identifier hs-var">AppendFrame</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-128"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FullFrame"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FullFrame"><span class="hs-identifier hs-var">FullFrame</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-129"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452618"><span id="local-6989586621679452642"><span id="local-6989586621679452645"><span class="annot"><span class="annottext">Int -&gt; StackMapFrame -&gt; ShowS
+[StackMapFrame] -&gt; ShowS
+StackMapFrame -&gt; String
+(Int -&gt; StackMapFrame -&gt; ShowS)
+-&gt; (StackMapFrame -&gt; String)
+-&gt; ([StackMapFrame] -&gt; ShowS)
+-&gt; Show StackMapFrame
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StackMapFrame -&gt; ShowS
+showsPrec :: Int -&gt; StackMapFrame -&gt; ShowS
+$cshow :: StackMapFrame -&gt; String
+show :: StackMapFrame -&gt; String
+$cshowList :: [StackMapFrame] -&gt; ShowS
+showList :: [StackMapFrame] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-130"></span><span>
+</span><span id="line-131"></span><span class="hs-keyword">data</span><span> </span><span id="VerificationTypeInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#VerificationTypeInfo"><span class="hs-identifier hs-var">VerificationTypeInfo</span></a></span></span><span>
+</span><span id="line-132"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="TopVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#TopVariableInfo"><span class="hs-identifier hs-var">TopVariableInfo</span></a></span></span><span>
+</span><span id="line-133"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="IntegerVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#IntegerVariableInfo"><span class="hs-identifier hs-var">IntegerVariableInfo</span></a></span></span><span>
+</span><span id="line-134"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="FloatVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FloatVariableInfo"><span class="hs-identifier hs-var">FloatVariableInfo</span></a></span></span><span>
+</span><span id="line-135"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="LongVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#LongVariableInfo"><span class="hs-identifier hs-var">LongVariableInfo</span></a></span></span><span>
+</span><span id="line-136"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="DoubleVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#DoubleVariableInfo"><span class="hs-identifier hs-var">DoubleVariableInfo</span></a></span></span><span>
+</span><span id="line-137"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="NullVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#NullVariableInfo"><span class="hs-identifier hs-var">NullVariableInfo</span></a></span></span><span>
+</span><span id="line-138"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="UninitializedThisVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#UninitializedThisVariableInfo"><span class="hs-identifier hs-var">UninitializedThisVariableInfo</span></a></span></span><span>
+</span><span id="line-139"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ObjectVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ObjectVariableInfo"><span class="hs-identifier hs-var">ObjectVariableInfo</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-140"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="UninitializedVariableInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#UninitializedVariableInfo"><span class="hs-identifier hs-var">UninitializedVariableInfo</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.Types.html#U2"><span class="hs-identifier hs-type">U2</span></a></span><span>
+</span><span id="line-141"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452657"><span id="local-6989586621679452663"><span id="local-6989586621679452666"><span class="annot"><span class="annottext">Int -&gt; VerificationTypeInfo -&gt; ShowS
+[VerificationTypeInfo] -&gt; ShowS
+VerificationTypeInfo -&gt; String
+(Int -&gt; VerificationTypeInfo -&gt; ShowS)
+-&gt; (VerificationTypeInfo -&gt; String)
+-&gt; ([VerificationTypeInfo] -&gt; ShowS)
+-&gt; Show VerificationTypeInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; VerificationTypeInfo -&gt; ShowS
+showsPrec :: Int -&gt; VerificationTypeInfo -&gt; ShowS
+$cshow :: VerificationTypeInfo -&gt; String
+show :: VerificationTypeInfo -&gt; String
+$cshowList :: [VerificationTypeInfo] -&gt; ShowS
+showList :: [VerificationTypeInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-142"></span><span>
+</span><span id="line-143"></span><span class="hs-keyword">data</span><span> </span><span id="BootstrapMethod"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#BootstrapMethod"><span class="hs-identifier hs-var">BootstrapMethod</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BootstrapMethod"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#BootstrapMethod"><span class="hs-identifier hs-var">BootstrapMethod</span></a></span></span><span>
+</span><span id="line-144"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="bootstrapMethodRef"><span class="annot"><span class="annottext">BootstrapMethod -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#bootstrapMethodRef"><span class="hs-identifier hs-var hs-var">bootstrapMethodRef</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-145"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="bootstrapArguments"><span class="annot"><span class="annottext">BootstrapMethod -&gt; Vector Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#bootstrapArguments"><span class="hs-identifier hs-var hs-var">bootstrapArguments</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-146"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-147"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452672"><span id="local-6989586621679452677"><span id="local-6989586621679452680"><span class="annot"><span class="annottext">Int -&gt; BootstrapMethod -&gt; ShowS
+[BootstrapMethod] -&gt; ShowS
+BootstrapMethod -&gt; String
+(Int -&gt; BootstrapMethod -&gt; ShowS)
+-&gt; (BootstrapMethod -&gt; String)
+-&gt; ([BootstrapMethod] -&gt; ShowS)
+-&gt; Show BootstrapMethod
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BootstrapMethod -&gt; ShowS
+showsPrec :: Int -&gt; BootstrapMethod -&gt; ShowS
+$cshow :: BootstrapMethod -&gt; String
+show :: BootstrapMethod -&gt; String
+$cshowList :: [BootstrapMethod] -&gt; ShowS
+showList :: [BootstrapMethod] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679452683"><span id="local-6989586621679452689"><span class="annot"><span class="annottext">BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+(BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; Eq BootstrapMethod
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+== :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$c/= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+/= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679452696"><span id="local-6989586621679452702"><span id="local-6989586621679452706"><span id="local-6989586621679452710"><span id="local-6989586621679452713"><span id="local-6989586621679452716"><span id="local-6989586621679452719"><span class="annot"><span class="annottext">Eq BootstrapMethod
+Eq BootstrapMethod =&gt;
+(BootstrapMethod -&gt; BootstrapMethod -&gt; Ordering)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod)
+-&gt; Ord BootstrapMethod
+BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+BootstrapMethod -&gt; BootstrapMethod -&gt; Ordering
+BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BootstrapMethod -&gt; BootstrapMethod -&gt; Ordering
+compare :: BootstrapMethod -&gt; BootstrapMethod -&gt; Ordering
+$c&lt; :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+&lt; :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$c&lt;= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+&lt;= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$c&gt; :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+&gt; :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$c&gt;= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+&gt;= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$cmax :: BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+max :: BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+$cmin :: BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+min :: BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-148"></span><span>
+</span><span id="line-149"></span><span class="hs-keyword">data</span><span> </span><span id="ExceptionTableEntry"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ExceptionTableEntry"><span class="hs-identifier hs-var">ExceptionTableEntry</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ExceptionTableEntry"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ExceptionTableEntry"><span class="hs-identifier hs-var">ExceptionTableEntry</span></a></span></span><span>
+</span><span id="line-150"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="startPc"><span class="annot"><span class="annottext">ExceptionTableEntry -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#startPc"><span class="hs-identifier hs-var hs-var">startPc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-151"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="endPc"><span class="annot"><span class="annottext">ExceptionTableEntry -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#endPc"><span class="hs-identifier hs-var hs-var">endPc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-152"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="handlerPc"><span class="annot"><span class="annottext">ExceptionTableEntry -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#handlerPc"><span class="hs-identifier hs-var hs-var">handlerPc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-153"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="catchType"><span class="annot"><span class="annottext">ExceptionTableEntry -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#catchType"><span class="hs-identifier hs-var hs-var">catchType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-154"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-155"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452732"><span id="local-6989586621679452739"><span id="local-6989586621679452742"><span class="annot"><span class="annottext">Int -&gt; ExceptionTableEntry -&gt; ShowS
+[ExceptionTableEntry] -&gt; ShowS
+ExceptionTableEntry -&gt; String
+(Int -&gt; ExceptionTableEntry -&gt; ShowS)
+-&gt; (ExceptionTableEntry -&gt; String)
+-&gt; ([ExceptionTableEntry] -&gt; ShowS)
+-&gt; Show ExceptionTableEntry
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ExceptionTableEntry -&gt; ShowS
+showsPrec :: Int -&gt; ExceptionTableEntry -&gt; ShowS
+$cshow :: ExceptionTableEntry -&gt; String
+show :: ExceptionTableEntry -&gt; String
+$cshowList :: [ExceptionTableEntry] -&gt; ShowS
+showList :: [ExceptionTableEntry] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-156"></span><span>
+</span><span id="line-157"></span><span class="hs-keyword">data</span><span> </span><span id="MethodInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#MethodInfo"><span class="hs-identifier hs-var">MethodInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MethodInfo"><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#MethodInfo"><span class="hs-identifier hs-var">MethodInfo</span></a></span></span><span>
+</span><span id="line-158"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="accessFlags"><span class="annot"><span class="annottext">MethodInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#accessFlags"><span class="hs-identifier hs-var hs-var">accessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-159"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="nameIndex"><span class="annot"><span class="annottext">MethodInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#nameIndex"><span class="hs-identifier hs-var hs-var">nameIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-160"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="descriptorIndex"><span class="annot"><span class="annottext">MethodInfo -&gt; Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#descriptorIndex"><span class="hs-identifier hs-var hs-var">descriptorIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span>
+</span><span id="line-161"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="attributes"><span class="annot"><span class="annottext">MethodInfo -&gt; Vector AttributeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#attributes"><span class="hs-identifier hs-var hs-var">attributes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-type">AttributeInfo</span></a></span><span>
+</span><span id="line-162"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-163"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679452750"><span id="local-6989586621679452758"><span id="local-6989586621679452761"><span class="annot"><span class="annottext">Int -&gt; MethodInfo -&gt; ShowS
+[MethodInfo] -&gt; ShowS
+MethodInfo -&gt; String
+(Int -&gt; MethodInfo -&gt; ShowS)
+-&gt; (MethodInfo -&gt; String)
+-&gt; ([MethodInfo] -&gt; ShowS)
+-&gt; Show MethodInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MethodInfo -&gt; ShowS
+showsPrec :: Int -&gt; MethodInfo -&gt; ShowS
+$cshow :: MethodInfo -&gt; String
+show :: MethodInfo -&gt; String
+$cshowList :: [MethodInfo] -&gt; ShowS
+showList :: [MethodInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-164"></span><span>
+</span><span id="line-165"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putConstantPool"><span class="hs-identifier hs-type">putConstantPool</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ConstantPool.html#ConstantPoolInfo"><span class="hs-identifier hs-type">ConstantPoolInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-166"></span><span id="putConstantPool"><span class="annot"><span class="annottext">putConstantPool :: Vector ConstantPoolInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putConstantPool"><span class="hs-identifier hs-var hs-var">putConstantPool</span></a></span></span><span> </span><span id="local-6989586621679452764"><span class="annot"><span class="annottext">Vector ConstantPoolInfo
+</span><a href="#local-6989586621679452764"><span class="hs-identifier hs-var">entries</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-167"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Word16 -&gt; Put
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector ConstantPoolInfo -&gt; Int
+forall a. Vector a -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Vector ConstantPoolInfo
+</span><a href="#local-6989586621679452764"><span class="hs-identifier hs-var">entries</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-168"></span><span>    </span><span class="annot"><span class="annottext">(ConstantPoolInfo -&gt; Put) -&gt; Vector ConstantPoolInfo -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">ConstantPoolInfo -&gt; Put
+forall a. WriteBinary a =&gt; a -&gt; Put
+</span><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="annot"><span class="annottext">Vector ConstantPoolInfo
+</span><a href="#local-6989586621679452764"><span class="hs-identifier hs-var">entries</span></a></span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putInterfaceTable"><span class="hs-identifier hs-type">putInterfaceTable</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word16</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-171"></span><span id="putInterfaceTable"><span class="annot"><span class="annottext">putInterfaceTable :: Vector Word16 -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putInterfaceTable"><span class="hs-identifier hs-var hs-var">putInterfaceTable</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Vector Word16 -&gt; Put
+forall a i (t :: * -&gt; *).
+(WriteBinary a, Integral i, Foldable t) =&gt;
+(i -&gt; Put) -&gt; t a -&gt; Put
+</span><a href="Data.Binary.Write.html#writeList"><span class="hs-identifier hs-var">writeList</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span>
+</span><span id="line-172"></span><span>
+</span><span id="line-173"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putFieldTable"><span class="hs-identifier hs-type">putFieldTable</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FieldInfo"><span class="hs-identifier hs-type">FieldInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-174"></span><span id="putFieldTable"><span class="annot"><span class="annottext">putFieldTable :: Vector FieldInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putFieldTable"><span class="hs-identifier hs-var hs-var">putFieldTable</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Vector FieldInfo -&gt; Put
+forall a i (t :: * -&gt; *).
+(WriteBinary a, Integral i, Foldable t) =&gt;
+(i -&gt; Put) -&gt; t a -&gt; Put
+</span><a href="Data.Binary.Write.html#writeList"><span class="hs-identifier hs-var">writeList</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span>
+</span><span id="line-175"></span><span>
+</span><span id="line-176"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.Binary.Write.html#WriteBinary"><span class="hs-identifier hs-type">WriteBinary</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FieldInfo"><span class="hs-identifier hs-type">FieldInfo</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-177"></span><span>    </span><span id="local-6989586621679452776"><span class="annot"><span class="annottext">writeBinary :: FieldInfo -&gt; Put
+</span><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var hs-var hs-var">writeBinary</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FieldInfo"><span class="hs-identifier hs-type">FieldInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452777"><span id="local-6989586621679452778"><span id="local-6989586621679452779"><span id="local-6989586621679452780"><span class="annot"><span class="annottext">Word16
+Vector AttributeInfo
+accessFlags :: FieldInfo -&gt; Word16
+nameIndex :: FieldInfo -&gt; Word16
+descriptorIndex :: FieldInfo -&gt; Word16
+attributes :: FieldInfo -&gt; Vector AttributeInfo
+accessFlags :: Word16
+nameIndex :: Word16
+descriptorIndex :: Word16
+attributes :: Vector AttributeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#accessFlags"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-178"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452777"><span class="hs-identifier hs-var">accessFlags</span></a></span><span>
+</span><span id="line-179"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452778"><span class="hs-identifier hs-var">nameIndex</span></a></span><span>
+</span><span id="line-180"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452779"><span class="hs-identifier hs-var">descriptorIndex</span></a></span><span>
+</span><span id="line-181"></span><span>        </span><span class="annot"><span class="annottext">Vector AttributeInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putAttributes"><span class="hs-identifier hs-var">putAttributes</span></a></span><span> </span><span class="annot"><span class="annottext">Vector AttributeInfo
+</span><a href="#local-6989586621679452780"><span class="hs-identifier hs-var">attributes</span></a></span><span>
+</span><span id="line-182"></span><span>
+</span><span id="line-183"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putAttributes"><span class="hs-identifier hs-type">putAttributes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-type">AttributeInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-184"></span><span id="putAttributes"><span class="annot"><span class="annottext">putAttributes :: Vector AttributeInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putAttributes"><span class="hs-identifier hs-var hs-var">putAttributes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Vector AttributeInfo -&gt; Put
+forall a i (t :: * -&gt; *).
+(WriteBinary a, Integral i, Foldable t) =&gt;
+(i -&gt; Put) -&gt; t a -&gt; Put
+</span><a href="Data.Binary.Write.html#writeList"><span class="hs-identifier hs-var">writeList</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span>
+</span><span id="line-185"></span><span>
+</span><span id="line-186"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.Binary.Write.html#WriteBinary"><span class="hs-identifier hs-type">WriteBinary</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-type">AttributeInfo</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-187"></span><span>    </span><span id="local-6989586621679452787"><span class="annot"><span class="annottext">writeBinary :: AttributeInfo -&gt; Put
+</span><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var hs-var hs-var">writeBinary</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AttributeInfo"><span class="hs-identifier hs-type">AttributeInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452788"><span id="local-6989586621679452789"><span class="annot"><span class="annottext">Word16
+Attribute
+nameIndex :: AttributeInfo -&gt; Word16
+info :: AttributeInfo -&gt; Attribute
+nameIndex :: Word16
+info :: Attribute
+</span><a href="JVM.Data.Raw.ClassFile.html#nameIndex"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-188"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452788"><span class="hs-identifier hs-var">nameIndex</span></a></span><span>
+</span><span id="line-189"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679452790"><span class="annot"><span class="annottext">infoBS :: StrictByteString
+</span><a href="#local-6989586621679452790"><span class="hs-identifier hs-var hs-var hs-var">infoBS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">LazyByteString -&gt; StrictByteString
+</span><span class="hs-identifier hs-var">B.toStrict</span></span><span> </span><span class="annot"><span class="annottext">(LazyByteString -&gt; StrictByteString)
+-&gt; LazyByteString -&gt; StrictByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Put -&gt; LazyByteString
+</span><span class="hs-identifier hs-var">runPut</span></span><span> </span><span class="annot"><span class="annottext">(Put -&gt; LazyByteString) -&gt; Put -&gt; LazyByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Attribute -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-var">putAttribute</span></a></span><span> </span><span class="annot"><span class="annottext">Attribute
+</span><a href="#local-6989586621679452789"><span class="hs-identifier hs-var">info</span></a></span><span>
+</span><span id="line-190"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679452794"><span class="annot"><span class="annottext">aiLength :: Int
+</span><a href="#local-6989586621679452794"><span class="hs-identifier hs-var hs-var hs-var">aiLength</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StrictByteString -&gt; Int
+</span><span class="hs-identifier hs-var">B.length</span></span><span> </span><span class="annot"><span class="annottext">StrictByteString
+</span><a href="#local-6989586621679452790"><span class="hs-identifier hs-var">infoBS</span></a></span><span>
+</span><span id="line-191"></span><span>        </span><span class="annot"><span class="annottext">Word32 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">(Word32 -&gt; Put) -&gt; Word32 -&gt; Put
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word32
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679452794"><span class="hs-identifier hs-var">aiLength</span></a></span><span>
+</span><span id="line-192"></span><span>        </span><span class="annot"><span class="annottext">StrictByteString -&gt; Put
+</span><span class="hs-identifier hs-var">putByteString</span></span><span> </span><span class="annot"><span class="annottext">StrictByteString
+</span><a href="#local-6989586621679452790"><span class="hs-identifier hs-var">infoBS</span></a></span><span>
+</span><span id="line-193"></span><span>
+</span><span id="line-194"></span><span class="annot"><span class="hs-comment">-- | Puts the attribute data. This must not include length or name, just the actual value</span></span><span>
+</span><span id="line-195"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-type">putAttribute</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#Attribute"><span class="hs-identifier hs-type">Attribute</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-196"></span><span id="putAttribute"><span class="annot"><span class="annottext">putAttribute :: Attribute -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-var hs-var">putAttribute</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ConstantValueAttribute"><span class="hs-identifier hs-type">ConstantValueAttribute</span></a></span><span> </span><span id="local-6989586621679452798"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452798"><span class="hs-identifier hs-var">cvIndex</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452798"><span class="hs-identifier hs-var">cvIndex</span></a></span><span>
+</span><span id="line-197"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-var">putAttribute</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#CodeAttribute"><span class="hs-identifier hs-type">CodeAttribute</span></a></span><span> </span><span id="local-6989586621679452799"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452799"><span class="hs-identifier hs-var">maxStack</span></a></span></span><span> </span><span id="local-6989586621679452800"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452800"><span class="hs-identifier hs-var">maxLocals</span></a></span></span><span> </span><span id="local-6989586621679452801"><span class="annot"><span class="annottext">Vector Instruction
+</span><a href="#local-6989586621679452801"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621679452802"><span class="annot"><span class="annottext">Vector ExceptionTableEntry
+</span><a href="#local-6989586621679452802"><span class="hs-identifier hs-var">exceptionTable</span></a></span></span><span> </span><span id="local-6989586621679452803"><span class="annot"><span class="annottext">Vector AttributeInfo
+</span><a href="#local-6989586621679452803"><span class="hs-identifier hs-var">codeAttributes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-198"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452799"><span class="hs-identifier hs-var">maxStack</span></a></span><span>
+</span><span id="line-199"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452800"><span class="hs-identifier hs-var">maxLocals</span></a></span><span>
+</span><span id="line-200"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679452804"><span class="annot"><span class="annottext">codeStr :: StrictByteString
+</span><a href="#local-6989586621679452804"><span class="hs-identifier hs-var hs-var hs-var">codeStr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">LazyByteString -&gt; StrictByteString
+</span><span class="hs-identifier hs-var">B.toStrict</span></span><span> </span><span class="annot"><span class="annottext">(LazyByteString -&gt; StrictByteString)
+-&gt; LazyByteString -&gt; StrictByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Builder -&gt; LazyByteString
+</span><span class="hs-identifier hs-var">toLazyByteString</span></span><span> </span><span class="annot"><span class="annottext">(Builder -&gt; LazyByteString) -&gt; Builder -&gt; LazyByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Put -&gt; Builder
+forall a. PutM a -&gt; Builder
+</span><span class="hs-identifier hs-var">execPut</span></span><span> </span><span class="annot"><span class="annottext">(Put -&gt; Builder) -&gt; Put -&gt; Builder
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(Instruction -&gt; Put) -&gt; Vector Instruction -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">Instruction -&gt; Put
+forall a. WriteBinary a =&gt; a -&gt; Put
+</span><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var">writeBinary</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Instruction
+</span><a href="#local-6989586621679452801"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-201"></span><span>    </span><span class="annot"><span class="annottext">Word32 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">(Word32 -&gt; Put) -&gt; Word32 -&gt; Put
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word32
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word32) -&gt; Int -&gt; Word32
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">StrictByteString -&gt; Int
+</span><span class="hs-identifier hs-var">B.length</span></span><span> </span><span class="annot"><span class="annottext">StrictByteString
+</span><a href="#local-6989586621679452804"><span class="hs-identifier hs-var">codeStr</span></a></span><span>
+</span><span id="line-202"></span><span>    </span><span class="annot"><span class="annottext">StrictByteString -&gt; Put
+</span><span class="hs-identifier hs-var">putByteString</span></span><span> </span><span class="annot"><span class="annottext">StrictByteString
+</span><a href="#local-6989586621679452804"><span class="hs-identifier hs-var">codeStr</span></a></span><span>
+</span><span id="line-203"></span><span>    </span><span class="annot"><span class="annottext">Vector ExceptionTableEntry -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putExceptionTable"><span class="hs-identifier hs-var">putExceptionTable</span></a></span><span> </span><span class="annot"><span class="annottext">Vector ExceptionTableEntry
+</span><a href="#local-6989586621679452802"><span class="hs-identifier hs-var">exceptionTable</span></a></span><span>
+</span><span id="line-204"></span><span>    </span><span class="annot"><span class="annottext">Vector AttributeInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putAttributes"><span class="hs-identifier hs-var">putAttributes</span></a></span><span> </span><span class="annot"><span class="annottext">Vector AttributeInfo
+</span><a href="#local-6989586621679452803"><span class="hs-identifier hs-var">codeAttributes</span></a></span><span>
+</span><span id="line-205"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-var">putAttribute</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#InnerClassesAttribute"><span class="hs-identifier hs-type">InnerClassesAttribute</span></a></span><span> </span><span id="local-6989586621679452807"><span class="annot"><span class="annottext">Vector InnerClassInfo
+</span><a href="#local-6989586621679452807"><span class="hs-identifier hs-var">classes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-206"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Word16 -&gt; Put
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word16) -&gt; Int -&gt; Word16
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector InnerClassInfo -&gt; Int
+forall a. Vector a -&gt; Int
+</span><span class="hs-identifier hs-var">V.length</span></span><span> </span><span class="annot"><span class="annottext">Vector InnerClassInfo
+</span><a href="#local-6989586621679452807"><span class="hs-identifier hs-var">classes</span></a></span><span>
+</span><span id="line-207"></span><span>    </span><span class="annot"><span class="annottext">(InnerClassInfo -&gt; Put) -&gt; Vector InnerClassInfo -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">InnerClassInfo -&gt; Put
+</span><a href="#local-6989586621679452809"><span class="hs-identifier hs-var">putInnerClassInfo</span></a></span><span> </span><span class="annot"><span class="annottext">Vector InnerClassInfo
+</span><a href="#local-6989586621679452807"><span class="hs-identifier hs-var">classes</span></a></span><span>
+</span><span id="line-208"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-209"></span><span>    </span><span class="annot"><a href="#local-6989586621679452809"><span class="hs-identifier hs-type">putInnerClassInfo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-type">InnerClassInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-210"></span><span>    </span><span id="local-6989586621679452809"><span class="annot"><span class="annottext">putInnerClassInfo :: InnerClassInfo -&gt; Put
+</span><a href="#local-6989586621679452809"><span class="hs-identifier hs-var hs-var">putInnerClassInfo</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#InnerClassInfo"><span class="hs-identifier hs-type">InnerClassInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452810"><span id="local-6989586621679452811"><span id="local-6989586621679452812"><span id="local-6989586621679452813"><span class="annot"><span class="annottext">Word16
+innerClassInfo :: InnerClassInfo -&gt; Word16
+outerClassInfo :: InnerClassInfo -&gt; Word16
+innerName :: InnerClassInfo -&gt; Word16
+accessFlags :: InnerClassInfo -&gt; Word16
+innerClassInfo :: Word16
+outerClassInfo :: Word16
+innerName :: Word16
+accessFlags :: Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#innerClassInfo"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-211"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452810"><span class="hs-identifier hs-var">innerClassInfo</span></a></span><span>
+</span><span id="line-212"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452811"><span class="hs-identifier hs-var">outerClassInfo</span></a></span><span>
+</span><span id="line-213"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452812"><span class="hs-identifier hs-var">innerName</span></a></span><span>
+</span><span id="line-214"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452813"><span class="hs-identifier hs-var">accessFlags</span></a></span><span>
+</span><span id="line-215"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-var">putAttribute</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SourceFileAttribute"><span class="hs-identifier hs-type">SourceFileAttribute</span></a></span><span> </span><span id="local-6989586621679452814"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452814"><span class="hs-identifier hs-var">sfIndex</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-216"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452814"><span class="hs-identifier hs-var">sfIndex</span></a></span><span>
+</span><span id="line-217"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-var">putAttribute</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#BootstrapMethodsAttribute"><span class="hs-identifier hs-type">BootstrapMethodsAttribute</span></a></span><span> </span><span id="local-6989586621679452815"><span class="annot"><span class="annottext">Vector BootstrapMethod
+</span><a href="#local-6989586621679452815"><span class="hs-identifier hs-var">bms</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-218"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Word16 -&gt; Put
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word16) -&gt; Int -&gt; Word16
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector BootstrapMethod -&gt; Int
+forall a. Vector a -&gt; Int
+</span><span class="hs-identifier hs-var">V.length</span></span><span> </span><span class="annot"><span class="annottext">Vector BootstrapMethod
+</span><a href="#local-6989586621679452815"><span class="hs-identifier hs-var">bms</span></a></span><span>
+</span><span id="line-219"></span><span>    </span><span class="annot"><span class="annottext">(BootstrapMethod -&gt; Put) -&gt; Vector BootstrapMethod -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">BootstrapMethod -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putBootstrapMethod"><span class="hs-identifier hs-var">putBootstrapMethod</span></a></span><span> </span><span class="annot"><span class="annottext">Vector BootstrapMethod
+</span><a href="#local-6989586621679452815"><span class="hs-identifier hs-var">bms</span></a></span><span>
+</span><span id="line-220"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-var">putAttribute</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#LineNumberTableAttribute"><span class="hs-identifier hs-type">LineNumberTableAttribute</span></a></span><span> </span><span id="local-6989586621679452817"><span class="annot"><span class="annottext">Vector LineNumberTableEntry
+</span><a href="#local-6989586621679452817"><span class="hs-identifier hs-var">lns</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-221"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Word16 -&gt; Put
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word16) -&gt; Int -&gt; Word16
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector LineNumberTableEntry -&gt; Int
+forall a. Vector a -&gt; Int
+</span><span class="hs-identifier hs-var">V.length</span></span><span> </span><span class="annot"><span class="annottext">Vector LineNumberTableEntry
+</span><a href="#local-6989586621679452817"><span class="hs-identifier hs-var">lns</span></a></span><span>
+</span><span id="line-222"></span><span>    </span><span class="annot"><span class="annottext">(LineNumberTableEntry -&gt; Put) -&gt; Vector LineNumberTableEntry -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">LineNumberTableEntry -&gt; Put
+</span><a href="#local-6989586621679452818"><span class="hs-identifier hs-var">putLineNumberEntry</span></a></span><span> </span><span class="annot"><span class="annottext">Vector LineNumberTableEntry
+</span><a href="#local-6989586621679452817"><span class="hs-identifier hs-var">lns</span></a></span><span>
+</span><span id="line-223"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-224"></span><span>    </span><span class="annot"><a href="#local-6989586621679452818"><span class="hs-identifier hs-type">putLineNumberEntry</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#LineNumberTableEntry"><span class="hs-identifier hs-type">LineNumberTableEntry</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-225"></span><span>    </span><span id="local-6989586621679452818"><span class="annot"><span class="annottext">putLineNumberEntry :: LineNumberTableEntry -&gt; Put
+</span><a href="#local-6989586621679452818"><span class="hs-identifier hs-var hs-var">putLineNumberEntry</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#LineNumberTableEntry"><span class="hs-identifier hs-type">LineNumberTableEntry</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452819"><span id="local-6989586621679452820"><span class="annot"><span class="annottext">Word16
+startPc :: LineNumberTableEntry -&gt; Word16
+lineNumber :: LineNumberTableEntry -&gt; Word16
+startPc :: Word16
+lineNumber :: Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#startPc"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-226"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452819"><span class="hs-identifier hs-var">startPc</span></a></span><span>
+</span><span id="line-227"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452820"><span class="hs-identifier hs-var">lineNumber</span></a></span><span>
+</span><span id="line-228"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putAttribute"><span class="hs-identifier hs-var">putAttribute</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#StackMapTableAttribute"><span class="hs-identifier hs-type">StackMapTableAttribute</span></a></span><span> </span><span id="local-6989586621679452821"><span class="annot"><span class="annottext">Vector StackMapFrame
+</span><a href="#local-6989586621679452821"><span class="hs-identifier hs-var">frames</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-229"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Word16 -&gt; Put
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word16) -&gt; Int -&gt; Word16
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector StackMapFrame -&gt; Int
+forall a. Vector a -&gt; Int
+</span><span class="hs-identifier hs-var">V.length</span></span><span> </span><span class="annot"><span class="annottext">Vector StackMapFrame
+</span><a href="#local-6989586621679452821"><span class="hs-identifier hs-var">frames</span></a></span><span>
+</span><span id="line-230"></span><span>    </span><span class="annot"><span class="annottext">(StackMapFrame -&gt; Put) -&gt; Vector StackMapFrame -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">StackMapFrame -&gt; Put
+</span><a href="#local-6989586621679452822"><span class="hs-identifier hs-var">putStackMapFrame</span></a></span><span> </span><span class="annot"><span class="annottext">Vector StackMapFrame
+</span><a href="#local-6989586621679452821"><span class="hs-identifier hs-var">frames</span></a></span><span>
+</span><span id="line-231"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-232"></span><span>    </span><span class="annot"><a href="#local-6989586621679452822"><span class="hs-identifier hs-type">putStackMapFrame</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#StackMapFrame"><span class="hs-identifier hs-type">StackMapFrame</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-233"></span><span>    </span><span id="local-6989586621679452822"><span class="annot"><span class="annottext">putStackMapFrame :: StackMapFrame -&gt; Put
+</span><a href="#local-6989586621679452822"><span class="hs-identifier hs-var hs-var">putStackMapFrame</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SameFrame"><span class="hs-identifier hs-type">SameFrame</span></a></span><span> </span><span id="local-6989586621679452823"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679452823"><span class="hs-identifier hs-var">offset</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679452823"><span class="hs-identifier hs-var">offset</span></a></span><span>
+</span><span id="line-234"></span><span>    </span><span class="annot"><a href="#local-6989586621679452822"><span class="hs-identifier hs-var">putStackMapFrame</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SameFrameExtended"><span class="hs-identifier hs-type">SameFrameExtended</span></a></span><span> </span><span id="local-6989586621679452825"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452825"><span class="hs-identifier hs-var">offset</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-235"></span><span>        </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">251</span></span><span>
+</span><span id="line-236"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452825"><span class="hs-identifier hs-var">offset</span></a></span><span>
+</span><span id="line-237"></span><span>    </span><span class="annot"><a href="#local-6989586621679452822"><span class="hs-identifier hs-var">putStackMapFrame</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SameLocals1StackItemFrame"><span class="hs-identifier hs-type">SameLocals1StackItemFrame</span></a></span><span> </span><span id="local-6989586621679452826"><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="#local-6989586621679452826"><span class="hs-identifier hs-var">info</span></a></span></span><span> </span><span id="local-6989586621679452827"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679452827"><span class="hs-identifier hs-var">offset</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-238"></span><span>        </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">64</span></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Word8 -&gt; Word8
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679452827"><span class="hs-identifier hs-var">offset</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- frame_type = 64 + offset</span><span>
+</span><span id="line-239"></span><span>        </span><span class="annot"><span class="annottext">VerificationTypeInfo -&gt; Put
+</span><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="#local-6989586621679452826"><span class="hs-identifier hs-var">info</span></a></span><span>
+</span><span id="line-240"></span><span>    </span><span class="annot"><a href="#local-6989586621679452822"><span class="hs-identifier hs-var">putStackMapFrame</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#SameLocals1StackItemFrameExtended"><span class="hs-identifier hs-type">SameLocals1StackItemFrameExtended</span></a></span><span> </span><span id="local-6989586621679452829"><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="#local-6989586621679452829"><span class="hs-identifier hs-var">info</span></a></span></span><span> </span><span id="local-6989586621679452830"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452830"><span class="hs-identifier hs-var">offset</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-241"></span><span>        </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">247</span></span><span>
+</span><span id="line-242"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452830"><span class="hs-identifier hs-var">offset</span></a></span><span>
+</span><span id="line-243"></span><span>        </span><span class="annot"><span class="annottext">VerificationTypeInfo -&gt; Put
+</span><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="#local-6989586621679452829"><span class="hs-identifier hs-var">info</span></a></span><span>
+</span><span id="line-244"></span><span>    </span><span class="annot"><a href="#local-6989586621679452822"><span class="hs-identifier hs-var">putStackMapFrame</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ChopFrame"><span class="hs-identifier hs-type">ChopFrame</span></a></span><span> </span><span id="local-6989586621679452831"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679452831"><span class="hs-identifier hs-var">chop</span></a></span></span><span> </span><span id="local-6989586621679452832"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452832"><span class="hs-keyword hs-var">label</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-245"></span><span>        </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">251</span></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Word8 -&gt; Word8
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679452831"><span class="hs-identifier hs-var">chop</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- chop = 251 - frame_type =&gt; frame_type = 251 - chop</span><span>
+</span><span id="line-246"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452832"><span class="hs-keyword hs-var">label</span></a></span><span>
+</span><span id="line-247"></span><span>    </span><span class="annot"><a href="#local-6989586621679452822"><span class="hs-identifier hs-var">putStackMapFrame</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#AppendFrame"><span class="hs-identifier hs-type">AppendFrame</span></a></span><span> </span><span id="local-6989586621679452833"><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452833"><span class="hs-identifier hs-var">infos</span></a></span></span><span> </span><span id="local-6989586621679452834"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452834"><span class="hs-identifier hs-var">offset</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-248"></span><span>        </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">251</span></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Word8 -&gt; Word8
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word8
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector VerificationTypeInfo -&gt; Int
+forall a. Vector a -&gt; Int
+</span><span class="hs-identifier hs-var">V.length</span></span><span> </span><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452833"><span class="hs-identifier hs-var">infos</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- frame_type = 251 + number_of_locals</span><span>
+</span><span id="line-249"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452834"><span class="hs-identifier hs-var">offset</span></a></span><span>
+</span><span id="line-250"></span><span>        </span><span class="annot"><span class="annottext">(VerificationTypeInfo -&gt; Put) -&gt; Vector VerificationTypeInfo -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo -&gt; Put
+</span><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452833"><span class="hs-identifier hs-var">infos</span></a></span><span>
+</span><span id="line-251"></span><span>    </span><span class="annot"><a href="#local-6989586621679452822"><span class="hs-identifier hs-var">putStackMapFrame</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#FullFrame"><span class="hs-identifier hs-type">FullFrame</span></a></span><span> </span><span id="local-6989586621679452835"><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452835"><span class="hs-identifier hs-var">locals</span></a></span></span><span> </span><span id="local-6989586621679452836"><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452836"><span class="hs-identifier hs-var">stack</span></a></span></span><span> </span><span id="local-6989586621679452837"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452837"><span class="hs-identifier hs-var">offset</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-252"></span><span>        </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">255</span></span><span>
+</span><span id="line-253"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452837"><span class="hs-identifier hs-var">offset</span></a></span><span>
+</span><span id="line-254"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word16) -&gt; Int -&gt; Word16
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector VerificationTypeInfo -&gt; Int
+forall a. Vector a -&gt; Int
+</span><span class="hs-identifier hs-var">V.length</span></span><span> </span><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452835"><span class="hs-identifier hs-var">locals</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-255"></span><span>        </span><span class="annot"><span class="annottext">(VerificationTypeInfo -&gt; Put) -&gt; Vector VerificationTypeInfo -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo -&gt; Put
+</span><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452835"><span class="hs-identifier hs-var">locals</span></a></span><span>
+</span><span id="line-256"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word16) -&gt; Int -&gt; Word16
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector VerificationTypeInfo -&gt; Int
+forall a. Vector a -&gt; Int
+</span><span class="hs-identifier hs-var">V.length</span></span><span> </span><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452836"><span class="hs-identifier hs-var">stack</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-257"></span><span>        </span><span class="annot"><span class="annottext">(VerificationTypeInfo -&gt; Put) -&gt; Vector VerificationTypeInfo -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo -&gt; Put
+</span><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">Vector VerificationTypeInfo
+</span><a href="#local-6989586621679452836"><span class="hs-identifier hs-var">stack</span></a></span><span>
+</span><span id="line-258"></span><span>
+</span><span id="line-259"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-type">putVerificationTypeInfo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#VerificationTypeInfo"><span class="hs-identifier hs-type">VerificationTypeInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-260"></span><span>    </span><span id="local-6989586621679452828"><span class="annot"><span class="annottext">putVerificationTypeInfo :: VerificationTypeInfo -&gt; Put
+</span><a href="#local-6989586621679452828"><span class="hs-identifier hs-var hs-var">putVerificationTypeInfo</span></a></span></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#TopVariableInfo"><span class="hs-identifier hs-var">TopVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_TopVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_TopVariableInfo</span></a></span><span>
+</span><span id="line-261"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#IntegerVariableInfo"><span class="hs-identifier hs-var">IntegerVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_IntegerVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_IntegerVariableInfo</span></a></span><span>
+</span><span id="line-262"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#FloatVariableInfo"><span class="hs-identifier hs-var">FloatVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_FloatVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_FloatVariableInfo</span></a></span><span>
+</span><span id="line-263"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#LongVariableInfo"><span class="hs-identifier hs-var">LongVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_LongVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_LongVariableInfo</span></a></span><span>
+</span><span id="line-264"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#DoubleVariableInfo"><span class="hs-identifier hs-var">DoubleVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_DoubleVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_DoubleVariableInfo</span></a></span><span>
+</span><span id="line-265"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#NullVariableInfo"><span class="hs-identifier hs-var">NullVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_NullVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_NullVariableInfo</span></a></span><span>
+</span><span id="line-266"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="annot"><span class="annottext">VerificationTypeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#UninitializedThisVariableInfo"><span class="hs-identifier hs-var">UninitializedThisVariableInfo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_UninitializedThisVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_UninitializedThisVariableInfo</span></a></span><span>
+</span><span id="line-267"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ObjectVariableInfo"><span class="hs-identifier hs-type">ObjectVariableInfo</span></a></span><span> </span><span id="local-6989586621679452845"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452845"><span class="hs-identifier hs-var">index</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-268"></span><span>        </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_ObjectVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_ObjectVariableInfo</span></a></span><span>
+</span><span id="line-269"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452845"><span class="hs-identifier hs-var">index</span></a></span><span>
+</span><span id="line-270"></span><span>    </span><span class="annot"><a href="#local-6989586621679452828"><span class="hs-identifier hs-var">putVerificationTypeInfo</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#UninitializedVariableInfo"><span class="hs-identifier hs-type">UninitializedVariableInfo</span></a></span><span> </span><span id="local-6989586621679452847"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452847"><span class="hs-identifier hs-var">offset</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-271"></span><span>        </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="JVM.Data.Raw.MagicNumbers.html#verificationType_info_UninitializedVariableInfo"><span class="hs-identifier hs-var">MagicNumbers.verificationType_info_UninitializedVariableInfo</span></a></span><span>
+</span><span id="line-272"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452847"><span class="hs-identifier hs-var">offset</span></a></span><span>
+</span><span id="line-273"></span><span>
+</span><span id="line-274"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putBootstrapMethod"><span class="hs-identifier hs-type">putBootstrapMethod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#BootstrapMethod"><span class="hs-identifier hs-type">BootstrapMethod</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-275"></span><span id="putBootstrapMethod"><span class="annot"><span class="annottext">putBootstrapMethod :: BootstrapMethod -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putBootstrapMethod"><span class="hs-identifier hs-var hs-var">putBootstrapMethod</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#BootstrapMethod"><span class="hs-identifier hs-type">BootstrapMethod</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452849"><span id="local-6989586621679452850"><span class="annot"><span class="annottext">Word16
+Vector Word16
+bootstrapMethodRef :: BootstrapMethod -&gt; Word16
+bootstrapArguments :: BootstrapMethod -&gt; Vector Word16
+bootstrapMethodRef :: Word16
+bootstrapArguments :: Vector Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#bootstrapMethodRef"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-276"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452849"><span class="hs-identifier hs-var">bootstrapMethodRef</span></a></span><span>
+</span><span id="line-277"></span><span>    </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Word16 -&gt; Put
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word16) -&gt; Int -&gt; Word16
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector Word16 -&gt; Int
+forall a. Vector a -&gt; Int
+</span><span class="hs-identifier hs-var">V.length</span></span><span> </span><span class="annot"><span class="annottext">Vector Word16
+</span><a href="#local-6989586621679452850"><span class="hs-identifier hs-var">bootstrapArguments</span></a></span><span>
+</span><span id="line-278"></span><span>    </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Vector Word16 -&gt; Put
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Vector Word16
+</span><a href="#local-6989586621679452850"><span class="hs-identifier hs-var">bootstrapArguments</span></a></span><span>
+</span><span id="line-279"></span><span>
+</span><span id="line-280"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putExceptionTable"><span class="hs-identifier hs-type">putExceptionTable</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ExceptionTableEntry"><span class="hs-identifier hs-type">ExceptionTableEntry</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-281"></span><span id="putExceptionTable"><span class="annot"><span class="annottext">putExceptionTable :: Vector ExceptionTableEntry -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putExceptionTable"><span class="hs-identifier hs-var hs-var">putExceptionTable</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Vector ExceptionTableEntry -&gt; Put
+forall a i (t :: * -&gt; *).
+(WriteBinary a, Integral i, Foldable t) =&gt;
+(i -&gt; Put) -&gt; t a -&gt; Put
+</span><a href="Data.Binary.Write.html#writeList"><span class="hs-identifier hs-var">writeList</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span>
+</span><span id="line-282"></span><span>
+</span><span id="line-283"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.Binary.Write.html#WriteBinary"><span class="hs-identifier hs-type">WriteBinary</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ExceptionTableEntry"><span class="hs-identifier hs-type">ExceptionTableEntry</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-284"></span><span>    </span><span id="local-6989586621679452855"><span class="annot"><span class="annottext">writeBinary :: ExceptionTableEntry -&gt; Put
+</span><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var hs-var hs-var">writeBinary</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ExceptionTableEntry"><span class="hs-identifier hs-type">ExceptionTableEntry</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452856"><span id="local-6989586621679452857"><span id="local-6989586621679452858"><span id="local-6989586621679452859"><span class="annot"><span class="annottext">Word16
+startPc :: ExceptionTableEntry -&gt; Word16
+endPc :: ExceptionTableEntry -&gt; Word16
+handlerPc :: ExceptionTableEntry -&gt; Word16
+catchType :: ExceptionTableEntry -&gt; Word16
+startPc :: Word16
+endPc :: Word16
+handlerPc :: Word16
+catchType :: Word16
+</span><a href="JVM.Data.Raw.ClassFile.html#startPc"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-285"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452856"><span class="hs-identifier hs-var">startPc</span></a></span><span>
+</span><span id="line-286"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452857"><span class="hs-identifier hs-var">endPc</span></a></span><span>
+</span><span id="line-287"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452858"><span class="hs-identifier hs-var">handlerPc</span></a></span><span>
+</span><span id="line-288"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452859"><span class="hs-identifier hs-var">catchType</span></a></span><span>
+</span><span id="line-289"></span><span>
+</span><span id="line-290"></span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#putMethodTable"><span class="hs-identifier hs-type">putMethodTable</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#MethodInfo"><span class="hs-identifier hs-type">MethodInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-291"></span><span id="putMethodTable"><span class="annot"><span class="annottext">putMethodTable :: Vector MethodInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putMethodTable"><span class="hs-identifier hs-var hs-var">putMethodTable</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word16 -&gt; Put) -&gt; Vector MethodInfo -&gt; Put
+forall a i (t :: * -&gt; *).
+(WriteBinary a, Integral i, Foldable t) =&gt;
+(i -&gt; Put) -&gt; t a -&gt; Put
+</span><a href="Data.Binary.Write.html#writeList"><span class="hs-identifier hs-var">writeList</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span>
+</span><span id="line-292"></span><span>
+</span><span id="line-293"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.Binary.Write.html#WriteBinary"><span class="hs-identifier hs-type">WriteBinary</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#MethodInfo"><span class="hs-identifier hs-type">MethodInfo</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-294"></span><span>    </span><span id="local-6989586621679452865"><span class="annot"><span class="annottext">writeBinary :: MethodInfo -&gt; Put
+</span><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var hs-var hs-var">writeBinary</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#MethodInfo"><span class="hs-identifier hs-type">MethodInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452866"><span id="local-6989586621679452867"><span id="local-6989586621679452868"><span id="local-6989586621679452869"><span class="annot"><span class="annottext">Word16
+Vector AttributeInfo
+accessFlags :: MethodInfo -&gt; Word16
+nameIndex :: MethodInfo -&gt; Word16
+descriptorIndex :: MethodInfo -&gt; Word16
+attributes :: MethodInfo -&gt; Vector AttributeInfo
+accessFlags :: Word16
+nameIndex :: Word16
+descriptorIndex :: Word16
+attributes :: Vector AttributeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#accessFlags"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-295"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452866"><span class="hs-identifier hs-var">accessFlags</span></a></span><span>
+</span><span id="line-296"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452867"><span class="hs-identifier hs-var">nameIndex</span></a></span><span>
+</span><span id="line-297"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452868"><span class="hs-identifier hs-var">descriptorIndex</span></a></span><span>
+</span><span id="line-298"></span><span>        </span><span class="annot"><span class="annottext">Vector AttributeInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putAttributes"><span class="hs-identifier hs-var">putAttributes</span></a></span><span> </span><span class="annot"><span class="annottext">Vector AttributeInfo
+</span><a href="#local-6989586621679452869"><span class="hs-identifier hs-var">attributes</span></a></span><span>
+</span><span id="line-299"></span><span>
+</span><span id="line-300"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Data.Binary.Write.html#WriteBinary"><span class="hs-identifier hs-type">WriteBinary</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ClassFile"><span class="hs-identifier hs-type">ClassFile</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-301"></span><span>    </span><span id="local-6989586621679452882"><span class="annot"><span class="annottext">writeBinary :: ClassFile -&gt; Put
+</span><a href="Data.Binary.Write.html#writeBinary"><span class="hs-identifier hs-var hs-var hs-var">writeBinary</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Raw.ClassFile.html#ClassFile"><span class="hs-identifier hs-type">ClassFile</span></a></span><span class="hs-special">{</span><span id="local-6989586621679452883"><span id="local-6989586621679452884"><span id="local-6989586621679452885"><span id="local-6989586621679452886"><span id="local-6989586621679452887"><span id="local-6989586621679452888"><span id="local-6989586621679452889"><span id="local-6989586621679452890"><span id="local-6989586621679452891"><span id="local-6989586621679452892"><span id="local-6989586621679452893"><span class="annot"><span class="annottext">Word16
+Word32
+Vector Word16
+Vector ConstantPoolInfo
+Vector MethodInfo
+Vector AttributeInfo
+Vector FieldInfo
+MinorVersion
+MajorVersion
+magic :: ClassFile -&gt; Word32
+minorVersion :: ClassFile -&gt; MinorVersion
+majorVersion :: ClassFile -&gt; MajorVersion
+constantPool :: ClassFile -&gt; Vector ConstantPoolInfo
+accessFlags :: ClassFile -&gt; Word16
+thisClass :: ClassFile -&gt; Word16
+superClass :: ClassFile -&gt; Word16
+interfaces :: ClassFile -&gt; Vector Word16
+fields :: ClassFile -&gt; Vector FieldInfo
+methods :: ClassFile -&gt; Vector MethodInfo
+attributes :: ClassFile -&gt; Vector AttributeInfo
+magic :: Word32
+minorVersion :: MinorVersion
+majorVersion :: MajorVersion
+constantPool :: Vector ConstantPoolInfo
+accessFlags :: Word16
+thisClass :: Word16
+superClass :: Word16
+interfaces :: Vector Word16
+fields :: Vector FieldInfo
+methods :: Vector MethodInfo
+attributes :: Vector AttributeInfo
+</span><a href="JVM.Data.Raw.ClassFile.html#magic"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-302"></span><span>        </span><span class="annot"><span class="annottext">Word32 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord32be</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679452883"><span class="hs-identifier hs-var">magic</span></a></span><span>
+</span><span id="line-303"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">MinorVersion -&gt; Word16
+</span><a href="JVM.Data.JVMVersion.html#unwrapMinor"><span class="hs-identifier hs-var">unwrapMinor</span></a></span><span> </span><span class="annot"><span class="annottext">MinorVersion
+</span><a href="#local-6989586621679452884"><span class="hs-identifier hs-var">minorVersion</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-304"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">MajorVersion -&gt; Word16
+</span><a href="JVM.Data.JVMVersion.html#unwrapMajor"><span class="hs-identifier hs-var">unwrapMajor</span></a></span><span> </span><span class="annot"><span class="annottext">MajorVersion
+</span><a href="#local-6989586621679452885"><span class="hs-identifier hs-var">majorVersion</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-305"></span><span>        </span><span class="annot"><span class="annottext">Vector ConstantPoolInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putConstantPool"><span class="hs-identifier hs-var">putConstantPool</span></a></span><span> </span><span class="annot"><span class="annottext">Vector ConstantPoolInfo
+</span><a href="#local-6989586621679452886"><span class="hs-identifier hs-var">constantPool</span></a></span><span>
+</span><span id="line-306"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452887"><span class="hs-identifier hs-var">accessFlags</span></a></span><span>
+</span><span id="line-307"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452888"><span class="hs-identifier hs-var">thisClass</span></a></span><span>
+</span><span id="line-308"></span><span>        </span><span class="annot"><span class="annottext">Word16 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord16be</span></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679452889"><span class="hs-identifier hs-var">superClass</span></a></span><span>
+</span><span id="line-309"></span><span>        </span><span class="annot"><span class="annottext">Vector Word16 -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putInterfaceTable"><span class="hs-identifier hs-var">putInterfaceTable</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Word16
+</span><a href="#local-6989586621679452890"><span class="hs-identifier hs-var">interfaces</span></a></span><span>
+</span><span id="line-310"></span><span>
+</span><span id="line-311"></span><span>        </span><span class="annot"><span class="annottext">Vector FieldInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putFieldTable"><span class="hs-identifier hs-var">putFieldTable</span></a></span><span> </span><span class="annot"><span class="annottext">Vector FieldInfo
+</span><a href="#local-6989586621679452891"><span class="hs-identifier hs-var">fields</span></a></span><span>
+</span><span id="line-312"></span><span>        </span><span class="annot"><span class="annottext">Vector MethodInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putMethodTable"><span class="hs-identifier hs-var">putMethodTable</span></a></span><span> </span><span class="annot"><span class="annottext">Vector MethodInfo
+</span><a href="#local-6989586621679452892"><span class="hs-identifier hs-var">methods</span></a></span><span>
+</span><span id="line-313"></span><span>        </span><span class="annot"><span class="annottext">Vector AttributeInfo -&gt; Put
+</span><a href="JVM.Data.Raw.ClassFile.html#putAttributes"><span class="hs-identifier hs-var">putAttributes</span></a></span><span> </span><span class="annot"><span class="annottext">Vector AttributeInfo
+</span><a href="#local-6989586621679452893"><span class="hs-identifier hs-var">attributes</span></a></span><span>
+</span><span id="line-314"></span></pre></body></html>

@@ -1,0 +1,1539 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679448001"><span id="local-6989586621679448002"><span id="local-6989586621679448003"><span id="local-6989586621679448004"><span id="local-6989586621679448005"><span id="local-6989586621679448006"><span id="local-6989586621679448007"><span id="local-6989586621679448008"><span id="local-6989586621679448009"><span id="local-6989586621679448010"><span id="local-6989586621679448011"><span id="local-6989586621679448012"><span id="local-6989586621679448013"><span id="local-6989586621679448014"><span id="local-6989586621679448015"><span id="local-6989586621679448016"><span id="local-6989586621679448017"><span id="local-6989586621679448018"><span id="local-6989586621679448019"><span id="local-6989586621679448020"><span id="local-6989586621679448021"><span id="local-6989586621679448022"></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-pragma">{-# LANGUAGE PartialTypeSignatures #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">{- | Provides a monadic interface to the constant pool.
+ This aims to eliminate the need to manually specify the index of the constant
+-}</span></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html"><span class="hs-identifier">JVM.Data.Abstract.ConstantPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#ConstantPoolEntry"><span class="hs-identifier">ConstantPoolEntry</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodHandleEntry"><span class="hs-identifier">MethodHandleEntry</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier">FieldRef</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier">MethodRef</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapMethod"><span class="hs-identifier">BootstrapMethod</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapArgument"><span class="hs-identifier">BootstrapArgument</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#bmArgToCPEntry"><span class="hs-identifier">bmArgToCPEntry</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html"><span class="hs-identifier">JVM.Data.Abstract.Descriptor</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier">MethodDescriptor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Data</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html"><span class="hs-identifier">JVM.Data.Abstract.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier">ClassInfoType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier">FieldType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Pretty.html"><span class="hs-identifier">JVM.Data.Pretty</span></a></span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="annot"><span class="hs-comment">{- | High-level, type-safe representation of a constant pool entry
+ This tries to hide indexes as much as possible, instead just allowing the values to be provided directly.
+ These are transformed into the correct indexes when the constant pool is built, which uses a state monad to avoid repeating entries.
+-}</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="ConstantPoolEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#ConstantPoolEntry"><span class="hs-identifier hs-var">ConstantPoolEntry</span></a></span></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-comment">-- | A class reference</span></span><span>
+</span><span id="line-22"></span><span>      </span><span id="CPClassEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPClassEntry"><span class="hs-identifier hs-var">CPClassEntry</span></a></span></span><span>
+</span><span id="line-23"></span><span>        </span><span class="annot"><span class="hs-comment">-- | The class being referenced</span></span><span>
+</span><span id="line-24"></span><span>        </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier hs-type">ClassInfoType</span></a></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPFieldRefEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPFieldRefEntry"><span class="hs-identifier hs-var">CPFieldRefEntry</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-type">FieldRef</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPMethodRefEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPMethodRefEntry"><span class="hs-identifier hs-var">CPMethodRefEntry</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPInterfaceMethodRefEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPInterfaceMethodRefEntry"><span class="hs-identifier hs-var">CPInterfaceMethodRefEntry</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPStringEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPStringEntry"><span class="hs-identifier hs-var">CPStringEntry</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPIntegerEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPIntegerEntry"><span class="hs-identifier hs-var">CPIntegerEntry</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPFloatEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPFloatEntry"><span class="hs-identifier hs-var">CPFloatEntry</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPLongEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPLongEntry"><span class="hs-identifier hs-var">CPLongEntry</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPDoubleEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPDoubleEntry"><span class="hs-identifier hs-var">CPDoubleEntry</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPNameAndTypeEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPNameAndTypeEntry"><span class="hs-identifier hs-var">CPNameAndTypeEntry</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPUTF8Entry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPUTF8Entry"><span class="hs-identifier hs-var">CPUTF8Entry</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPMethodHandleEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPMethodHandleEntry"><span class="hs-identifier hs-var">CPMethodHandleEntry</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodHandleEntry"><span class="hs-identifier hs-type">MethodHandleEntry</span></a></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="CPMethodTypeEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPMethodTypeEntry"><span class="hs-identifier hs-var">CPMethodTypeEntry</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | CONSTANT_InvokeDynamic_info</span></span><span>
+</span><span id="line-38"></span><span>      </span><span id="CPInvokeDynamicEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#CPInvokeDynamicEntry"><span class="hs-identifier hs-var">CPInvokeDynamicEntry</span></a></span></span><span>
+</span><span id="line-39"></span><span>        </span><span class="annot"><span class="hs-comment">-- | bootstrap_method_attr(_index)</span></span><span>
+</span><span id="line-40"></span><span>        </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapMethod"><span class="hs-identifier hs-type">BootstrapMethod</span></a></span><span>
+</span><span id="line-41"></span><span>        </span><span class="annot"><span class="hs-comment">-- | name(_and_type_index)</span></span><span>
+</span><span id="line-42"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-43"></span><span>        </span><span class="annot"><span class="hs-comment">-- | (name_and_)type(_index)</span></span><span>
+</span><span id="line-44"></span><span>        </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679448039"><span id="local-6989586621679448084"><span id="local-6989586621679448088"><span class="annot"><span class="annottext">Int -&gt; ConstantPoolEntry -&gt; ShowS
+[ConstantPoolEntry] -&gt; ShowS
+ConstantPoolEntry -&gt; String
+(Int -&gt; ConstantPoolEntry -&gt; ShowS)
+-&gt; (ConstantPoolEntry -&gt; String)
+-&gt; ([ConstantPoolEntry] -&gt; ShowS)
+-&gt; Show ConstantPoolEntry
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ConstantPoolEntry -&gt; ShowS
+showsPrec :: Int -&gt; ConstantPoolEntry -&gt; ShowS
+$cshow :: ConstantPoolEntry -&gt; String
+show :: ConstantPoolEntry -&gt; String
+$cshowList :: [ConstantPoolEntry] -&gt; ShowS
+showList :: [ConstantPoolEntry] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448093"><span id="local-6989586621679448126"><span class="annot"><span class="annottext">ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+(ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool)
+-&gt; (ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool)
+-&gt; Eq ConstantPoolEntry
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+== :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+$c/= :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+/= :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448133"><span id="local-6989586621679448172"><span id="local-6989586621679448176"><span id="local-6989586621679448179"><span id="local-6989586621679448182"><span id="local-6989586621679448185"><span id="local-6989586621679448188"><span class="annot"><span class="annottext">Eq ConstantPoolEntry
+Eq ConstantPoolEntry =&gt;
+(ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Ordering)
+-&gt; (ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool)
+-&gt; (ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool)
+-&gt; (ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool)
+-&gt; (ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool)
+-&gt; (ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; ConstantPoolEntry)
+-&gt; (ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; ConstantPoolEntry)
+-&gt; Ord ConstantPoolEntry
+ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Ordering
+ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; ConstantPoolEntry
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Ordering
+compare :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Ordering
+$c&lt; :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+&lt; :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+$c&lt;= :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+&lt;= :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+$c&gt; :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+&gt; :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+$c&gt;= :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+&gt;= :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; Bool
+$cmax :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; ConstantPoolEntry
+max :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; ConstantPoolEntry
+$cmin :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; ConstantPoolEntry
+min :: ConstantPoolEntry -&gt; ConstantPoolEntry -&gt; ConstantPoolEntry
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="hs-keyword">data</span><span> </span><span id="FieldRef"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-var">FieldRef</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="FieldRef"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-var">FieldRef</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier hs-type">ClassInfoType</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier hs-type">FieldType</span></a></span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679448194"><span id="local-6989586621679448201"><span id="local-6989586621679448204"><span class="annot"><span class="annottext">Int -&gt; FieldRef -&gt; ShowS
+[FieldRef] -&gt; ShowS
+FieldRef -&gt; String
+(Int -&gt; FieldRef -&gt; ShowS)
+-&gt; (FieldRef -&gt; String) -&gt; ([FieldRef] -&gt; ShowS) -&gt; Show FieldRef
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; FieldRef -&gt; ShowS
+showsPrec :: Int -&gt; FieldRef -&gt; ShowS
+$cshow :: FieldRef -&gt; String
+show :: FieldRef -&gt; String
+$cshowList :: [FieldRef] -&gt; ShowS
+showList :: [FieldRef] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448207"><span id="local-6989586621679448213"><span class="annot"><span class="annottext">FieldRef -&gt; FieldRef -&gt; Bool
+(FieldRef -&gt; FieldRef -&gt; Bool)
+-&gt; (FieldRef -&gt; FieldRef -&gt; Bool) -&gt; Eq FieldRef
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: FieldRef -&gt; FieldRef -&gt; Bool
+== :: FieldRef -&gt; FieldRef -&gt; Bool
+$c/= :: FieldRef -&gt; FieldRef -&gt; Bool
+/= :: FieldRef -&gt; FieldRef -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448218"><span id="local-6989586621679448224"><span id="local-6989586621679448229"><span id="local-6989586621679448232"><span id="local-6989586621679448235"><span id="local-6989586621679448238"><span id="local-6989586621679448241"><span class="annot"><span class="annottext">Eq FieldRef
+Eq FieldRef =&gt;
+(FieldRef -&gt; FieldRef -&gt; Ordering)
+-&gt; (FieldRef -&gt; FieldRef -&gt; Bool)
+-&gt; (FieldRef -&gt; FieldRef -&gt; Bool)
+-&gt; (FieldRef -&gt; FieldRef -&gt; Bool)
+-&gt; (FieldRef -&gt; FieldRef -&gt; Bool)
+-&gt; (FieldRef -&gt; FieldRef -&gt; FieldRef)
+-&gt; (FieldRef -&gt; FieldRef -&gt; FieldRef)
+-&gt; Ord FieldRef
+FieldRef -&gt; FieldRef -&gt; Bool
+FieldRef -&gt; FieldRef -&gt; Ordering
+FieldRef -&gt; FieldRef -&gt; FieldRef
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: FieldRef -&gt; FieldRef -&gt; Ordering
+compare :: FieldRef -&gt; FieldRef -&gt; Ordering
+$c&lt; :: FieldRef -&gt; FieldRef -&gt; Bool
+&lt; :: FieldRef -&gt; FieldRef -&gt; Bool
+$c&lt;= :: FieldRef -&gt; FieldRef -&gt; Bool
+&lt;= :: FieldRef -&gt; FieldRef -&gt; Bool
+$c&gt; :: FieldRef -&gt; FieldRef -&gt; Bool
+&gt; :: FieldRef -&gt; FieldRef -&gt; Bool
+$c&gt;= :: FieldRef -&gt; FieldRef -&gt; Bool
+&gt;= :: FieldRef -&gt; FieldRef -&gt; Bool
+$cmax :: FieldRef -&gt; FieldRef -&gt; FieldRef
+max :: FieldRef -&gt; FieldRef -&gt; FieldRef
+$cmin :: FieldRef -&gt; FieldRef -&gt; FieldRef
+min :: FieldRef -&gt; FieldRef -&gt; FieldRef
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448249"><span id="local-6989586621679448257"><span id="local-6989586621679448262"><span id="local-6989586621679448264"><span id="local-6989586621679448266"><span id="local-6989586621679448272"><span id="local-6989586621679448277"><span id="local-6989586621679448280"><span id="local-6989586621679448283"><span id="local-6989586621679448286"><span id="local-6989586621679448289"><span id="local-6989586621679448292"><span id="local-6989586621679448297"><span id="local-6989586621679448302"><span class="annot"><span class="annottext">Typeable FieldRef
+Typeable FieldRef =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; FieldRef -&gt; c FieldRef)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c FieldRef)
+-&gt; (FieldRef -&gt; Constr)
+-&gt; (FieldRef -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c FieldRef))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c FieldRef))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; FieldRef -&gt; FieldRef)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldRef -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldRef -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; FieldRef -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; FieldRef -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef)
+-&gt; Data FieldRef
+FieldRef -&gt; Constr
+FieldRef -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; FieldRef -&gt; FieldRef
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; FieldRef -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; FieldRef -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldRef -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldRef -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c FieldRef
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; FieldRef -&gt; c FieldRef
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c FieldRef)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c FieldRef)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; FieldRef -&gt; c FieldRef
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; FieldRef -&gt; c FieldRef
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c FieldRef
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c FieldRef
+$ctoConstr :: FieldRef -&gt; Constr
+toConstr :: FieldRef -&gt; Constr
+$cdataTypeOf :: FieldRef -&gt; DataType
+dataTypeOf :: FieldRef -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c FieldRef)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c FieldRef)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c FieldRef)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c FieldRef)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; FieldRef -&gt; FieldRef
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; FieldRef -&gt; FieldRef
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldRef -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldRef -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldRef -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; FieldRef -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; FieldRef -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; FieldRef -&gt; [u]
+$cgmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; FieldRef -&gt; u
+gmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; FieldRef -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; FieldRef -&gt; m FieldRef
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679448313"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-type">FieldRef</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-51"></span><span>    </span><span id="local-6989586621679448331"><span class="annot"><span class="annottext">pretty :: forall ann. FieldRef -&gt; Doc ann
+</span><a href="#local-6989586621679448331"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-type">FieldRef</span></a></span><span> </span><span id="local-6989586621679448333"><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679448333"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679448334"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679448334"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span id="local-6989586621679448335"><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679448335"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassInfoType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ClassInfoType -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679448333"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679448334"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;:&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">FieldType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldType -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679448335"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">data</span><span> </span><span id="MethodRef"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-var">MethodRef</span></a></span></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="MethodRef"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-var">MethodRef</span></a></span></span><span>
+</span><span id="line-55"></span><span>        </span><span class="annot"><span class="hs-comment">-- | The class containing the method</span></span><span>
+</span><span id="line-56"></span><span>        </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier hs-type">ClassInfoType</span></a></span><span>
+</span><span id="line-57"></span><span>        </span><span class="annot"><span class="hs-comment">-- | The name of the method</span></span><span>
+</span><span id="line-58"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-59"></span><span>        </span><span class="annot"><span class="hs-comment">-- | The descriptor of the method</span></span><span>
+</span><span id="line-60"></span><span>        </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679448338"><span id="local-6989586621679448344"><span id="local-6989586621679448347"><span class="annot"><span class="annottext">Int -&gt; MethodRef -&gt; ShowS
+[MethodRef] -&gt; ShowS
+MethodRef -&gt; String
+(Int -&gt; MethodRef -&gt; ShowS)
+-&gt; (MethodRef -&gt; String)
+-&gt; ([MethodRef] -&gt; ShowS)
+-&gt; Show MethodRef
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MethodRef -&gt; ShowS
+showsPrec :: Int -&gt; MethodRef -&gt; ShowS
+$cshow :: MethodRef -&gt; String
+show :: MethodRef -&gt; String
+$cshowList :: [MethodRef] -&gt; ShowS
+showList :: [MethodRef] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448350"><span id="local-6989586621679448355"><span class="annot"><span class="annottext">MethodRef -&gt; MethodRef -&gt; Bool
+(MethodRef -&gt; MethodRef -&gt; Bool)
+-&gt; (MethodRef -&gt; MethodRef -&gt; Bool) -&gt; Eq MethodRef
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MethodRef -&gt; MethodRef -&gt; Bool
+== :: MethodRef -&gt; MethodRef -&gt; Bool
+$c/= :: MethodRef -&gt; MethodRef -&gt; Bool
+/= :: MethodRef -&gt; MethodRef -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448360"><span id="local-6989586621679448365"><span id="local-6989586621679448370"><span id="local-6989586621679448373"><span id="local-6989586621679448376"><span id="local-6989586621679448379"><span id="local-6989586621679448382"><span class="annot"><span class="annottext">Eq MethodRef
+Eq MethodRef =&gt;
+(MethodRef -&gt; MethodRef -&gt; Ordering)
+-&gt; (MethodRef -&gt; MethodRef -&gt; Bool)
+-&gt; (MethodRef -&gt; MethodRef -&gt; Bool)
+-&gt; (MethodRef -&gt; MethodRef -&gt; Bool)
+-&gt; (MethodRef -&gt; MethodRef -&gt; Bool)
+-&gt; (MethodRef -&gt; MethodRef -&gt; MethodRef)
+-&gt; (MethodRef -&gt; MethodRef -&gt; MethodRef)
+-&gt; Ord MethodRef
+MethodRef -&gt; MethodRef -&gt; Bool
+MethodRef -&gt; MethodRef -&gt; Ordering
+MethodRef -&gt; MethodRef -&gt; MethodRef
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: MethodRef -&gt; MethodRef -&gt; Ordering
+compare :: MethodRef -&gt; MethodRef -&gt; Ordering
+$c&lt; :: MethodRef -&gt; MethodRef -&gt; Bool
+&lt; :: MethodRef -&gt; MethodRef -&gt; Bool
+$c&lt;= :: MethodRef -&gt; MethodRef -&gt; Bool
+&lt;= :: MethodRef -&gt; MethodRef -&gt; Bool
+$c&gt; :: MethodRef -&gt; MethodRef -&gt; Bool
+&gt; :: MethodRef -&gt; MethodRef -&gt; Bool
+$c&gt;= :: MethodRef -&gt; MethodRef -&gt; Bool
+&gt;= :: MethodRef -&gt; MethodRef -&gt; Bool
+$cmax :: MethodRef -&gt; MethodRef -&gt; MethodRef
+max :: MethodRef -&gt; MethodRef -&gt; MethodRef
+$cmin :: MethodRef -&gt; MethodRef -&gt; MethodRef
+min :: MethodRef -&gt; MethodRef -&gt; MethodRef
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448387"><span id="local-6989586621679448393"><span id="local-6989586621679448398"><span id="local-6989586621679448400"><span id="local-6989586621679448402"><span id="local-6989586621679448408"><span id="local-6989586621679448413"><span id="local-6989586621679448416"><span id="local-6989586621679448419"><span id="local-6989586621679448422"><span id="local-6989586621679448425"><span id="local-6989586621679448428"><span id="local-6989586621679448433"><span id="local-6989586621679448438"><span class="annot"><span class="annottext">Typeable MethodRef
+Typeable MethodRef =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; MethodRef -&gt; c MethodRef)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodRef)
+-&gt; (MethodRef -&gt; Constr)
+-&gt; (MethodRef -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodRef))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c MethodRef))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; MethodRef -&gt; MethodRef)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodRef -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodRef -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodRef -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodRef -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef)
+-&gt; Data MethodRef
+MethodRef -&gt; Constr
+MethodRef -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; MethodRef -&gt; MethodRef
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodRef -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodRef -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodRef -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodRef -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodRef
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodRef -&gt; c MethodRef
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodRef)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c MethodRef)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodRef -&gt; c MethodRef
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodRef -&gt; c MethodRef
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodRef
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodRef
+$ctoConstr :: MethodRef -&gt; Constr
+toConstr :: MethodRef -&gt; Constr
+$cdataTypeOf :: MethodRef -&gt; DataType
+dataTypeOf :: MethodRef -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodRef)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodRef)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c MethodRef)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c MethodRef)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; MethodRef -&gt; MethodRef
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; MethodRef -&gt; MethodRef
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodRef -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodRef -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodRef -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodRef -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodRef -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodRef -&gt; [u]
+$cgmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodRef -&gt; u
+gmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodRef -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; MethodRef -&gt; m MethodRef
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679448444"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621679448455"><span class="annot"><span class="annottext">pretty :: forall ann. MethodRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span><span> </span><span id="local-6989586621679448456"><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679448456"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679448457"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679448457"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span id="local-6989586621679448458"><span class="annot"><span class="annottext">MethodDescriptor
+</span><a href="#local-6989586621679448458"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassInfoType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ClassInfoType -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679448456"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679448457"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">MethodDescriptor -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodDescriptor -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodDescriptor
+</span><a href="#local-6989586621679448458"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-keyword">data</span><span> </span><span id="BootstrapMethod"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapMethod"><span class="hs-identifier hs-var">BootstrapMethod</span></a></span></span><span>
+</span><span id="line-67"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="BootstrapMethod"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapMethod"><span class="hs-identifier hs-var">BootstrapMethod</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodHandleEntry"><span class="hs-identifier hs-type">MethodHandleEntry</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapArgument"><span class="hs-identifier hs-type">BootstrapArgument</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-68"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679448461"><span id="local-6989586621679448468"><span id="local-6989586621679448471"><span class="annot"><span class="annottext">Int -&gt; BootstrapMethod -&gt; ShowS
+[BootstrapMethod] -&gt; ShowS
+BootstrapMethod -&gt; String
+(Int -&gt; BootstrapMethod -&gt; ShowS)
+-&gt; (BootstrapMethod -&gt; String)
+-&gt; ([BootstrapMethod] -&gt; ShowS)
+-&gt; Show BootstrapMethod
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BootstrapMethod -&gt; ShowS
+showsPrec :: Int -&gt; BootstrapMethod -&gt; ShowS
+$cshow :: BootstrapMethod -&gt; String
+show :: BootstrapMethod -&gt; String
+$cshowList :: [BootstrapMethod] -&gt; ShowS
+showList :: [BootstrapMethod] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448475"><span id="local-6989586621679448481"><span class="annot"><span class="annottext">BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+(BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; Eq BootstrapMethod
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+== :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$c/= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+/= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448487"><span id="local-6989586621679448493"><span id="local-6989586621679448498"><span id="local-6989586621679448501"><span id="local-6989586621679448504"><span id="local-6989586621679448507"><span id="local-6989586621679448510"><span class="annot"><span class="annottext">Eq BootstrapMethod
+Eq BootstrapMethod =&gt;
+(BootstrapMethod -&gt; BootstrapMethod -&gt; Ordering)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; Bool)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod)
+-&gt; (BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod)
+-&gt; Ord BootstrapMethod
+BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+BootstrapMethod -&gt; BootstrapMethod -&gt; Ordering
+BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BootstrapMethod -&gt; BootstrapMethod -&gt; Ordering
+compare :: BootstrapMethod -&gt; BootstrapMethod -&gt; Ordering
+$c&lt; :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+&lt; :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$c&lt;= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+&lt;= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$c&gt; :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+&gt; :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$c&gt;= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+&gt;= :: BootstrapMethod -&gt; BootstrapMethod -&gt; Bool
+$cmax :: BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+max :: BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+$cmin :: BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+min :: BootstrapMethod -&gt; BootstrapMethod -&gt; BootstrapMethod
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448516"><span id="local-6989586621679448523"><span id="local-6989586621679448528"><span id="local-6989586621679448530"><span id="local-6989586621679448532"><span id="local-6989586621679448538"><span id="local-6989586621679448543"><span id="local-6989586621679448546"><span id="local-6989586621679448549"><span id="local-6989586621679448552"><span id="local-6989586621679448555"><span id="local-6989586621679448558"><span id="local-6989586621679448563"><span id="local-6989586621679448568"><span class="annot"><span class="annottext">Typeable BootstrapMethod
+Typeable BootstrapMethod =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; BootstrapMethod -&gt; c BootstrapMethod)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c BootstrapMethod)
+-&gt; (BootstrapMethod -&gt; Constr)
+-&gt; (BootstrapMethod -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c BootstrapMethod))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c BootstrapMethod))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; BootstrapMethod -&gt; BootstrapMethod)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapMethod -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapMethod -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapMethod -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapMethod -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; BootstrapMethod -&gt; m BootstrapMethod)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; BootstrapMethod -&gt; m BootstrapMethod)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; BootstrapMethod -&gt; m BootstrapMethod)
+-&gt; Data BootstrapMethod
+BootstrapMethod -&gt; Constr
+BootstrapMethod -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; BootstrapMethod -&gt; BootstrapMethod
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapMethod -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapMethod -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapMethod -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapMethod -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapMethod -&gt; m BootstrapMethod
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapMethod -&gt; m BootstrapMethod
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c BootstrapMethod
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; BootstrapMethod -&gt; c BootstrapMethod
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c BootstrapMethod)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c BootstrapMethod)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; BootstrapMethod -&gt; c BootstrapMethod
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; BootstrapMethod -&gt; c BootstrapMethod
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c BootstrapMethod
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c BootstrapMethod
+$ctoConstr :: BootstrapMethod -&gt; Constr
+toConstr :: BootstrapMethod -&gt; Constr
+$cdataTypeOf :: BootstrapMethod -&gt; DataType
+dataTypeOf :: BootstrapMethod -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c BootstrapMethod)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c BootstrapMethod)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c BootstrapMethod)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c BootstrapMethod)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; BootstrapMethod -&gt; BootstrapMethod
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; BootstrapMethod -&gt; BootstrapMethod
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapMethod -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapMethod -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapMethod -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapMethod -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapMethod -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapMethod -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapMethod -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapMethod -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapMethod -&gt; m BootstrapMethod
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapMethod -&gt; m BootstrapMethod
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapMethod -&gt; m BootstrapMethod
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapMethod -&gt; m BootstrapMethod
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapMethod -&gt; m BootstrapMethod
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapMethod -&gt; m BootstrapMethod
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679448575"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapMethod"><span class="hs-identifier hs-type">BootstrapMethod</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-71"></span><span>    </span><span id="local-6989586621679448582"><span class="annot"><span class="annottext">pretty :: forall ann. BootstrapMethod -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapMethod"><span class="hs-identifier hs-type">BootstrapMethod</span></a></span><span> </span><span id="local-6989586621679448583"><span class="annot"><span class="annottext">MethodHandleEntry
+</span><a href="#local-6989586621679448583"><span class="hs-identifier hs-var">mh</span></a></span></span><span> </span><span id="local-6989586621679448584"><span class="annot"><span class="annottext">[BootstrapArgument]
+</span><a href="#local-6989586621679448584"><span class="hs-identifier hs-var">args</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MethodHandleEntry -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodHandleEntry -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodHandleEntry
+</span><a href="#local-6989586621679448583"><span class="hs-identifier hs-var">mh</span></a></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[Doc ann] -&gt; Doc ann
+forall ann. [Doc ann] -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#hsep"><span class="hs-identifier hs-var">hsep</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(BootstrapArgument -&gt; Doc ann) -&gt; [BootstrapArgument] -&gt; [Doc ann]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">BootstrapArgument -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. BootstrapArgument -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">[BootstrapArgument]
+</span><a href="#local-6989586621679448584"><span class="hs-identifier hs-var">args</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="hs-keyword">data</span><span> </span><span id="BootstrapArgument"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapArgument"><span class="hs-identifier hs-var">BootstrapArgument</span></a></span></span><span>
+</span><span id="line-74"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="BMClassArg"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMClassArg"><span class="hs-identifier hs-var">BMClassArg</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier hs-type">ClassInfoType</span></a></span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="BMStringArg"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMStringArg"><span class="hs-identifier hs-var">BMStringArg</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-76"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="BMIntArg"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMIntArg"><span class="hs-identifier hs-var">BMIntArg</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="BMMethodArg"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMMethodArg"><span class="hs-identifier hs-var">BMMethodArg</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span><span>
+</span><span id="line-78"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="BMMethodHandleArg"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMMethodHandleArg"><span class="hs-identifier hs-var">BMMethodHandleArg</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodHandleEntry"><span class="hs-identifier hs-type">MethodHandleEntry</span></a></span><span>
+</span><span id="line-79"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679448593"><span id="local-6989586621679448605"><span id="local-6989586621679448608"><span class="annot"><span class="annottext">Int -&gt; BootstrapArgument -&gt; ShowS
+[BootstrapArgument] -&gt; ShowS
+BootstrapArgument -&gt; String
+(Int -&gt; BootstrapArgument -&gt; ShowS)
+-&gt; (BootstrapArgument -&gt; String)
+-&gt; ([BootstrapArgument] -&gt; ShowS)
+-&gt; Show BootstrapArgument
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BootstrapArgument -&gt; ShowS
+showsPrec :: Int -&gt; BootstrapArgument -&gt; ShowS
+$cshow :: BootstrapArgument -&gt; String
+show :: BootstrapArgument -&gt; String
+$cshowList :: [BootstrapArgument] -&gt; ShowS
+showList :: [BootstrapArgument] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448611"><span id="local-6989586621679448620"><span class="annot"><span class="annottext">BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+(BootstrapArgument -&gt; BootstrapArgument -&gt; Bool)
+-&gt; (BootstrapArgument -&gt; BootstrapArgument -&gt; Bool)
+-&gt; Eq BootstrapArgument
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+== :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+$c/= :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+/= :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448625"><span id="local-6989586621679448633"><span id="local-6989586621679448636"><span id="local-6989586621679448639"><span id="local-6989586621679448642"><span id="local-6989586621679448645"><span id="local-6989586621679448648"><span class="annot"><span class="annottext">Eq BootstrapArgument
+Eq BootstrapArgument =&gt;
+(BootstrapArgument -&gt; BootstrapArgument -&gt; Ordering)
+-&gt; (BootstrapArgument -&gt; BootstrapArgument -&gt; Bool)
+-&gt; (BootstrapArgument -&gt; BootstrapArgument -&gt; Bool)
+-&gt; (BootstrapArgument -&gt; BootstrapArgument -&gt; Bool)
+-&gt; (BootstrapArgument -&gt; BootstrapArgument -&gt; Bool)
+-&gt; (BootstrapArgument -&gt; BootstrapArgument -&gt; BootstrapArgument)
+-&gt; (BootstrapArgument -&gt; BootstrapArgument -&gt; BootstrapArgument)
+-&gt; Ord BootstrapArgument
+BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+BootstrapArgument -&gt; BootstrapArgument -&gt; Ordering
+BootstrapArgument -&gt; BootstrapArgument -&gt; BootstrapArgument
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BootstrapArgument -&gt; BootstrapArgument -&gt; Ordering
+compare :: BootstrapArgument -&gt; BootstrapArgument -&gt; Ordering
+$c&lt; :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+&lt; :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+$c&lt;= :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+&lt;= :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+$c&gt; :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+&gt; :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+$c&gt;= :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+&gt;= :: BootstrapArgument -&gt; BootstrapArgument -&gt; Bool
+$cmax :: BootstrapArgument -&gt; BootstrapArgument -&gt; BootstrapArgument
+max :: BootstrapArgument -&gt; BootstrapArgument -&gt; BootstrapArgument
+$cmin :: BootstrapArgument -&gt; BootstrapArgument -&gt; BootstrapArgument
+min :: BootstrapArgument -&gt; BootstrapArgument -&gt; BootstrapArgument
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448653"><span id="local-6989586621679448661"><span id="local-6989586621679448668"><span id="local-6989586621679448670"><span id="local-6989586621679448672"><span id="local-6989586621679448677"><span id="local-6989586621679448682"><span id="local-6989586621679448685"><span id="local-6989586621679448688"><span id="local-6989586621679448691"><span id="local-6989586621679448694"><span id="local-6989586621679448697"><span id="local-6989586621679448702"><span id="local-6989586621679448707"><span class="annot"><span class="annottext">Typeable BootstrapArgument
+Typeable BootstrapArgument =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g)
+ -&gt; BootstrapArgument
+ -&gt; c BootstrapArgument)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c BootstrapArgument)
+-&gt; (BootstrapArgument -&gt; Constr)
+-&gt; (BootstrapArgument -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c BootstrapArgument))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c BootstrapArgument))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; BootstrapArgument -&gt; BootstrapArgument)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapArgument -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapArgument -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapArgument -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapArgument -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; BootstrapArgument -&gt; m BootstrapArgument)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; BootstrapArgument -&gt; m BootstrapArgument)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; BootstrapArgument -&gt; m BootstrapArgument)
+-&gt; Data BootstrapArgument
+BootstrapArgument -&gt; Constr
+BootstrapArgument -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; BootstrapArgument -&gt; BootstrapArgument
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapArgument -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapArgument -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapArgument -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapArgument -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapArgument -&gt; m BootstrapArgument
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapArgument -&gt; m BootstrapArgument
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c BootstrapArgument
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; BootstrapArgument -&gt; c BootstrapArgument
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c BootstrapArgument)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c BootstrapArgument)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; BootstrapArgument -&gt; c BootstrapArgument
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; BootstrapArgument -&gt; c BootstrapArgument
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c BootstrapArgument
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c BootstrapArgument
+$ctoConstr :: BootstrapArgument -&gt; Constr
+toConstr :: BootstrapArgument -&gt; Constr
+$cdataTypeOf :: BootstrapArgument -&gt; DataType
+dataTypeOf :: BootstrapArgument -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c BootstrapArgument)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c BootstrapArgument)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c BootstrapArgument)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c BootstrapArgument)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; BootstrapArgument -&gt; BootstrapArgument
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; BootstrapArgument -&gt; BootstrapArgument
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapArgument -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapArgument -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapArgument -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; BootstrapArgument -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapArgument -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapArgument -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapArgument -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; BootstrapArgument -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapArgument -&gt; m BootstrapArgument
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapArgument -&gt; m BootstrapArgument
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapArgument -&gt; m BootstrapArgument
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapArgument -&gt; m BootstrapArgument
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapArgument -&gt; m BootstrapArgument
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; BootstrapArgument -&gt; m BootstrapArgument
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679448713"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapArgument"><span class="hs-identifier hs-type">BootstrapArgument</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-82"></span><span>    </span><span id="local-6989586621679448721"><span class="annot"><span class="annottext">pretty :: forall ann. BootstrapArgument -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMClassArg"><span class="hs-identifier hs-type">BMClassArg</span></a></span><span> </span><span id="local-6989586621679448722"><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679448722"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassInfoType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ClassInfoType -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679448722"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMStringArg"><span class="hs-identifier hs-type">BMStringArg</span></a></span><span> </span><span id="local-6989586621679448723"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679448723"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679448723"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-84"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMIntArg"><span class="hs-identifier hs-type">BMIntArg</span></a></span><span> </span><span id="local-6989586621679448724"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679448724"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc ann
+forall ann. Int -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679448724"><span class="hs-identifier hs-var">i</span></a></span><span>
+</span><span id="line-85"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMMethodArg"><span class="hs-identifier hs-type">BMMethodArg</span></a></span><span> </span><span id="local-6989586621679448725"><span class="annot"><span class="annottext">MethodDescriptor
+</span><a href="#local-6989586621679448725"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MethodDescriptor -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodDescriptor -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodDescriptor
+</span><a href="#local-6989586621679448725"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-86"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMMethodHandleArg"><span class="hs-identifier hs-type">BMMethodHandleArg</span></a></span><span> </span><span id="local-6989586621679448726"><span class="annot"><span class="annottext">MethodHandleEntry
+</span><a href="#local-6989586621679448726"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MethodHandleEntry -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodHandleEntry -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodHandleEntry
+</span><a href="#local-6989586621679448726"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#bmArgToCPEntry"><span class="hs-identifier hs-type">bmArgToCPEntry</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BootstrapArgument"><span class="hs-identifier hs-type">BootstrapArgument</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#ConstantPoolEntry"><span class="hs-identifier hs-type">ConstantPoolEntry</span></a></span><span>
+</span><span id="line-89"></span><span id="bmArgToCPEntry"><span class="annot"><span class="annottext">bmArgToCPEntry :: BootstrapArgument -&gt; ConstantPoolEntry
+</span><a href="JVM.Data.Abstract.ConstantPool.html#bmArgToCPEntry"><span class="hs-identifier hs-var hs-var">bmArgToCPEntry</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMClassArg"><span class="hs-identifier hs-type">BMClassArg</span></a></span><span> </span><span id="local-6989586621679448727"><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679448727"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ClassInfoType -&gt; ConstantPoolEntry
+</span><a href="JVM.Data.Abstract.ConstantPool.html#CPClassEntry"><span class="hs-identifier hs-var">CPClassEntry</span></a></span><span> </span><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679448727"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-90"></span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#bmArgToCPEntry"><span class="hs-identifier hs-var">bmArgToCPEntry</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMStringArg"><span class="hs-identifier hs-type">BMStringArg</span></a></span><span> </span><span id="local-6989586621679448728"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679448728"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ConstantPoolEntry
+</span><a href="JVM.Data.Abstract.ConstantPool.html#CPStringEntry"><span class="hs-identifier hs-var">CPStringEntry</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679448728"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-91"></span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#bmArgToCPEntry"><span class="hs-identifier hs-var">bmArgToCPEntry</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMIntArg"><span class="hs-identifier hs-type">BMIntArg</span></a></span><span> </span><span id="local-6989586621679448729"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679448729"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; ConstantPoolEntry
+</span><a href="JVM.Data.Abstract.ConstantPool.html#CPIntegerEntry"><span class="hs-identifier hs-var">CPIntegerEntry</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679448729"><span class="hs-identifier hs-var">i</span></a></span><span>
+</span><span id="line-92"></span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#bmArgToCPEntry"><span class="hs-identifier hs-var">bmArgToCPEntry</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMMethodArg"><span class="hs-identifier hs-type">BMMethodArg</span></a></span><span> </span><span id="local-6989586621679448730"><span class="annot"><span class="annottext">MethodDescriptor
+</span><a href="#local-6989586621679448730"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MethodDescriptor -&gt; ConstantPoolEntry
+</span><a href="JVM.Data.Abstract.ConstantPool.html#CPMethodTypeEntry"><span class="hs-identifier hs-var">CPMethodTypeEntry</span></a></span><span> </span><span class="annot"><span class="annottext">MethodDescriptor
+</span><a href="#local-6989586621679448730"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-93"></span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#bmArgToCPEntry"><span class="hs-identifier hs-var">bmArgToCPEntry</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#BMMethodHandleArg"><span class="hs-identifier hs-type">BMMethodHandleArg</span></a></span><span> </span><span id="local-6989586621679448731"><span class="annot"><span class="annottext">MethodHandleEntry
+</span><a href="#local-6989586621679448731"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MethodHandleEntry -&gt; ConstantPoolEntry
+</span><a href="JVM.Data.Abstract.ConstantPool.html#CPMethodHandleEntry"><span class="hs-identifier hs-var">CPMethodHandleEntry</span></a></span><span> </span><span class="annot"><span class="annottext">MethodHandleEntry
+</span><a href="#local-6989586621679448731"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="hs-keyword">data</span><span> </span><span id="MethodHandleEntry"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodHandleEntry"><span class="hs-identifier hs-var">MethodHandleEntry</span></a></span></span><span>
+</span><span id="line-96"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="MHGetField"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHGetField"><span class="hs-identifier hs-var">MHGetField</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-type">FieldRef</span></a></span><span>
+</span><span id="line-97"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MHGetStatic"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHGetStatic"><span class="hs-identifier hs-var">MHGetStatic</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-type">FieldRef</span></a></span><span>
+</span><span id="line-98"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MHPutField"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHPutField"><span class="hs-identifier hs-var">MHPutField</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-type">FieldRef</span></a></span><span>
+</span><span id="line-99"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MHPutStatic"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHPutStatic"><span class="hs-identifier hs-var">MHPutStatic</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#FieldRef"><span class="hs-identifier hs-type">FieldRef</span></a></span><span>
+</span><span id="line-100"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MHInvokeVirtual"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHInvokeVirtual"><span class="hs-identifier hs-var">MHInvokeVirtual</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span><span>
+</span><span id="line-101"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MHNewInvokeSpecial"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHNewInvokeSpecial"><span class="hs-identifier hs-var">MHNewInvokeSpecial</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span><span>
+</span><span id="line-102"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MHInvokeStatic"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHInvokeStatic"><span class="hs-identifier hs-var">MHInvokeStatic</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span><span>
+</span><span id="line-103"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MHInvokeSpecial"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHInvokeSpecial"><span class="hs-identifier hs-var">MHInvokeSpecial</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span><span>
+</span><span id="line-104"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="MHInvokeInterface"><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHInvokeInterface"><span class="hs-identifier hs-var">MHInvokeInterface</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodRef"><span class="hs-identifier hs-type">MethodRef</span></a></span><span>
+</span><span id="line-105"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679448742"><span id="local-6989586621679448762"><span id="local-6989586621679448765"><span class="annot"><span class="annottext">Int -&gt; MethodHandleEntry -&gt; ShowS
+[MethodHandleEntry] -&gt; ShowS
+MethodHandleEntry -&gt; String
+(Int -&gt; MethodHandleEntry -&gt; ShowS)
+-&gt; (MethodHandleEntry -&gt; String)
+-&gt; ([MethodHandleEntry] -&gt; ShowS)
+-&gt; Show MethodHandleEntry
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MethodHandleEntry -&gt; ShowS
+showsPrec :: Int -&gt; MethodHandleEntry -&gt; ShowS
+$cshow :: MethodHandleEntry -&gt; String
+show :: MethodHandleEntry -&gt; String
+$cshowList :: [MethodHandleEntry] -&gt; ShowS
+showList :: [MethodHandleEntry] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448768"><span id="local-6989586621679448781"><span class="annot"><span class="annottext">MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+(MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool)
+-&gt; (MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool)
+-&gt; Eq MethodHandleEntry
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+== :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+$c/= :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+/= :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448786"><span id="local-6989586621679448802"><span id="local-6989586621679448805"><span id="local-6989586621679448808"><span id="local-6989586621679448811"><span id="local-6989586621679448814"><span id="local-6989586621679448817"><span class="annot"><span class="annottext">Eq MethodHandleEntry
+Eq MethodHandleEntry =&gt;
+(MethodHandleEntry -&gt; MethodHandleEntry -&gt; Ordering)
+-&gt; (MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool)
+-&gt; (MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool)
+-&gt; (MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool)
+-&gt; (MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool)
+-&gt; (MethodHandleEntry -&gt; MethodHandleEntry -&gt; MethodHandleEntry)
+-&gt; (MethodHandleEntry -&gt; MethodHandleEntry -&gt; MethodHandleEntry)
+-&gt; Ord MethodHandleEntry
+MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+MethodHandleEntry -&gt; MethodHandleEntry -&gt; Ordering
+MethodHandleEntry -&gt; MethodHandleEntry -&gt; MethodHandleEntry
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Ordering
+compare :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Ordering
+$c&lt; :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+&lt; :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+$c&lt;= :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+&lt;= :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+$c&gt; :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+&gt; :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+$c&gt;= :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+&gt;= :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; Bool
+$cmax :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; MethodHandleEntry
+max :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; MethodHandleEntry
+$cmin :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; MethodHandleEntry
+min :: MethodHandleEntry -&gt; MethodHandleEntry -&gt; MethodHandleEntry
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679448822"><span id="local-6989586621679448833"><span id="local-6989586621679448844"><span id="local-6989586621679448846"><span id="local-6989586621679448848"><span id="local-6989586621679448853"><span id="local-6989586621679448858"><span id="local-6989586621679448861"><span id="local-6989586621679448864"><span id="local-6989586621679448867"><span id="local-6989586621679448870"><span id="local-6989586621679448873"><span id="local-6989586621679448878"><span id="local-6989586621679448883"><span class="annot"><span class="annottext">Typeable MethodHandleEntry
+Typeable MethodHandleEntry =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g)
+ -&gt; MethodHandleEntry
+ -&gt; c MethodHandleEntry)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodHandleEntry)
+-&gt; (MethodHandleEntry -&gt; Constr)
+-&gt; (MethodHandleEntry -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodHandleEntry))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c MethodHandleEntry))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; MethodHandleEntry -&gt; MethodHandleEntry)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodHandleEntry -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodHandleEntry -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; MethodHandleEntry -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodHandleEntry -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodHandleEntry -&gt; m MethodHandleEntry)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodHandleEntry -&gt; m MethodHandleEntry)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodHandleEntry -&gt; m MethodHandleEntry)
+-&gt; Data MethodHandleEntry
+MethodHandleEntry -&gt; Constr
+MethodHandleEntry -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodHandleEntry -&gt; MethodHandleEntry
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodHandleEntry -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodHandleEntry -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodHandleEntry -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodHandleEntry -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodHandleEntry -&gt; m MethodHandleEntry
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodHandleEntry -&gt; m MethodHandleEntry
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodHandleEntry
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodHandleEntry -&gt; c MethodHandleEntry
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodHandleEntry)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodHandleEntry)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodHandleEntry -&gt; c MethodHandleEntry
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodHandleEntry -&gt; c MethodHandleEntry
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodHandleEntry
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodHandleEntry
+$ctoConstr :: MethodHandleEntry -&gt; Constr
+toConstr :: MethodHandleEntry -&gt; Constr
+$cdataTypeOf :: MethodHandleEntry -&gt; DataType
+dataTypeOf :: MethodHandleEntry -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodHandleEntry)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodHandleEntry)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodHandleEntry)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodHandleEntry)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodHandleEntry -&gt; MethodHandleEntry
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodHandleEntry -&gt; MethodHandleEntry
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodHandleEntry -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodHandleEntry -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodHandleEntry -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodHandleEntry -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodHandleEntry -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodHandleEntry -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodHandleEntry -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodHandleEntry -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodHandleEntry -&gt; m MethodHandleEntry
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodHandleEntry -&gt; m MethodHandleEntry
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodHandleEntry -&gt; m MethodHandleEntry
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodHandleEntry -&gt; m MethodHandleEntry
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodHandleEntry -&gt; m MethodHandleEntry
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodHandleEntry -&gt; m MethodHandleEntry
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679448889"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MethodHandleEntry"><span class="hs-identifier hs-type">MethodHandleEntry</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-108"></span><span>    </span><span id="local-6989586621679448909"><span class="annot"><span class="annottext">pretty :: forall ann. MethodHandleEntry -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHGetField"><span class="hs-identifier hs-type">MHGetField</span></a></span><span> </span><span id="local-6989586621679448910"><span class="annot"><span class="annottext">FieldRef
+</span><a href="#local-6989586621679448910"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;getField&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">FieldRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldRef
+</span><a href="#local-6989586621679448910"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-109"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHGetStatic"><span class="hs-identifier hs-type">MHGetStatic</span></a></span><span> </span><span id="local-6989586621679448911"><span class="annot"><span class="annottext">FieldRef
+</span><a href="#local-6989586621679448911"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;getStatic&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">FieldRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldRef
+</span><a href="#local-6989586621679448911"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-110"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHPutField"><span class="hs-identifier hs-type">MHPutField</span></a></span><span> </span><span id="local-6989586621679448912"><span class="annot"><span class="annottext">FieldRef
+</span><a href="#local-6989586621679448912"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;putField&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">FieldRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldRef
+</span><a href="#local-6989586621679448912"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-111"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHPutStatic"><span class="hs-identifier hs-type">MHPutStatic</span></a></span><span> </span><span id="local-6989586621679448913"><span class="annot"><span class="annottext">FieldRef
+</span><a href="#local-6989586621679448913"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;putStatic&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">FieldRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldRef
+</span><a href="#local-6989586621679448913"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-112"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHInvokeVirtual"><span class="hs-identifier hs-type">MHInvokeVirtual</span></a></span><span> </span><span id="local-6989586621679448914"><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448914"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;invokeVirtual&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448914"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-113"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHNewInvokeSpecial"><span class="hs-identifier hs-type">MHNewInvokeSpecial</span></a></span><span> </span><span id="local-6989586621679448915"><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448915"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;newInvokeSpecial&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448915"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-114"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHInvokeStatic"><span class="hs-identifier hs-type">MHInvokeStatic</span></a></span><span> </span><span id="local-6989586621679448916"><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448916"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;invokeStatic&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448916"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-115"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHInvokeSpecial"><span class="hs-identifier hs-type">MHInvokeSpecial</span></a></span><span> </span><span id="local-6989586621679448917"><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448917"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;invokeSpecial&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448917"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-116"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.ConstantPool.html#MHInvokeInterface"><span class="hs-identifier hs-type">MHInvokeInterface</span></a></span><span> </span><span id="local-6989586621679448918"><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448918"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;invokeInterface&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall ann. Doc ann -&gt; Doc ann -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#%3C%2B%3E"><span class="hs-operator hs-var">&lt;+&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. MethodRef -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">MethodRef
+</span><a href="#local-6989586621679448918"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-117"></span></pre></body></html>

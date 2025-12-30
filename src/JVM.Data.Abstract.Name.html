@@ -1,0 +1,869 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679446271"><span id="local-6989586621679446272"><span id="local-6989586621679446273"><span id="local-6989586621679446274"><span id="local-6989586621679446275"><span id="local-6989586621679446276"></span></span></span></span></span></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html"><span class="hs-identifier">JVM.Data.Abstract.Name</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Data</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.String</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">IsString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">fromString</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Pretty.html"><span class="hs-identifier">JVM.Data.Pretty</span></a></span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="annot"><span class="hs-comment">{- | A JVM package name
+This is defined as a potentially empty list of identifiers, which would be separated by dots in the source code
+-}</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">newtype</span><span> </span><span id="PackageName"><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-var">PackageName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PackageName"><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-var">PackageName</span></a></span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679446301"><span id="local-6989586621679446308"><span id="local-6989586621679446312"><span class="annot"><span class="annottext">Int -&gt; PackageName -&gt; ShowS
+[PackageName] -&gt; ShowS
+PackageName -&gt; String
+(Int -&gt; PackageName -&gt; ShowS)
+-&gt; (PackageName -&gt; String)
+-&gt; ([PackageName] -&gt; ShowS)
+-&gt; Show PackageName
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PackageName -&gt; ShowS
+showsPrec :: Int -&gt; PackageName -&gt; ShowS
+$cshow :: PackageName -&gt; String
+show :: PackageName -&gt; String
+$cshowList :: [PackageName] -&gt; ShowS
+showList :: [PackageName] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446318"><span id="local-6989586621679446323"><span class="annot"><span class="annottext">PackageName -&gt; PackageName -&gt; Bool
+(PackageName -&gt; PackageName -&gt; Bool)
+-&gt; (PackageName -&gt; PackageName -&gt; Bool) -&gt; Eq PackageName
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PackageName -&gt; PackageName -&gt; Bool
+== :: PackageName -&gt; PackageName -&gt; Bool
+$c/= :: PackageName -&gt; PackageName -&gt; Bool
+/= :: PackageName -&gt; PackageName -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446332"><span id="local-6989586621679446338"><span id="local-6989586621679446343"><span id="local-6989586621679446348"><span id="local-6989586621679446353"><span id="local-6989586621679446358"><span id="local-6989586621679446363"><span class="annot"><span class="annottext">Eq PackageName
+Eq PackageName =&gt;
+(PackageName -&gt; PackageName -&gt; Ordering)
+-&gt; (PackageName -&gt; PackageName -&gt; Bool)
+-&gt; (PackageName -&gt; PackageName -&gt; Bool)
+-&gt; (PackageName -&gt; PackageName -&gt; Bool)
+-&gt; (PackageName -&gt; PackageName -&gt; Bool)
+-&gt; (PackageName -&gt; PackageName -&gt; PackageName)
+-&gt; (PackageName -&gt; PackageName -&gt; PackageName)
+-&gt; Ord PackageName
+PackageName -&gt; PackageName -&gt; Bool
+PackageName -&gt; PackageName -&gt; Ordering
+PackageName -&gt; PackageName -&gt; PackageName
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: PackageName -&gt; PackageName -&gt; Ordering
+compare :: PackageName -&gt; PackageName -&gt; Ordering
+$c&lt; :: PackageName -&gt; PackageName -&gt; Bool
+&lt; :: PackageName -&gt; PackageName -&gt; Bool
+$c&lt;= :: PackageName -&gt; PackageName -&gt; Bool
+&lt;= :: PackageName -&gt; PackageName -&gt; Bool
+$c&gt; :: PackageName -&gt; PackageName -&gt; Bool
+&gt; :: PackageName -&gt; PackageName -&gt; Bool
+$c&gt;= :: PackageName -&gt; PackageName -&gt; Bool
+&gt;= :: PackageName -&gt; PackageName -&gt; Bool
+$cmax :: PackageName -&gt; PackageName -&gt; PackageName
+max :: PackageName -&gt; PackageName -&gt; PackageName
+$cmin :: PackageName -&gt; PackageName -&gt; PackageName
+min :: PackageName -&gt; PackageName -&gt; PackageName
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446379"><span id="local-6989586621679446384"><span id="local-6989586621679446388"><span id="local-6989586621679446390"><span id="local-6989586621679446392"><span id="local-6989586621679446398"><span id="local-6989586621679446403"><span id="local-6989586621679446406"><span id="local-6989586621679446409"><span id="local-6989586621679446412"><span id="local-6989586621679446415"><span id="local-6989586621679446418"><span id="local-6989586621679446423"><span id="local-6989586621679446428"><span class="annot"><span class="annottext">Typeable PackageName
+Typeable PackageName =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; PackageName -&gt; c PackageName)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c PackageName)
+-&gt; (PackageName -&gt; Constr)
+-&gt; (PackageName -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c PackageName))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c PackageName))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; PackageName -&gt; PackageName)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; PackageName -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; PackageName -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; PackageName -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; PackageName -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName)
+-&gt; Data PackageName
+PackageName -&gt; Constr
+PackageName -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; PackageName -&gt; PackageName
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; PackageName -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; PackageName -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; PackageName -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; PackageName -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c PackageName
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; PackageName -&gt; c PackageName
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c PackageName)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c PackageName)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; PackageName -&gt; c PackageName
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; PackageName -&gt; c PackageName
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c PackageName
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c PackageName
+$ctoConstr :: PackageName -&gt; Constr
+toConstr :: PackageName -&gt; Constr
+$cdataTypeOf :: PackageName -&gt; DataType
+dataTypeOf :: PackageName -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c PackageName)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c PackageName)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c PackageName)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c PackageName)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; PackageName -&gt; PackageName
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; PackageName -&gt; PackageName
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; PackageName -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; PackageName -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; PackageName -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; PackageName -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; PackageName -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; PackageName -&gt; [u]
+$cgmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; PackageName -&gt; u
+gmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; PackageName -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; PackageName -&gt; m PackageName
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">{- | Parse a 'PackageName' from a 'Text'
+
+&gt;&gt;&gt; parsePackageName &quot;java.lang&quot;
+PackageName [&quot;java&quot;,&quot;lang&quot;]
+
+&gt;&gt;&gt; parsePackageName &quot;&quot;
+PackageName []
+-}</span></span><span>
+</span><span id="line-22"></span><span class="annot"><a href="JVM.Data.Abstract.Name.html#parsePackageName"><span class="hs-identifier hs-type">parsePackageName</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-type">PackageName</span></a></span><span>
+</span><span id="line-23"></span><span id="parsePackageName"><span class="annot"><span class="annottext">parsePackageName :: Text -&gt; PackageName
+</span><a href="JVM.Data.Abstract.Name.html#parsePackageName"><span class="hs-identifier hs-var hs-var">parsePackageName</span></a></span></span><span> </span><span id="local-6989586621679446439"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446439"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; [Text]
+Text -&gt; Text -&gt; [Text]
+</span><span class="hs-identifier hs-var">T.splitOn</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446439"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; PackageName
+</span><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-var">PackageName</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-25"></span><span>    </span><span id="local-6989586621679446441"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446441"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; PackageName
+</span><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-var">PackageName</span></a></span><span> </span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446441"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="annot"><span class="hs-comment">-- | A JVM class name</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">newtype</span><span> </span><span id="ClassName"><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-var">ClassName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ClassName"><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-var">ClassName</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679446444"><span id="local-6989586621679446448"><span id="local-6989586621679446452"><span class="annot"><span class="annottext">Int -&gt; ClassName -&gt; ShowS
+[ClassName] -&gt; ShowS
+ClassName -&gt; String
+(Int -&gt; ClassName -&gt; ShowS)
+-&gt; (ClassName -&gt; String)
+-&gt; ([ClassName] -&gt; ShowS)
+-&gt; Show ClassName
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ClassName -&gt; ShowS
+showsPrec :: Int -&gt; ClassName -&gt; ShowS
+$cshow :: ClassName -&gt; String
+show :: ClassName -&gt; String
+$cshowList :: [ClassName] -&gt; ShowS
+showList :: [ClassName] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446455"><span id="local-6989586621679446459"><span class="annot"><span class="annottext">ClassName -&gt; ClassName -&gt; Bool
+(ClassName -&gt; ClassName -&gt; Bool)
+-&gt; (ClassName -&gt; ClassName -&gt; Bool) -&gt; Eq ClassName
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ClassName -&gt; ClassName -&gt; Bool
+== :: ClassName -&gt; ClassName -&gt; Bool
+$c/= :: ClassName -&gt; ClassName -&gt; Bool
+/= :: ClassName -&gt; ClassName -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446466"><span id="local-6989586621679446470"><span id="local-6989586621679446474"><span id="local-6989586621679446478"><span id="local-6989586621679446482"><span id="local-6989586621679446486"><span id="local-6989586621679446490"><span class="annot"><span class="annottext">Eq ClassName
+Eq ClassName =&gt;
+(ClassName -&gt; ClassName -&gt; Ordering)
+-&gt; (ClassName -&gt; ClassName -&gt; Bool)
+-&gt; (ClassName -&gt; ClassName -&gt; Bool)
+-&gt; (ClassName -&gt; ClassName -&gt; Bool)
+-&gt; (ClassName -&gt; ClassName -&gt; Bool)
+-&gt; (ClassName -&gt; ClassName -&gt; ClassName)
+-&gt; (ClassName -&gt; ClassName -&gt; ClassName)
+-&gt; Ord ClassName
+ClassName -&gt; ClassName -&gt; Bool
+ClassName -&gt; ClassName -&gt; Ordering
+ClassName -&gt; ClassName -&gt; ClassName
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: ClassName -&gt; ClassName -&gt; Ordering
+compare :: ClassName -&gt; ClassName -&gt; Ordering
+$c&lt; :: ClassName -&gt; ClassName -&gt; Bool
+&lt; :: ClassName -&gt; ClassName -&gt; Bool
+$c&lt;= :: ClassName -&gt; ClassName -&gt; Bool
+&lt;= :: ClassName -&gt; ClassName -&gt; Bool
+$c&gt; :: ClassName -&gt; ClassName -&gt; Bool
+&gt; :: ClassName -&gt; ClassName -&gt; Bool
+$c&gt;= :: ClassName -&gt; ClassName -&gt; Bool
+&gt;= :: ClassName -&gt; ClassName -&gt; Bool
+$cmax :: ClassName -&gt; ClassName -&gt; ClassName
+max :: ClassName -&gt; ClassName -&gt; ClassName
+$cmin :: ClassName -&gt; ClassName -&gt; ClassName
+min :: ClassName -&gt; ClassName -&gt; ClassName
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446497"><span id="local-6989586621679446500"><span id="local-6989586621679446503"><span id="local-6989586621679446505"><span id="local-6989586621679446507"><span id="local-6989586621679446513"><span id="local-6989586621679446518"><span id="local-6989586621679446521"><span id="local-6989586621679446524"><span id="local-6989586621679446527"><span id="local-6989586621679446530"><span id="local-6989586621679446533"><span id="local-6989586621679446538"><span id="local-6989586621679446543"><span class="annot"><span class="annottext">Typeable ClassName
+Typeable ClassName =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; ClassName -&gt; c ClassName)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassName)
+-&gt; (ClassName -&gt; Constr)
+-&gt; (ClassName -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassName))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c ClassName))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; ClassName -&gt; ClassName)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassName -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassName -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassName -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassName -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName)
+-&gt; Data ClassName
+ClassName -&gt; Constr
+ClassName -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b) -&gt; ClassName -&gt; ClassName
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassName -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassName -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassName -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassName -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassName
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ClassName -&gt; c ClassName
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassName)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c ClassName)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ClassName -&gt; c ClassName
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ClassName -&gt; c ClassName
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassName
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ClassName
+$ctoConstr :: ClassName -&gt; Constr
+toConstr :: ClassName -&gt; Constr
+$cdataTypeOf :: ClassName -&gt; DataType
+dataTypeOf :: ClassName -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassName)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ClassName)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c ClassName)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c ClassName)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; ClassName -&gt; ClassName
+gmapT :: (forall b. Data b =&gt; b -&gt; b) -&gt; ClassName -&gt; ClassName
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassName -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassName -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassName -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ClassName -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassName -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ClassName -&gt; [u]
+$cgmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassName -&gt; u
+gmapQi :: forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ClassName -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d) -&gt; ClassName -&gt; m ClassName
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><span class="hs-comment">-- | Parse a 'ClassName' from a 'Text'</span></span><span>
+</span><span id="line-31"></span><span class="annot"><a href="JVM.Data.Abstract.Name.html#parseClassName"><span class="hs-identifier hs-type">parseClassName</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-type">ClassName</span></a></span><span>
+</span><span id="line-32"></span><span id="parseClassName"><span class="annot"><span class="annottext">parseClassName :: Text -&gt; ClassName
+</span><a href="JVM.Data.Abstract.Name.html#parseClassName"><span class="hs-identifier hs-var hs-var">parseClassName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ClassName
+</span><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-var">ClassName</span></a></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">data</span><span> </span><span id="QualifiedClassName"><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-var">QualifiedClassName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QualifiedClassName"><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-var">QualifiedClassName</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-type">PackageName</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-type">ClassName</span></a></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679446550"><span id="local-6989586621679446555"><span id="local-6989586621679446559"><span class="annot"><span class="annottext">Int -&gt; QualifiedClassName -&gt; ShowS
+[QualifiedClassName] -&gt; ShowS
+QualifiedClassName -&gt; String
+(Int -&gt; QualifiedClassName -&gt; ShowS)
+-&gt; (QualifiedClassName -&gt; String)
+-&gt; ([QualifiedClassName] -&gt; ShowS)
+-&gt; Show QualifiedClassName
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; QualifiedClassName -&gt; ShowS
+showsPrec :: Int -&gt; QualifiedClassName -&gt; ShowS
+$cshow :: QualifiedClassName -&gt; String
+show :: QualifiedClassName -&gt; String
+$cshowList :: [QualifiedClassName] -&gt; ShowS
+showList :: [QualifiedClassName] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446562"><span id="local-6989586621679446566"><span class="annot"><span class="annottext">QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+(QualifiedClassName -&gt; QualifiedClassName -&gt; Bool)
+-&gt; (QualifiedClassName -&gt; QualifiedClassName -&gt; Bool)
+-&gt; Eq QualifiedClassName
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+== :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+$c/= :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+/= :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446572"><span id="local-6989586621679446576"><span id="local-6989586621679446580"><span id="local-6989586621679446584"><span id="local-6989586621679446587"><span id="local-6989586621679446590"><span id="local-6989586621679446593"><span class="annot"><span class="annottext">Eq QualifiedClassName
+Eq QualifiedClassName =&gt;
+(QualifiedClassName -&gt; QualifiedClassName -&gt; Ordering)
+-&gt; (QualifiedClassName -&gt; QualifiedClassName -&gt; Bool)
+-&gt; (QualifiedClassName -&gt; QualifiedClassName -&gt; Bool)
+-&gt; (QualifiedClassName -&gt; QualifiedClassName -&gt; Bool)
+-&gt; (QualifiedClassName -&gt; QualifiedClassName -&gt; Bool)
+-&gt; (QualifiedClassName -&gt; QualifiedClassName -&gt; QualifiedClassName)
+-&gt; (QualifiedClassName -&gt; QualifiedClassName -&gt; QualifiedClassName)
+-&gt; Ord QualifiedClassName
+QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+QualifiedClassName -&gt; QualifiedClassName -&gt; Ordering
+QualifiedClassName -&gt; QualifiedClassName -&gt; QualifiedClassName
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: QualifiedClassName -&gt; QualifiedClassName -&gt; Ordering
+compare :: QualifiedClassName -&gt; QualifiedClassName -&gt; Ordering
+$c&lt; :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+&lt; :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+$c&lt;= :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+&lt;= :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+$c&gt; :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+&gt; :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+$c&gt;= :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+&gt;= :: QualifiedClassName -&gt; QualifiedClassName -&gt; Bool
+$cmax :: QualifiedClassName -&gt; QualifiedClassName -&gt; QualifiedClassName
+max :: QualifiedClassName -&gt; QualifiedClassName -&gt; QualifiedClassName
+$cmin :: QualifiedClassName -&gt; QualifiedClassName -&gt; QualifiedClassName
+min :: QualifiedClassName -&gt; QualifiedClassName -&gt; QualifiedClassName
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679446598"><span id="local-6989586621679446602"><span id="local-6989586621679446606"><span id="local-6989586621679446608"><span id="local-6989586621679446610"><span id="local-6989586621679446616"><span id="local-6989586621679446621"><span id="local-6989586621679446624"><span id="local-6989586621679446627"><span id="local-6989586621679446630"><span id="local-6989586621679446633"><span id="local-6989586621679446636"><span id="local-6989586621679446641"><span id="local-6989586621679446646"><span class="annot"><span class="annottext">Typeable QualifiedClassName
+Typeable QualifiedClassName =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g)
+ -&gt; QualifiedClassName
+ -&gt; c QualifiedClassName)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c QualifiedClassName)
+-&gt; (QualifiedClassName -&gt; Constr)
+-&gt; (QualifiedClassName -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c QualifiedClassName))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c QualifiedClassName))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; QualifiedClassName -&gt; QualifiedClassName)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; QualifiedClassName -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; QualifiedClassName -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; QualifiedClassName -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; QualifiedClassName -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; QualifiedClassName -&gt; m QualifiedClassName)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; QualifiedClassName -&gt; m QualifiedClassName)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; QualifiedClassName -&gt; m QualifiedClassName)
+-&gt; Data QualifiedClassName
+QualifiedClassName -&gt; Constr
+QualifiedClassName -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; QualifiedClassName -&gt; QualifiedClassName
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; QualifiedClassName -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; QualifiedClassName -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; QualifiedClassName -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; QualifiedClassName -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; QualifiedClassName -&gt; m QualifiedClassName
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; QualifiedClassName -&gt; m QualifiedClassName
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c QualifiedClassName
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; QualifiedClassName
+-&gt; c QualifiedClassName
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c QualifiedClassName)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c QualifiedClassName)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; QualifiedClassName
+-&gt; c QualifiedClassName
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g)
+-&gt; QualifiedClassName
+-&gt; c QualifiedClassName
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c QualifiedClassName
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c QualifiedClassName
+$ctoConstr :: QualifiedClassName -&gt; Constr
+toConstr :: QualifiedClassName -&gt; Constr
+$cdataTypeOf :: QualifiedClassName -&gt; DataType
+dataTypeOf :: QualifiedClassName -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c QualifiedClassName)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c QualifiedClassName)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c QualifiedClassName)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c QualifiedClassName)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; QualifiedClassName -&gt; QualifiedClassName
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; QualifiedClassName -&gt; QualifiedClassName
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; QualifiedClassName -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; QualifiedClassName -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; QualifiedClassName -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; QualifiedClassName -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; QualifiedClassName -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; QualifiedClassName -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; QualifiedClassName -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; QualifiedClassName -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; QualifiedClassName -&gt; m QualifiedClassName
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; QualifiedClassName -&gt; m QualifiedClassName
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; QualifiedClassName -&gt; m QualifiedClassName
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; QualifiedClassName -&gt; m QualifiedClassName
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; QualifiedClassName -&gt; m QualifiedClassName
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; QualifiedClassName -&gt; m QualifiedClassName
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679446652"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-37"></span><span>    </span><span id="local-6989586621679446661"><span class="annot"><span class="annottext">pretty :: forall ann. QualifiedClassName -&gt; Doc ann
+</span><a href="#local-6989586621679446661"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-type">PackageName</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-type">ClassName</span></a></span><span> </span><span id="local-6989586621679446663"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446663"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446663"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-type">PackageName</span></a></span><span> </span><span id="local-6989586621679446664"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446664"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-type">ClassName</span></a></span><span> </span><span id="local-6989586621679446665"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446665"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. Text -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Doc ann) -&gt; Text -&gt; Doc ann
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; Text
+</span><span class="hs-identifier hs-var">T.intercalate</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446664"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446665"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span>    </span><span id="local-6989586621679446670"><span class="annot"><span class="annottext">fromString :: String -&gt; QualifiedClassName
+</span><span class="hs-identifier hs-var hs-var hs-var">fromString</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; QualifiedClassName
+</span><a href="JVM.Data.Abstract.Name.html#parseQualifiedClassName"><span class="hs-identifier hs-var">parseQualifiedClassName</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; QualifiedClassName)
+-&gt; (String -&gt; Text) -&gt; String -&gt; QualifiedClassName
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">{- | Parse a 'QualifiedClassName' from a 'Text'
+
+&gt;&gt;&gt; parseQualifiedClassName &quot;java.lang.Object&quot;
+QualifiedClassName (PackageName [&quot;java&quot;,&quot;lang&quot;]) (ClassName &quot;Object&quot;)
+
+&gt;&gt;&gt; parseQualifiedClassName &quot;Object&quot;
+QualifiedClassName (PackageName []) (ClassName &quot;Object&quot;)
+
+This function is lenient and will accept invalid class names:
+&gt;&gt;&gt; parseQualifiedClassName &quot;123invalid&quot;
+QualifiedClassName (PackageName []) (ClassName &quot;123invalid&quot;)
+-}</span></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="JVM.Data.Abstract.Name.html#parseQualifiedClassName"><span class="hs-identifier hs-type">parseQualifiedClassName</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span>
+</span><span id="line-56"></span><span id="parseQualifiedClassName"><span class="annot"><span class="annottext">parseQualifiedClassName :: Text -&gt; QualifiedClassName
+</span><a href="JVM.Data.Abstract.Name.html#parseQualifiedClassName"><span class="hs-identifier hs-var hs-var">parseQualifiedClassName</span></a></span></span><span> </span><span id="local-6989586621679446674"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446674"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; [Text]
+Text -&gt; Text -&gt; [Text]
+</span><span class="hs-identifier hs-var">T.splitOn</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446674"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">[</span><span id="local-6989586621679446675"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446675"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">PackageName -&gt; ClassName -&gt; QualifiedClassName
+</span><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-var">QualifiedClassName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Text] -&gt; PackageName
+</span><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-var">PackageName</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; ClassName
+</span><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-var">ClassName</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446675"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>    </span><span id="local-6989586621679446676"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446676"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">PackageName -&gt; ClassName -&gt; QualifiedClassName
+</span><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-var">QualifiedClassName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Text] -&gt; PackageName
+</span><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-var">PackageName</span></a></span><span> </span><span class="annot"><span class="annottext">([Text] -&gt; PackageName) -&gt; [Text] -&gt; PackageName
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text]
+forall a. HasCallStack =&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">init</span></span><span> </span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446676"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; ClassName
+</span><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-var">ClassName</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; ClassName) -&gt; Text -&gt; ClassName
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; Text
+forall a. HasCallStack =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">last</span></span><span> </span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446676"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="annot"><span class="hs-comment">{- | Convert a 'QualifiedClassName' to a 'Text' that can be used as an internal JVM name
+
+&gt;&gt;&gt; toInternalName (QualifiedClassName (PackageName [&quot;java&quot;,&quot;lang&quot;]) (ClassName &quot;Object&quot;))
+&quot;java/lang/Object&quot;
+-}</span></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="JVM.Data.Abstract.Name.html#toInternalName"><span class="hs-identifier hs-type">toInternalName</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-66"></span><span id="toInternalName"><span class="annot"><span class="annottext">toInternalName :: QualifiedClassName -&gt; Text
+</span><a href="JVM.Data.Abstract.Name.html#toInternalName"><span class="hs-identifier hs-var hs-var">toInternalName</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-type">PackageName</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-type">ClassName</span></a></span><span> </span><span id="local-6989586621679446680"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446680"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446680"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="JVM.Data.Abstract.Name.html#toInternalName"><span class="hs-identifier hs-var">toInternalName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-type">PackageName</span></a></span><span> </span><span id="local-6989586621679446681"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446681"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-type">ClassName</span></a></span><span> </span><span id="local-6989586621679446682"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446682"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; Text
+</span><span class="hs-identifier hs-var">T.intercalate</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;/&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446681"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446682"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="annot"><span class="hs-comment">{- | Convert a 'QualifiedClassName' to a 'FilePath' that one would expect the class file to be in
+&gt;&gt;&gt; suitableFilePath &quot;java.lang.Object&quot;
+&quot;java/lang/Object.class&quot;
+
+&gt;&gt;&gt; suitableFilePath &quot;Object&quot;
+&quot;Object.class&quot;
+-}</span></span><span>
+</span><span id="line-76"></span><span class="annot"><a href="JVM.Data.Abstract.Name.html#suitableFilePath"><span class="hs-identifier hs-type">suitableFilePath</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span>
+</span><span id="line-77"></span><span id="suitableFilePath"><span class="annot"><span class="annottext">suitableFilePath :: QualifiedClassName -&gt; String
+</span><a href="JVM.Data.Abstract.Name.html#suitableFilePath"><span class="hs-identifier hs-var hs-var">suitableFilePath</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#QualifiedClassName"><span class="hs-identifier hs-type">QualifiedClassName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#PackageName"><span class="hs-identifier hs-type">PackageName</span></a></span><span> </span><span id="local-6989586621679446685"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446685"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#ClassName"><span class="hs-identifier hs-type">ClassName</span></a></span><span> </span><span id="local-6989586621679446686"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446686"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">T.unpack</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; String) -&gt; Text -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; Text
+</span><span class="hs-identifier hs-var">T.intercalate</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;/&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679446685"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679446686"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;.class&quot;</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span></pre></body></html>

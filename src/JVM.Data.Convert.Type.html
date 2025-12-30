@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Convert.Type.html"><span class="hs-identifier">JVM.Data.Convert.Type</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Name.html"><span class="hs-identifier">JVM.Data.Abstract.Name</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Name.html#toInternalName"><span class="hs-identifier">toInternalName</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html"><span class="hs-identifier">JVM.Data.Abstract.Type</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Abs</span></span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="annot"><a href="JVM.Data.Convert.Type.html#baseTypeDescriptor"><span class="hs-identifier hs-type">baseTypeDescriptor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#PrimitiveType"><span class="hs-identifier hs-type">Abs.PrimitiveType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-10"></span><span id="baseTypeDescriptor"><span class="annot"><span class="annottext">baseTypeDescriptor :: PrimitiveType -&gt; Text
+</span><a href="JVM.Data.Convert.Type.html#baseTypeDescriptor"><span class="hs-identifier hs-var hs-var">baseTypeDescriptor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="JVM.Data.Abstract.Type.html#Byte"><span class="hs-identifier hs-var">Abs.Byte</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;B&quot;</span></span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="JVM.Data.Abstract.Type.html#Char"><span class="hs-identifier hs-var">Abs.Char</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;C&quot;</span></span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="JVM.Data.Abstract.Type.html#Double"><span class="hs-identifier hs-var">Abs.Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;D&quot;</span></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="JVM.Data.Abstract.Type.html#Float"><span class="hs-identifier hs-var">Abs.Float</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;F&quot;</span></span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="JVM.Data.Abstract.Type.html#Int"><span class="hs-identifier hs-var">Abs.Int</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;I&quot;</span></span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="JVM.Data.Abstract.Type.html#Long"><span class="hs-identifier hs-var">Abs.Long</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;J&quot;</span></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="JVM.Data.Abstract.Type.html#Short"><span class="hs-identifier hs-var">Abs.Short</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;S&quot;</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="JVM.Data.Abstract.Type.html#Boolean"><span class="hs-identifier hs-var">Abs.Boolean</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Z&quot;</span></span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><a href="JVM.Data.Convert.Type.html#fieldTypeDescriptor"><span class="hs-identifier hs-type">fieldTypeDescriptor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier hs-type">Abs.FieldType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-21"></span><span id="fieldTypeDescriptor"><span class="annot"><span class="annottext">fieldTypeDescriptor :: FieldType -&gt; Text
+</span><a href="JVM.Data.Convert.Type.html#fieldTypeDescriptor"><span class="hs-identifier hs-var hs-var">fieldTypeDescriptor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#PrimitiveFieldType"><span class="hs-identifier hs-type">Abs.PrimitiveFieldType</span></a></span><span> </span><span id="local-6989586621679447424"><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="#local-6989586621679447424"><span class="hs-identifier hs-var">base</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">PrimitiveType -&gt; Text
+</span><a href="JVM.Data.Convert.Type.html#baseTypeDescriptor"><span class="hs-identifier hs-var">baseTypeDescriptor</span></a></span><span> </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="#local-6989586621679447424"><span class="hs-identifier hs-var">base</span></a></span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ObjectFieldType"><span class="hs-identifier hs-type">Abs.ObjectFieldType</span></a></span><span> </span><span id="local-6989586621679447426"><span class="annot"><span class="annottext">QualifiedClassName
+</span><a href="#local-6989586621679447426"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;L&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName -&gt; Text
+</span><a href="JVM.Data.Abstract.Name.html#toInternalName"><span class="hs-identifier hs-var">toInternalName</span></a></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName
+</span><a href="#local-6989586621679447426"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;;&quot;</span></span><span>
+</span><span id="line-24"></span><span>    </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ArrayFieldType"><span class="hs-identifier hs-type">Abs.ArrayFieldType</span></a></span><span> </span><span id="local-6989586621679447428"><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679447428"><span class="hs-identifier hs-var">fieldType</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;[&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">FieldType -&gt; Text
+</span><a href="JVM.Data.Convert.Type.html#fieldTypeDescriptor"><span class="hs-identifier hs-var">fieldTypeDescriptor</span></a></span><span> </span><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679447428"><span class="hs-identifier hs-var">fieldType</span></a></span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="annot"><a href="JVM.Data.Convert.Type.html#classInfoTypeDescriptor"><span class="hs-identifier hs-type">classInfoTypeDescriptor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier hs-type">Abs.ClassInfoType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-27"></span><span id="classInfoTypeDescriptor"><span class="annot"><span class="annottext">classInfoTypeDescriptor :: ClassInfoType -&gt; Text
+</span><a href="JVM.Data.Convert.Type.html#classInfoTypeDescriptor"><span class="hs-identifier hs-var hs-var">classInfoTypeDescriptor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ClassInfoType"><span class="hs-identifier hs-type">Abs.ClassInfoType</span></a></span><span> </span><span id="local-6989586621679447431"><span class="annot"><span class="annottext">QualifiedClassName
+</span><a href="#local-6989586621679447431"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QualifiedClassName -&gt; Text
+</span><a href="JVM.Data.Abstract.Name.html#toInternalName"><span class="hs-identifier hs-var">toInternalName</span></a></span><span> </span><span class="annot"><span class="annottext">QualifiedClassName
+</span><a href="#local-6989586621679447431"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-29"></span><span>    </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#ArrayClassInfoType"><span class="hs-identifier hs-type">Abs.ArrayClassInfoType</span></a></span><span> </span><span id="local-6989586621679447433"><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679447433"><span class="hs-identifier hs-var">classInfoType</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;[&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">ClassInfoType -&gt; Text
+</span><a href="JVM.Data.Convert.Type.html#classInfoTypeDescriptor"><span class="hs-identifier hs-var">classInfoTypeDescriptor</span></a></span><span> </span><span class="annot"><span class="annottext">ClassInfoType
+</span><a href="#local-6989586621679447433"><span class="hs-identifier hs-var">classInfoType</span></a></span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#PrimitiveClassInfoType"><span class="hs-identifier hs-type">Abs.PrimitiveClassInfoType</span></a></span><span> </span><span id="local-6989586621679447435"><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="#local-6989586621679447435"><span class="hs-identifier hs-var">base</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">PrimitiveType -&gt; Text
+</span><a href="JVM.Data.Convert.Type.html#baseTypeDescriptor"><span class="hs-identifier hs-var">baseTypeDescriptor</span></a></span><span> </span><span class="annot"><span class="annottext">PrimitiveType
+</span><a href="#local-6989586621679447435"><span class="hs-identifier hs-var">base</span></a></span><span>
+</span><span id="line-31"></span></pre></body></html>

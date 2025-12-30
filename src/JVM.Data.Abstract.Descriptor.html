@@ -1,0 +1,595 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679447515"><span id="local-6989586621679447516"><span id="local-6989586621679447517"><span id="local-6989586621679447518"><span id="local-6989586621679447519"></span></span></span></span></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html"><span class="hs-identifier">JVM.Data.Abstract.Descriptor</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Data</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html"><span class="hs-identifier">JVM.Data.Abstract.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier">FieldType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="JVM.Data.Pretty.html"><span class="hs-identifier">JVM.Data.Pretty</span></a></span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">data</span><span> </span><span id="MethodDescriptor"><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-var">MethodDescriptor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MethodDescriptor"><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-var">MethodDescriptor</span></a></span></span><span>
+</span><span id="line-8"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="params"><span class="annot"><span class="annottext">MethodDescriptor -&gt; [FieldType]
+</span><a href="JVM.Data.Abstract.Descriptor.html#params"><span class="hs-identifier hs-var hs-var">params</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier hs-type">FieldType</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-9"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="returnDesc"><span class="annot"><span class="annottext">MethodDescriptor -&gt; ReturnDescriptor
+</span><a href="JVM.Data.Abstract.Descriptor.html#returnDesc"><span class="hs-identifier hs-var hs-var">returnDesc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#ReturnDescriptor"><span class="hs-identifier hs-type">ReturnDescriptor</span></a></span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679447528"><span id="local-6989586621679447537"><span id="local-6989586621679447541"><span class="annot"><span class="annottext">Int -&gt; MethodDescriptor -&gt; ShowS
+[MethodDescriptor] -&gt; ShowS
+MethodDescriptor -&gt; String
+(Int -&gt; MethodDescriptor -&gt; ShowS)
+-&gt; (MethodDescriptor -&gt; String)
+-&gt; ([MethodDescriptor] -&gt; ShowS)
+-&gt; Show MethodDescriptor
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MethodDescriptor -&gt; ShowS
+showsPrec :: Int -&gt; MethodDescriptor -&gt; ShowS
+$cshow :: MethodDescriptor -&gt; String
+show :: MethodDescriptor -&gt; String
+$cshowList :: [MethodDescriptor] -&gt; ShowS
+showList :: [MethodDescriptor] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679447547"><span id="local-6989586621679447554"><span class="annot"><span class="annottext">MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+(MethodDescriptor -&gt; MethodDescriptor -&gt; Bool)
+-&gt; (MethodDescriptor -&gt; MethodDescriptor -&gt; Bool)
+-&gt; Eq MethodDescriptor
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+== :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+$c/= :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+/= :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679447562"><span id="local-6989586621679447569"><span id="local-6989586621679447574"><span id="local-6989586621679447578"><span id="local-6989586621679447581"><span id="local-6989586621679447584"><span id="local-6989586621679447587"><span class="annot"><span class="annottext">Eq MethodDescriptor
+Eq MethodDescriptor =&gt;
+(MethodDescriptor -&gt; MethodDescriptor -&gt; Ordering)
+-&gt; (MethodDescriptor -&gt; MethodDescriptor -&gt; Bool)
+-&gt; (MethodDescriptor -&gt; MethodDescriptor -&gt; Bool)
+-&gt; (MethodDescriptor -&gt; MethodDescriptor -&gt; Bool)
+-&gt; (MethodDescriptor -&gt; MethodDescriptor -&gt; Bool)
+-&gt; (MethodDescriptor -&gt; MethodDescriptor -&gt; MethodDescriptor)
+-&gt; (MethodDescriptor -&gt; MethodDescriptor -&gt; MethodDescriptor)
+-&gt; Ord MethodDescriptor
+MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+MethodDescriptor -&gt; MethodDescriptor -&gt; Ordering
+MethodDescriptor -&gt; MethodDescriptor -&gt; MethodDescriptor
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: MethodDescriptor -&gt; MethodDescriptor -&gt; Ordering
+compare :: MethodDescriptor -&gt; MethodDescriptor -&gt; Ordering
+$c&lt; :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+&lt; :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+$c&lt;= :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+&lt;= :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+$c&gt; :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+&gt; :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+$c&gt;= :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+&gt;= :: MethodDescriptor -&gt; MethodDescriptor -&gt; Bool
+$cmax :: MethodDescriptor -&gt; MethodDescriptor -&gt; MethodDescriptor
+max :: MethodDescriptor -&gt; MethodDescriptor -&gt; MethodDescriptor
+$cmin :: MethodDescriptor -&gt; MethodDescriptor -&gt; MethodDescriptor
+min :: MethodDescriptor -&gt; MethodDescriptor -&gt; MethodDescriptor
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679447598"><span id="local-6989586621679447605"><span id="local-6989586621679447610"><span id="local-6989586621679447612"><span id="local-6989586621679447614"><span id="local-6989586621679447620"><span id="local-6989586621679447625"><span id="local-6989586621679447628"><span id="local-6989586621679447631"><span id="local-6989586621679447634"><span id="local-6989586621679447637"><span id="local-6989586621679447640"><span id="local-6989586621679447645"><span id="local-6989586621679447650"><span class="annot"><span class="annottext">Typeable MethodDescriptor
+Typeable MethodDescriptor =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; MethodDescriptor -&gt; c MethodDescriptor)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodDescriptor)
+-&gt; (MethodDescriptor -&gt; Constr)
+-&gt; (MethodDescriptor -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodDescriptor))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c MethodDescriptor))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; MethodDescriptor -&gt; MethodDescriptor)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodDescriptor -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodDescriptor -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; MethodDescriptor -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodDescriptor -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodDescriptor -&gt; m MethodDescriptor)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodDescriptor -&gt; m MethodDescriptor)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; MethodDescriptor -&gt; m MethodDescriptor)
+-&gt; Data MethodDescriptor
+MethodDescriptor -&gt; Constr
+MethodDescriptor -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodDescriptor -&gt; MethodDescriptor
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodDescriptor -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodDescriptor -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodDescriptor -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodDescriptor -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodDescriptor -&gt; m MethodDescriptor
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodDescriptor -&gt; m MethodDescriptor
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodDescriptor
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodDescriptor -&gt; c MethodDescriptor
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodDescriptor)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodDescriptor)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodDescriptor -&gt; c MethodDescriptor
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; MethodDescriptor -&gt; c MethodDescriptor
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodDescriptor
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c MethodDescriptor
+$ctoConstr :: MethodDescriptor -&gt; Constr
+toConstr :: MethodDescriptor -&gt; Constr
+$cdataTypeOf :: MethodDescriptor -&gt; DataType
+dataTypeOf :: MethodDescriptor -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodDescriptor)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c MethodDescriptor)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodDescriptor)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c MethodDescriptor)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodDescriptor -&gt; MethodDescriptor
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; MethodDescriptor -&gt; MethodDescriptor
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodDescriptor -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodDescriptor -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodDescriptor -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; MethodDescriptor -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodDescriptor -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; MethodDescriptor -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodDescriptor -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; MethodDescriptor -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodDescriptor -&gt; m MethodDescriptor
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodDescriptor -&gt; m MethodDescriptor
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodDescriptor -&gt; m MethodDescriptor
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodDescriptor -&gt; m MethodDescriptor
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodDescriptor -&gt; m MethodDescriptor
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; MethodDescriptor -&gt; m MethodDescriptor
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679447662"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>    </span><span id="local-6989586621679447679"><span class="annot"><span class="annottext">pretty :: forall ann. MethodDescriptor -&gt; Doc ann
+</span><a href="#local-6989586621679447679"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span><span> </span><span id="local-6989586621679447681"><span class="annot"><span class="annottext">[FieldType]
+</span><a href="#local-6989586621679447681"><span class="hs-identifier hs-var">params</span></a></span></span><span> </span><span id="local-6989586621679447682"><span class="annot"><span class="annottext">ReturnDescriptor
+</span><a href="#local-6989586621679447682"><span class="hs-identifier hs-var">ret</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;(&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Doc ann] -&gt; Doc ann
+forall ann. [Doc ann] -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#hsep"><span class="hs-identifier hs-var">hsep</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FieldType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldType -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">(FieldType -&gt; Doc ann) -&gt; [FieldType] -&gt; [Doc ann]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[FieldType]
+</span><a href="#local-6989586621679447681"><span class="hs-identifier hs-var">params</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;)&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc ann -&gt; Doc ann -&gt; Doc ann
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">ReturnDescriptor -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. ReturnDescriptor -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">ReturnDescriptor
+</span><a href="#local-6989586621679447682"><span class="hs-identifier hs-var">ret</span></a></span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#methodParam"><span class="hs-identifier hs-type">methodParam</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier hs-type">FieldType</span></a></span><span>
+</span><span id="line-17"></span><span id="methodParam"><span class="annot"><span class="annottext">methodParam :: MethodDescriptor -&gt; Int -&gt; Maybe FieldType
+</span><a href="JVM.Data.Abstract.Descriptor.html#methodParam"><span class="hs-identifier hs-var hs-var">methodParam</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#MethodDescriptor"><span class="hs-identifier hs-type">MethodDescriptor</span></a></span><span> </span><span id="local-6989586621679447686"><span class="annot"><span class="annottext">[FieldType]
+</span><a href="#local-6989586621679447686"><span class="hs-identifier hs-var">params</span></a></span></span><span> </span><span class="annot"><span class="annottext">ReturnDescriptor
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679447687"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679447687"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[FieldType]
+</span><a href="#local-6989586621679447686"><span class="hs-identifier hs-var">params</span></a></span><span> </span><span class="annot"><span class="annottext">[FieldType] -&gt; Int -&gt; Maybe FieldType
+forall {t} {a}. (Eq t, Num t) =&gt; [a] -&gt; t -&gt; Maybe a
+</span><a href="#local-6989586621679447688"><span class="hs-operator hs-var">!!?</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679447687"><span class="hs-identifier hs-var">i</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span id="local-6989586621679447688"><span class="annot"><span class="annottext">!!? :: [a] -&gt; t -&gt; Maybe a
+</span><a href="#local-6989586621679447688"><span class="hs-operator hs-var hs-var">!!?</span></a></span></span><span> </span><span class="annot"><span class="annottext">t
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe a
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679447695"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679447695"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679447688"><span class="hs-operator hs-var">!!?</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; Maybe a
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679447695"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679447696"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679447696"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679447688"><span class="hs-operator hs-var">!!?</span></a></span><span> </span><span id="local-6989586621679447697"><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679447697"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679447696"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; t -&gt; Maybe a
+</span><a href="#local-6989586621679447688"><span class="hs-operator hs-var">!!?</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679447697"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">t -&gt; t -&gt; t
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">t
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="ReturnDescriptor"><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#ReturnDescriptor"><span class="hs-identifier hs-var">ReturnDescriptor</span></a></span></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="VoidReturn"><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#VoidReturn"><span class="hs-identifier hs-var">VoidReturn</span></a></span></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="TypeReturn"><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#TypeReturn"><span class="hs-identifier hs-var">TypeReturn</span></a></span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier hs-type">FieldType</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679447701"><span id="local-6989586621679447705"><span id="local-6989586621679447708"><span class="annot"><span class="annottext">Int -&gt; ReturnDescriptor -&gt; ShowS
+[ReturnDescriptor] -&gt; ShowS
+ReturnDescriptor -&gt; String
+(Int -&gt; ReturnDescriptor -&gt; ShowS)
+-&gt; (ReturnDescriptor -&gt; String)
+-&gt; ([ReturnDescriptor] -&gt; ShowS)
+-&gt; Show ReturnDescriptor
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReturnDescriptor -&gt; ShowS
+showsPrec :: Int -&gt; ReturnDescriptor -&gt; ShowS
+$cshow :: ReturnDescriptor -&gt; String
+show :: ReturnDescriptor -&gt; String
+$cshowList :: [ReturnDescriptor] -&gt; ShowS
+showList :: [ReturnDescriptor] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679447711"><span id="local-6989586621679447717"><span class="annot"><span class="annottext">ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+(ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool)
+-&gt; (ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool)
+-&gt; Eq ReturnDescriptor
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+== :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+$c/= :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+/= :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679447722"><span id="local-6989586621679447725"><span id="local-6989586621679447728"><span id="local-6989586621679447731"><span id="local-6989586621679447734"><span id="local-6989586621679447737"><span id="local-6989586621679447740"><span class="annot"><span class="annottext">Eq ReturnDescriptor
+Eq ReturnDescriptor =&gt;
+(ReturnDescriptor -&gt; ReturnDescriptor -&gt; Ordering)
+-&gt; (ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool)
+-&gt; (ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool)
+-&gt; (ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool)
+-&gt; (ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool)
+-&gt; (ReturnDescriptor -&gt; ReturnDescriptor -&gt; ReturnDescriptor)
+-&gt; (ReturnDescriptor -&gt; ReturnDescriptor -&gt; ReturnDescriptor)
+-&gt; Ord ReturnDescriptor
+ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+ReturnDescriptor -&gt; ReturnDescriptor -&gt; Ordering
+ReturnDescriptor -&gt; ReturnDescriptor -&gt; ReturnDescriptor
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Ordering
+compare :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Ordering
+$c&lt; :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+&lt; :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+$c&lt;= :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+&lt;= :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+$c&gt; :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+&gt; :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+$c&gt;= :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+&gt;= :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; Bool
+$cmax :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; ReturnDescriptor
+max :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; ReturnDescriptor
+$cmin :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; ReturnDescriptor
+min :: ReturnDescriptor -&gt; ReturnDescriptor -&gt; ReturnDescriptor
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679447745"><span id="local-6989586621679447748"><span id="local-6989586621679447751"><span id="local-6989586621679447753"><span id="local-6989586621679447755"><span id="local-6989586621679447760"><span id="local-6989586621679447765"><span id="local-6989586621679447768"><span id="local-6989586621679447771"><span id="local-6989586621679447774"><span id="local-6989586621679447777"><span id="local-6989586621679447780"><span id="local-6989586621679447785"><span id="local-6989586621679447790"><span class="annot"><span class="annottext">Typeable ReturnDescriptor
+Typeable ReturnDescriptor =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; ReturnDescriptor -&gt; c ReturnDescriptor)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ReturnDescriptor)
+-&gt; (ReturnDescriptor -&gt; Constr)
+-&gt; (ReturnDescriptor -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ReturnDescriptor))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e))
+    -&gt; Maybe (c ReturnDescriptor))
+-&gt; ((forall b. Data b =&gt; b -&gt; b)
+    -&gt; ReturnDescriptor -&gt; ReturnDescriptor)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ReturnDescriptor -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r)
+    -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ReturnDescriptor -&gt; r)
+-&gt; (forall u.
+    (forall d. Data d =&gt; d -&gt; u) -&gt; ReturnDescriptor -&gt; [u])
+-&gt; (forall u.
+    Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ReturnDescriptor -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ReturnDescriptor -&gt; m ReturnDescriptor)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ReturnDescriptor -&gt; m ReturnDescriptor)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d)
+    -&gt; ReturnDescriptor -&gt; m ReturnDescriptor)
+-&gt; Data ReturnDescriptor
+ReturnDescriptor -&gt; Constr
+ReturnDescriptor -&gt; DataType
+(forall b. Data b =&gt; b -&gt; b)
+-&gt; ReturnDescriptor -&gt; ReturnDescriptor
+forall a.
+Typeable a =&gt;
+(forall (c :: * -&gt; *).
+ (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+ -&gt; (forall g. g -&gt; c g) -&gt; a -&gt; c a)
+-&gt; (forall (c :: * -&gt; *).
+    (forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+    -&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c a)
+-&gt; (a -&gt; Constr)
+-&gt; (a -&gt; DataType)
+-&gt; (forall (t :: * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d. Data d =&gt; c (t d)) -&gt; Maybe (c a))
+-&gt; (forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+    Typeable t =&gt;
+    (forall d e. (Data d, Data e) =&gt; c (t d e)) -&gt; Maybe (c a))
+-&gt; ((forall b. Data b =&gt; b -&gt; b) -&gt; a -&gt; a)
+-&gt; (forall r r'.
+    (r -&gt; r' -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall r r'.
+    (r' -&gt; r -&gt; r) -&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; a -&gt; r)
+-&gt; (forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; [u])
+-&gt; (forall u. Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; a -&gt; u)
+-&gt; (forall (m :: * -&gt; *).
+    Monad m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; (forall (m :: * -&gt; *).
+    MonadPlus m =&gt;
+    (forall d. Data d =&gt; d -&gt; m d) -&gt; a -&gt; m a)
+-&gt; Data a
+forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ReturnDescriptor -&gt; u
+forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ReturnDescriptor -&gt; [u]
+forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ReturnDescriptor -&gt; r
+forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ReturnDescriptor -&gt; r
+forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ReturnDescriptor -&gt; m ReturnDescriptor
+forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ReturnDescriptor -&gt; m ReturnDescriptor
+forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ReturnDescriptor
+forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ReturnDescriptor -&gt; c ReturnDescriptor
+forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ReturnDescriptor)
+forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ReturnDescriptor)
+$cgfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ReturnDescriptor -&gt; c ReturnDescriptor
+gfoldl :: forall (c :: * -&gt; *).
+(forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
+-&gt; (forall g. g -&gt; c g) -&gt; ReturnDescriptor -&gt; c ReturnDescriptor
+$cgunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ReturnDescriptor
+gunfold :: forall (c :: * -&gt; *).
+(forall b r. Data b =&gt; c (b -&gt; r) -&gt; c r)
+-&gt; (forall r. r -&gt; c r) -&gt; Constr -&gt; c ReturnDescriptor
+$ctoConstr :: ReturnDescriptor -&gt; Constr
+toConstr :: ReturnDescriptor -&gt; Constr
+$cdataTypeOf :: ReturnDescriptor -&gt; DataType
+dataTypeOf :: ReturnDescriptor -&gt; DataType
+$cdataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ReturnDescriptor)
+dataCast1 :: forall (t :: * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d. Data d =&gt; c (t d)) -&gt; Maybe (c ReturnDescriptor)
+$cdataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ReturnDescriptor)
+dataCast2 :: forall (t :: * -&gt; * -&gt; *) (c :: * -&gt; *).
+Typeable t =&gt;
+(forall d e. (Data d, Data e) =&gt; c (t d e))
+-&gt; Maybe (c ReturnDescriptor)
+$cgmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; ReturnDescriptor -&gt; ReturnDescriptor
+gmapT :: (forall b. Data b =&gt; b -&gt; b)
+-&gt; ReturnDescriptor -&gt; ReturnDescriptor
+$cgmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ReturnDescriptor -&gt; r
+gmapQl :: forall r r'.
+(r -&gt; r' -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ReturnDescriptor -&gt; r
+$cgmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ReturnDescriptor -&gt; r
+gmapQr :: forall r r'.
+(r' -&gt; r -&gt; r)
+-&gt; r -&gt; (forall d. Data d =&gt; d -&gt; r') -&gt; ReturnDescriptor -&gt; r
+$cgmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ReturnDescriptor -&gt; [u]
+gmapQ :: forall u. (forall d. Data d =&gt; d -&gt; u) -&gt; ReturnDescriptor -&gt; [u]
+$cgmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ReturnDescriptor -&gt; u
+gmapQi :: forall u.
+Int -&gt; (forall d. Data d =&gt; d -&gt; u) -&gt; ReturnDescriptor -&gt; u
+$cgmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ReturnDescriptor -&gt; m ReturnDescriptor
+gmapM :: forall (m :: * -&gt; *).
+Monad m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ReturnDescriptor -&gt; m ReturnDescriptor
+$cgmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ReturnDescriptor -&gt; m ReturnDescriptor
+gmapMp :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ReturnDescriptor -&gt; m ReturnDescriptor
+$cgmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ReturnDescriptor -&gt; m ReturnDescriptor
+gmapMo :: forall (m :: * -&gt; *).
+MonadPlus m =&gt;
+(forall d. Data d =&gt; d -&gt; m d)
+-&gt; ReturnDescriptor -&gt; m ReturnDescriptor
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679447796"><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#Pretty"><span class="hs-identifier hs-type">Pretty</span></a></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#ReturnDescriptor"><span class="hs-identifier hs-type">ReturnDescriptor</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-29"></span><span>    </span><span id="local-6989586621679447800"><span class="annot"><span class="annottext">pretty :: forall ann. ReturnDescriptor -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var hs-var hs-var">pretty</span></a></span></span><span> </span><span class="annot"><span class="annottext">ReturnDescriptor
+</span><a href="JVM.Data.Abstract.Descriptor.html#VoidReturn"><span class="hs-identifier hs-var">VoidReturn</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc ann
+</span><span class="hs-string">&quot;V&quot;</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#TypeReturn"><span class="hs-identifier hs-type">TypeReturn</span></a></span><span> </span><span id="local-6989586621679447801"><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679447801"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FieldType -&gt; Doc ann
+forall a ann. Pretty a =&gt; a -&gt; Doc ann
+forall ann. FieldType -&gt; Doc ann
+</span><a href="file:///nix/store/s4x2sn2zvyza046va2fdq9kak893syc8-prettyprinter-1.7.1-doc/share/doc/prettyprinter-1.7.1/html/src/Prettyprinter.Internal.html#pretty"><span class="hs-identifier hs-var">pretty</span></a></span><span> </span><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679447801"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#returnDescriptorType"><span class="hs-identifier hs-type">returnDescriptorType</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#ReturnDescriptor"><span class="hs-identifier hs-type">ReturnDescriptor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="JVM.Data.Abstract.Type.html#FieldType"><span class="hs-identifier hs-type">FieldType</span></a></span><span>
+</span><span id="line-33"></span><span id="returnDescriptorType"><span class="annot"><span class="annottext">returnDescriptorType :: ReturnDescriptor -&gt; Maybe FieldType
+</span><a href="JVM.Data.Abstract.Descriptor.html#returnDescriptorType"><span class="hs-identifier hs-var hs-var">returnDescriptorType</span></a></span></span><span> </span><span class="annot"><span class="annottext">ReturnDescriptor
+</span><a href="JVM.Data.Abstract.Descriptor.html#VoidReturn"><span class="hs-identifier hs-var">VoidReturn</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe FieldType
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-34"></span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#returnDescriptorType"><span class="hs-identifier hs-var">returnDescriptorType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="JVM.Data.Abstract.Descriptor.html#TypeReturn"><span class="hs-identifier hs-type">TypeReturn</span></a></span><span> </span><span id="local-6989586621679447803"><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679447803"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FieldType -&gt; Maybe FieldType
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">FieldType
+</span><a href="#local-6989586621679447803"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-35"></span></pre></body></html>
