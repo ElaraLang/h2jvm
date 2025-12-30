@@ -17,6 +17,9 @@ import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), returnDescriptorType)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (FieldType (..), PrimitiveType (..), classInfoTypeToFieldType, fieldTypeToClassInfoType)
+import JVM.Data.Pretty (Pretty (pretty), showPretty)
+import Prettyprinter (vsep)
+import JVM.Data.Raw.Types
 
 data BasicBlock = BasicBlock
     { index :: Int
@@ -34,8 +37,17 @@ data Frame = Frame
 data LocalVariable = Uninitialised | LocalVariable FieldType
     deriving (Show, Eq)
 
+instance Pretty LocalVariable where
+    pretty Uninitialised = "uninitialised"
+    pretty (LocalVariable ft) = pretty ft
+
 data StackEntry = StackEntry FieldType | StackEntryTop | StackEntryNull
     deriving (Show, Eq)
+
+instance Pretty StackEntry where
+    pretty StackEntryTop = "top"
+    pretty StackEntryNull = "null"
+    pretty (StackEntry ft) = pretty ft
 
 lvToStackEntry :: LocalVariable -> StackEntry
 lvToStackEntry Uninitialised = StackEntryTop
@@ -76,29 +88,28 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     isConditionalJump (IfLe _) = True
     isConditionalJump _ = False
 
+    indexOOBError :: (HasCallStack) => String -> U1 -> Frame -> BasicBlock -> a
+    indexOOBError instName i ba block =
+        error $
+            showPretty
+                ( vsep
+                    [ pretty instName <> " at index " <> pretty i <> "is out of bounds."
+                    , "Locals: " <> pretty ba.locals
+                    , "Instructions: " <> pretty block.instructions
+                    ]
+                )
+
     analyseInstruction :: (HasCallStack) => Instruction -> Frame -> Frame
     analyseInstruction (Label _) ba = error "Label should not be encountered in analyseInstruction"
     analyseInstruction (ALoad i) ba =
         if i >= genericLength ba.locals
             then
-                error $
-                    "ALoad index out of bounds. Given: "
-                        <> show i
-                        <> " Locals: "
-                        <> show ba.locals
-                        <> " in instructions: "
-                        <> show block.instructions
+                indexOOBError "ALoad" i ba block
             else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
     analyseInstruction (ILoad i) ba =
         if i >= genericLength ba.locals
             then
-                error $
-                    "ILoad index out of bounds. Given: "
-                        <> show i
-                        <> " Locals: "
-                        <> show ba.locals
-                        <> " in instructions: "
-                        <> show block.instructions
+                indexOOBError "ILoad" i ba block
             else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
     analyseInstruction (AStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
     analyseInstruction (IStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
