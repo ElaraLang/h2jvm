@@ -21,7 +21,11 @@ jobs:
       - name: Build Haddock
         run: |
           nix build .#h2jvm.doc
-          ln -s $(readlink -f result-doc/share/doc/*/html) ./public
+
+          mkdir -p public
+          cp -rvL result-docs/share/doc/*/html/* public/
+          chmod -R +w public
+
           echo '<meta http-equiv="refresh" content="0; url=H2JVM.html">' > public/index.html
 
       - name: Deploy to GitHub Pages
