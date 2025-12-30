@@ -41,7 +41,7 @@ spec = describe "test conversions" $ do
         constants `shouldContain` Raw.UTF8Info "hello"
         bms === []
         indexOfInteger <- findCPIndex (\case StringInfo _ -> True; _ -> False) constants
-        inst === Raw.LDC (fromIntegral indexOfInteger)
+        inst === Raw.LDC_W (fromIntegral indexOfInteger)
 
     it "Converts a simple indy instruction properly" $ hedgehog $ do
         ([inst], ConstantPoolState constants bms) <-

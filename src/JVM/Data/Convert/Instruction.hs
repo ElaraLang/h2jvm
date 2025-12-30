@@ -80,7 +80,7 @@ instructionSize (Abs.InvokeInterface{}) = 5
 instructionSize (Abs.InvokeDynamic{}) = 5
 instructionSize (Abs.InvokeSpecial{}) = 3
 instructionSize (Abs.Label _) = 0
-instructionSize (Abs.LDC _) = 2
+instructionSize (Abs.LDC _) = 3
 instructionSize (Abs.PutStatic{}) = 3
 instructionSize (Abs.GetField{}) = 3
 instructionSize (Abs.GetStatic{}) = 3
@@ -215,7 +215,8 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
                     LDCClass c -> CPClassEntry c
                 )
 
-        pure (Raw.LDC (fromIntegral idx)) -- for some reason, the index is a u8, not a u16
+        pure (Raw.LDC_W idx) -- TODO: handle LDC vs LDC_W properly
+
         -- TODO: this should probably do a bounds check on the index
     convertInstruction (Abs.PutStatic c n t) = do
         idx <- findIndexOf (CPFieldRefEntry (FieldRef c n t))
