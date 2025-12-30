@@ -22,7 +22,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - uses: DeterminateSystems/nix-installer-action@v19
+      - uses: DeterminateSystems/nix-installer-action@v21
         with:
           extra-conf: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
