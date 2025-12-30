@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           h2jvm
-version:        0.6.0.2
+version:        0.6.0.3
 synopsis:       Haskell library for writing JVM bytecode in a high level format
 description:    See https://hackage.haskell.org/package/h2jvm/docs/H2jvm.html
 author:         Alexander Wood
