@@ -7,17 +7,18 @@
         ]
       },
       "locked": {
-        "lastModified": 1765134552,
-        "narHash": "sha256-JbSDrVjrGPorblFtZZrTENuYWZnd3xFdn5UWILtthos=",
-        "ref": "refs/heads/main",
-        "rev": "d2429babe27230a1abae99590e69bfd4782bf3e6",
-        "revCount": 1075,
-        "type": "git",
-        "url": "https://git.tryp.io/tek/hix"
+        "lastModified": 1745095131,
+        "narHash": "sha256-8wujZRs1pMKXsy8irnF6yzjZAIQ0oUmVLPVrfGJKZ+s=",
+        "owner": "tek",
+        "repo": "hix",
+        "rev": "b70d5e8c34a1cba0cf0b69988fe8df01eb626b50",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "https://git.tryp.io/tek/hix"
+        "owner": "tek",
+        "ref": "0.9.1",
+        "repo": "hix",
+        "type": "github"
       }
     },
     "nixpkgs": {
