@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiWayIf #-}
 
 {- | Generate a stack map table for a method.
@@ -11,6 +12,9 @@ import Control.Lens.Fold
 import Data.Generics.Sum (AsAny (_As))
 import Data.List
 import Data.Maybe (fromJust, maybeToList)
+import Effectful (Eff, runPureEff)
+import Effectful.Reader.Static (Reader, ask, runReader)
+import Effectful.State.Static.Local (State, execState, get, gets, modify, put)
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method
@@ -18,8 +22,8 @@ import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), returnDescriptorType
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (FieldType (..), PrimitiveType (..), classInfoTypeToFieldType, fieldTypeToClassInfoType)
 import JVM.Data.Pretty (Pretty (pretty), showPretty)
-import Prettyprinter (vsep)
 import JVM.Data.Raw.Types
+import Prettyprinter (vsep)
 
 data BasicBlock = BasicBlock
     { index :: Int
@@ -88,56 +92,60 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     isConditionalJump (IfLe _) = True
     isConditionalJump _ = False
 
-    indexOOBError :: (HasCallStack) => String -> U1 -> Frame -> BasicBlock -> a
-    indexOOBError instName i ba block =
-        error $
-            showPretty
-                ( vsep
-                    [ pretty instName <> " at index " <> pretty i <> "is out of bounds."
-                    , "Locals: " <> pretty ba.locals
-                    , "Instructions: " <> pretty block.instructions
-                    ]
-                )
-
     analyseInstruction :: (HasCallStack) => Instruction -> Frame -> Frame
-    analyseInstruction (Label _) ba = error "Label should not be encountered in analyseInstruction"
-    analyseInstruction (ALoad i) ba =
-        if i >= genericLength ba.locals
-            then
-                indexOOBError "ALoad" i ba block
-            else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
-    analyseInstruction (ILoad i) ba =
-        if i >= genericLength ba.locals
-            then
-                indexOOBError "ILoad" i ba block
-            else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
-    analyseInstruction (AStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
-    analyseInstruction (IStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
-    analyseInstruction AReturn ba = ba{stack = tail ba.stack}
-    analyseInstruction Return ba = ba
-    analyseInstruction (LDC (LDCInt _)) ba = ba{stack = StackEntry (PrimitiveFieldType Int) : ba.stack}
-    analyseInstruction AConstNull ba = ba{stack = StackEntryNull : ba.stack}
-    analyseInstruction Dup ba = ba{stack = head ba.stack : ba.stack}
-    analyseInstruction (IfEq _) ba = ba{stack = tail ba.stack}
-    analyseInstruction (IfNe _) ba = ba{stack = tail ba.stack}
-    analyseInstruction (IfLt _) ba = ba{stack = tail ba.stack}
-    analyseInstruction (IfGe _) ba = ba{stack = tail ba.stack}
-    analyseInstruction (IfGt _) ba = ba{stack = tail ba.stack}
-    analyseInstruction (IfLe _) ba = ba{stack = tail ba.stack}
-    analyseInstruction (CheckCast _) ba = ba
-    analyseInstruction (Instanceof _) ba = ba{stack = StackEntry (PrimitiveFieldType Int) : tail ba.stack}
-    analyseInstruction (InvokeStatic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (length md.params) ba.stack}
-    analyseInstruction (InvokeVirtual _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (1 + length md.params) ba.stack}
-    analyseInstruction (InvokeInterface _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (length md.params) ba.stack}
-    analyseInstruction (InvokeDynamic _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (1 + length md.params) ba.stack}
-    analyseInstruction (InvokeSpecial _ _ md) ba = ba{stack = (StackEntry <$> maybeToList (returnDescriptorType md.returnDesc)) <> drop (1 + length md.params) ba.stack}
-    analyseInstruction (PutStatic{}) ba = ba{stack = tail ba.stack}
-    analyseInstruction (GetField _ _ ft) ba = ba{stack = StackEntry ft : tail ba.stack}
-    analyseInstruction (GetStatic _ _ ft) ba = ba{stack = StackEntry ft : ba.stack}
-    analyseInstruction (PutField{}) ba = ba{stack = tail $ tail ba.stack}
-    analyseInstruction (Goto _) ba = ba
-    analyseInstruction (LDC l) ba = ba{stack = StackEntry (ldcEntryToFieldType l) : ba.stack}
-    analyseInstruction (New t) ba = ba{stack = StackEntry (classInfoTypeToFieldType t) : ba.stack}
+    analyseInstruction inst frame =
+        runPureEff $
+            runReader block $
+                execState frame $
+                    analyse inst
+      where
+        analyse :: Instruction -> Analyser
+        analyse = \case
+            (Label _) -> error "Label should not be encountered in analyseInstruction"
+            (ALoad i) -> loads "ALoad" i
+            (ILoad i) -> loads "ILoad" i
+            (AStore i) -> stores (fromIntegral i)
+            (IStore i) -> stores (fromIntegral i)
+            AReturn -> pops 1
+            AConstNull -> pushesEntry StackEntryNull
+            Return -> pure ()
+            LDC t -> pushes (ldcEntryToFieldType t)
+            Dup -> do
+                s <- gets (.stack)
+                case s of
+                    [] -> error "Stack underflow during dup"
+                    head : _ -> pushesEntry head
+            IfEq _ -> pops 1
+            IfNe _ -> pops 1
+            IfLt _ -> pops 1
+            IfGe _ -> pops 1
+            IfGt _ -> pops 1
+            IfLe _ -> pops 1
+            CheckCast ft -> replaceTop (classInfoTypeToFieldType ft)
+            Instanceof _ -> replaceTop (PrimitiveFieldType Int)
+            InvokeStatic _ _ md -> do
+                pops (length md.params)
+                pushesMaybe (returnDescriptorType md.returnDesc)
+            InvokeVirtual _ _ md -> do
+                pops (1 + length md.params)
+                pushesMaybe (returnDescriptorType md.returnDesc)
+            InvokeInterface _ _ md -> do
+                pops (1 + length md.params)
+                pushesMaybe (returnDescriptorType md.returnDesc)
+            InvokeDynamic _ _ md -> do
+                pops (length md.params)
+                pushesMaybe (returnDescriptorType md.returnDesc)
+            InvokeSpecial _ _ md -> do
+                pops (1 + length md.params)
+                pushesMaybe (returnDescriptorType md.returnDesc)
+            PutStatic{} -> pops 1
+            GetField _ _ ft -> do
+                pops 1
+                pushes ft
+            GetStatic _ _ ft -> pushes ft
+            PutField{} -> pops 2
+            Goto _ -> pure ()
+            New t -> pushes (classInfoTypeToFieldType t)
 
 frameDiffToSMF :: (HasCallStack) => Frame -> BasicBlock -> StackMapFrame
 frameDiffToSMF f1@(Frame locals1 stack1) bb = do
@@ -189,3 +197,69 @@ takeWhileInclusive _ [] = []
 takeWhileInclusive p (x : xs)
     | p x = x : takeWhileInclusive p xs
     | otherwise = [x]
+
+-- | Analyser monad for stack map frame analysis
+type Analyser = Eff '[State Frame, Reader BasicBlock] ()
+
+-- | Pops n items off the stack
+pops :: Int -> Analyser
+pops n = modify $ \f -> f{stack = drop n f.stack}
+
+-- | Pushes a single type onto the stack
+pushes :: FieldType -> Analyser
+pushes ft = modify $ \f -> f{stack = StackEntry ft : f.stack}
+
+-- | Pushes a raw StackEntry
+pushesEntry :: StackEntry -> Analyser
+pushesEntry se = modify $ \f -> f{stack = se : f.stack}
+
+-- | Pushes an item only if it exists (for void returns)
+pushesMaybe :: Maybe FieldType -> Analyser
+pushesMaybe Nothing = pure ()
+pushesMaybe (Just ft) = pushes ft
+
+-- | pops 1, pushes 1
+replaceTop :: FieldType -> Analyser
+replaceTop ft = do
+    pops 1
+    pushes ft
+
+-- | Loads a local variable onto the stack
+loads :: String -> U1 -> Analyser
+loads instName i = do
+    f <- get
+    block <- ask
+    if i >= genericLength f.locals
+        then
+            indexOOBError instName i f block
+        else do
+            let lv = f.locals !! fromIntegral i
+            pushesEntry (lvToStackEntry lv)
+
+-- | Stores the top of the stack into a local variable
+stores ::
+    -- | The variable index
+    Int ->
+    Analyser
+stores i = do
+    f <- get
+    case f.stack of
+        [] -> error "Stack underflow during store"
+        (top : rest) ->
+            put
+                f
+                    { locals = replaceAtOrGrow i (stackEntryToLV top) f.locals
+                    , stack = rest
+                    }
+
+-- | Error for index out of bounds
+indexOOBError :: (HasCallStack) => String -> U1 -> Frame -> BasicBlock -> a
+indexOOBError instName i ba block =
+    error $
+        showPretty
+            ( vsep
+                [ pretty instName <> " at index " <> pretty i <> "is out of bounds."
+                , "Locals: " <> pretty ba.locals
+                , "Instructions: " <> pretty block.instructions
+                ]
+            )
