@@ -8,6 +8,7 @@
     compiler = "ghc912";
     gen-overrides.enable = true;
     managed.enable = true;
+    managed.lower.enable = true;
 
     packages = {
       h2jvm = {
