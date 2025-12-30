@@ -2,28 +2,23 @@
 name: lower
 on: [workflow_dispatch, pull_request, push]
 permissions:
-    contents: write
-    pull-requests: write
-    id-token: write
+  contents: write
+  pull-requests: write
+  id-token: write
 jobs:
-    lower-pr:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: DeterminateSystems/nix-installer-action@v16
-              with:
-                  extra-conf: |
-                      access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+  lower-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
 
-            - uses: cachix/cachix-action@v16
-              with:
-                  name: elara
-                  authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
- 
-            - id: bounds
-              run: nix run .#lower -- --output=ga-pr
+      - uses: ./.github/actions/setup-nix
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: pr
-              if: steps.bounds.outputs.commit-message
-              uses: peter-evans/create-pull-request@v5
-              with: ${{ steps.bounds.outputs }}
+      - id: bounds
+        run: nix run .#lower -- --output=ga-pr
+
+      - name: pr
+        if: steps.bounds.outputs.commit-message
+        uses: peter-evans/create-pull-request@v5
+        with: ${{ steps.bounds.outputs }}

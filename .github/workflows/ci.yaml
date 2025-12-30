@@ -8,14 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: DeterminateSystems/nix-installer-action@v21
+
+      - uses: ./.github/actions/setup-nix
         with:
-          extra-conf: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-            extra-substituters = https://tek.cachix.org
-            extra-trusted-public-keys = tek.cachix.org-1:+sdc73WFq8aEKnrVv5j/kuhmnW2hQJuqdPJF5SnaCBk=
-      - uses: cachix/cachix-action@v16
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
         with:
-          name: elara
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          tool-cache: true
+
       - run: nix flake check
