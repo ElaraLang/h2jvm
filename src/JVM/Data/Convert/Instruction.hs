@@ -17,7 +17,9 @@ import JVM.Data.Abstract.Type
 import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
+import Control.Monad (void)
 import Data.Word (Word16)
+import Debug.Trace (traceM)
 import Effectful
 import Effectful.Error.Static
 import Effectful.State.Static.Local
@@ -108,7 +110,9 @@ insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
     incOffset (Label _) = pure () -- Label instructions have no representation in the bytecode, so they don't affect the offset
     incOffset inst = do
         offset <- gets (.currentOffset)
-        modify (\s -> s{currentOffset = offset + instructionSize inst})
+        let size = instructionSize inst
+        traceM $ "Offset: " ++ show offset ++ " | Size: " ++ show size ++ " | Inst: " ++ show (void inst)
+        modify (\s -> s{currentOffset = offset + size})
 
     insertLabel :: (CodeConverterEff r) => Abs.Instruction -> Eff r (OffsetInstruction Abs.Instruction)
     insertLabel (Label l) = do

@@ -152,12 +152,18 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
 -- | Diff two frames to produce a StackMapFrame
 diffFrames :: Frame -> Frame -> Label -> StackMapFrame
 diffFrames (Frame locals1 stack1) (Frame locals2 stack2) label
-    | locals1 == locals2 && stack1 == stack2 = SameFrame label
-    | stack1 == stack2 && locals1 `isPrefixOf` locals2 =
+    -- locals the same, stack empty
+    | locals1 == locals2 && null stack2 = SameFrame label
+    -- same locals, one stack item
+    | [x] <- stack2, locals1 == locals2 = SameLocals1StackItemFrame (seToVerificationTypeInfo x) label
+    -- stack empty, locals appended
+    | null stack2 && locals1 `isPrefixOf` locals2 =
         let difference = drop (length locals1) locals2
          in AppendFrame (map lvToVerificationTypeInfo difference) label
-    | [x] <- stack2, locals1 == locals2 = SameLocals1StackItemFrame (seToVerificationTypeInfo x) label
-    | stack1 == stack2 && locals2 `isPrefixOf` locals1 = ChopFrame (fromIntegral $ length locals1 - length locals2) label
+
+    -- stack empty, locals chopped
+    | null stack2 && locals2 `isPrefixOf` locals1 = ChopFrame (fromIntegral $ length locals1 - length locals2) label
+    -- full frame otherwise
     | otherwise = FullFrame (map lvToVerificationTypeInfo locals2) (map seToVerificationTypeInfo stack2) label
 
 lvToVerificationTypeInfo :: LocalVariable -> VerificationTypeInfo
