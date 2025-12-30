@@ -21,23 +21,8 @@ import JVM.Data.Raw.ConstantPool qualified as Raw
 import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec hiding (shouldContain)
 import Test.Hspec.Hedgehog
-import Util (runConv, shouldBeJust, shouldContain)
+import Util
 
-genPrimitiveType :: Gen PrimitiveType
-genPrimitiveType =
-    Gen.element @[]
-        [minBound .. maxBound]
-
-genQualifiedClassName :: Gen QualifiedClassName
-genQualifiedClassName = do
-    package <- Gen.list (Range.linear 0 10) (Gen.text (Range.linear 0 10) Gen.alphaNum)
-    class_ <- Gen.text (Range.linear 0 10) Gen.alphaNum
-    pure $ QualifiedClassName (PackageName package) (ClassName class_)
-
-runAnalysis :: Eff '[CodeBuilder] a -> ([BasicBlock], a)
-runAnalysis builder =
-    let (val, _, code) = runPureEff $ runCodeBuilder builder
-     in (splitIntoBasicBlocks code, val)
 
 spec :: Spec
 spec = describe "test conversions" $ do

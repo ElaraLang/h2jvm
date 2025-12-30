@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE MultiWayIf #-}
 
 {- | Generate a stack map table for a method.
 This process MUST run last in the high level stage -
@@ -150,24 +149,30 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
             Goto _ -> pure ()
             New t -> pushes (classInfoTypeToFieldType t)
 
-frameDiffToSMF :: (HasCallStack) => Frame -> BasicBlock -> StackMapFrame
-frameDiffToSMF f1@(Frame locals1 stack1) bb = do
-    let (Frame locals2 stack2) = analyseBlockDiff f1 bb
-    if
-        | locals1 == locals2 && stack1 == stack2 -> SameFrame (fromJust bb.end)
-        | stack1 == stack2 && locals1 `isPrefixOf` locals2 -> AppendFrame (map lvToVerificationTypeInfo (drop (length locals1) locals2)) (fromJust bb.end)
-        | [x] <- stack2, locals1 == locals2 -> SameLocals1StackItemFrame (seToVerificationTypeInfo x) (fromJust bb.end)
-        | locals1 == locals2 && locals1 `isSuffixOf` locals2 -> ChopFrame (fromIntegral $ length locals1 - length locals2) (fromJust bb.end)
-        | otherwise -> FullFrame (map lvToVerificationTypeInfo locals2) (map seToVerificationTypeInfo stack2) (fromJust bb.end)
+-- | Diff two frames to produce a StackMapFrame
+diffFrames :: Frame -> Frame -> Label -> StackMapFrame
+diffFrames (Frame locals1 stack1) (Frame locals2 stack2) label
+    | locals1 == locals2 && stack1 == stack2 = SameFrame label
+    | stack1 == stack2 && locals1 `isPrefixOf` locals2 =
+        let difference = drop (length locals1) locals2
+         in AppendFrame (map lvToVerificationTypeInfo difference) label
+    | [x] <- stack2, locals1 == locals2 = SameLocals1StackItemFrame (seToVerificationTypeInfo x) label
+    | stack1 == stack2 && locals2 `isPrefixOf` locals1 = ChopFrame (fromIntegral $ length locals1 - length locals2) label
+    | otherwise = FullFrame (map lvToVerificationTypeInfo locals2) (map seToVerificationTypeInfo stack2) label
 
 lvToVerificationTypeInfo :: LocalVariable -> VerificationTypeInfo
 lvToVerificationTypeInfo Uninitialised = TopVariableInfo
 lvToVerificationTypeInfo (LocalVariable ft) = case ft of
     PrimitiveFieldType Int -> IntegerVariableInfo
+    PrimitiveFieldType Byte -> IntegerVariableInfo
+    PrimitiveFieldType Char -> IntegerVariableInfo
+    PrimitiveFieldType Short -> IntegerVariableInfo
+    PrimitiveFieldType Boolean -> IntegerVariableInfo
     PrimitiveFieldType Float -> FloatVariableInfo
     PrimitiveFieldType Long -> LongVariableInfo
     PrimitiveFieldType Double -> DoubleVariableInfo
-    _ -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
+    ObjectFieldType{} -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
+    ArrayFieldType{} -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
 
 seToVerificationTypeInfo :: StackEntry -> VerificationTypeInfo
 seToVerificationTypeInfo StackEntryTop = TopVariableInfo
@@ -183,17 +188,26 @@ calculateStackMapFrames :: (HasCallStack) => MethodDescriptor -> [Instruction] -
 calculateStackMapFrames md code = do
     let blocks = splitIntoBasicBlocks code
     let top = topFrame md
+
+    -- frames contains the state at the start of each block
+    -- eg frames !! 0 = top
+    --    frames !! 1 = top + analysis of block 0
     let frames = scanl analyseBlockDiff top blocks
 
-    
-    let framesWithBlocks = zip (tail frames) (init blocks)
-    let validFrames =
-            filter
-                -- remove any same_frame at the start which is not valid
-                (\(_, block) -> not (block.index == 0 && null block.instructions))
-                framesWithBlocks
+    let blockOutputs = zip (tail frames) blocks
 
-    map (uncurry frameDiffToSMF) validFrames
+    let labelledFrames =
+            [ (frame, label)
+            | (frame, block) <- blockOutputs
+            , -- Filter out the frame if it is the implicit Frame @ 0
+            not (block.index == 0 && null block.instructions)
+            , Just label <- [block.end]
+            ]
+
+    zipWith mkFrameDiff (top : map fst labelledFrames) labelledFrames
+  where
+    mkFrameDiff prevFrame (thisFrame, label) =
+        diffFrames prevFrame thisFrame label
 
 replaceAtOrGrow :: Int -> LocalVariable -> [LocalVariable] -> [LocalVariable]
 replaceAtOrGrow i x xs
@@ -269,7 +283,7 @@ indexOOBError instName i ba block =
     error $
         showPretty
             ( vsep
-                [ pretty instName <> " at index " <> pretty i <> "is out of bounds."
+                [ pretty instName <> " at index " <> pretty i <> " is out of bounds."
                 , "Locals: " <> pretty ba.locals
                 , "Instructions: " <> pretty block.instructions
                 ]

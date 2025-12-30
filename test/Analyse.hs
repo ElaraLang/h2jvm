@@ -2,37 +2,17 @@ module Analyse where
 
 import Hedgehog
 import Hedgehog.Gen qualified as Gen
-import Hedgehog.Range qualified as Range
-import JVM.Data.Abstract.Name
 import JVM.Data.Abstract.Type
 
+import Effectful
 import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.ClassFile.Method (StackMapFrame (..), VerificationTypeInfo (..))
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Instruction
-import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, frameDiffToSMF, splitIntoBasicBlocks, topFrame)
-import Effectful
+import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, diffFrames, splitIntoBasicBlocks, topFrame)
 import Test.Hspec
 import Test.Hspec.Hedgehog
-
-genPrimitiveType :: Gen PrimitiveType
-genPrimitiveType =
-    Gen.element @[]
-        [ Byte
-        , Char
-        , Double
-        , Float
-        , Int
-        , Long
-        , Short
-        , Boolean
-        ]
-
-genQualifiedClassName :: Gen QualifiedClassName
-genQualifiedClassName = do
-    package <- Gen.list (Range.linear 0 10) (Gen.text (Range.linear 0 10) Gen.alphaNum)
-    class_ <- Gen.text (Range.linear 0 10) Gen.alphaNum
-    pure $ QualifiedClassName (PackageName package) (ClassName class_)
+import Util
 
 genFieldType :: Gen FieldType
 genFieldType =
@@ -107,7 +87,7 @@ spec = describe "Analysis checks" $ do
                         , stack = []
                         }
 
-                frameDiffToSMF top (head blocks)
+                diffFrames top nextFrame l
                     === SameFrame l
 
         it "Can identify append frame blocks properly" $ do
@@ -151,5 +131,5 @@ spec = describe "Analysis checks" $ do
                         , stack = []
                         }
 
-                frameDiffToSMF top (head blocks)
+                diffFrames top nextFrame l
                     === AppendFrame [IntegerVariableInfo, IntegerVariableInfo] l
