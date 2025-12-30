@@ -1,6 +1,6 @@
 {
   description = "A Haskell project";
-  inputs.hix.url = "git+https://git.tryp.io/tek/hix";
+  inputs.hix.url = "github:tek/hix?ref=0.9.1";
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   inputs.hix.inputs.nixpkgs.follows = "nixpkgs";
   outputs = {hix, ...}: hix.lib.flake {
@@ -17,7 +17,7 @@
           build-type = "Simple";
           license = "MIT";
           license-file = "LICENSE";
-          version = "0.6.0.3";
+          version = "0.6.1.0";
           meta = {
             maintainer = "alexljwood24@hotmail.co.uk";
             synopsis = "Haskell library for writing JVM bytecode in a high level format";
