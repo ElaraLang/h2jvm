@@ -64,7 +64,7 @@ splitOnLabels xs = go xs []
 topFrame :: MethodDescriptor -> Frame
 topFrame (MethodDescriptor args _) = Frame (map LocalVariable args) []
 
-analyseBlockDiff :: Frame -> BasicBlock -> Frame
+analyseBlockDiff :: (HasCallStack) => Frame -> BasicBlock -> Frame
 analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeWhileInclusive (not . isConditionalJump) block.instructions)
   where
     isConditionalJump :: Instruction -> Bool
@@ -76,15 +76,29 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     isConditionalJump (IfLe _) = True
     isConditionalJump _ = False
 
-    analyseInstruction :: HasCallStack => Instruction -> Frame -> Frame
+    analyseInstruction :: (HasCallStack) => Instruction -> Frame -> Frame
     analyseInstruction (Label _) ba = error "Label should not be encountered in analyseInstruction"
     analyseInstruction (ALoad i) ba =
         if i >= genericLength ba.locals
-            then error $ "ALoad index out of bounds. Given: " <> show i <> " Locals: " <> show ba.locals
+            then
+                error $
+                    "ALoad index out of bounds. Given: "
+                        <> show i
+                        <> " Locals: "
+                        <> show ba.locals
+                        <> " in instructions: "
+                        <> show block.instructions
             else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
     analyseInstruction (ILoad i) ba =
         if i >= genericLength ba.locals
-            then error $ "ILoad index out of bounds. Given: " <> show i <> " Locals: " <> show ba.locals
+            then
+                error $
+                    "ILoad index out of bounds. Given: "
+                        <> show i
+                        <> " Locals: "
+                        <> show ba.locals
+                        <> " in instructions: "
+                        <> show block.instructions
             else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
     analyseInstruction (AStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
     analyseInstruction (IStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
@@ -143,7 +157,7 @@ seToVerificationTypeInfo (StackEntry ft) = case ft of
     PrimitiveFieldType Double -> DoubleVariableInfo
     _ -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
 
-calculateStackMapFrames :: MethodDescriptor -> [Instruction] -> [StackMapFrame]
+calculateStackMapFrames :: (HasCallStack) => MethodDescriptor -> [Instruction] -> [StackMapFrame]
 calculateStackMapFrames md code = do
     let blocks = splitIntoBasicBlocks code
     let top = topFrame md
