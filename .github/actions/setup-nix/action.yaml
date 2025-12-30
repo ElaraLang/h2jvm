@@ -5,6 +5,11 @@ inputs:
     description: "GitHub Token for Nix access-tokens"
     required: true
     default: ${{ github.token }}
+  
+  cachix-auth-token:
+    description: "Cachix Auth Token"
+    required: false
+    default: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
 runs:
   using: "composite"
@@ -19,4 +24,4 @@ runs:
     - uses: cachix/cachix-action@v16
       with:
         name: elara
-        authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        authToken: ${{ inputs.cachix-auth-token }}
