@@ -115,8 +115,9 @@ data Instruction
     | IDiv
     | -- | if_acmpeq
       IfAcmpEq Word16
-    | -- | if_acmpne
-      -- Branch if int comparison succeeds
+    | {- | if_acmpne
+      Branch if int comparison succeeds
+      -}
       IfAcmpNe Word16
     | IfIcmpEq Word16
     | IfIcmpNe Word16
@@ -212,7 +213,8 @@ data Instruction
     | SIPush Word16
     | Swap
     | TableSwitch Word32 Word32 Word32 [(Word32, Word32)]
-    | Wide Word8 Word16
+    | Wide1 U1 U2
+    | WideIInc U2 U2
     deriving (Eq, Show)
 
 putInstruction :: Instruction -> Put
@@ -417,7 +419,15 @@ putInstruction = \case
     SIPush value -> putWord8 MagicNumbers.instruction_sIPush *> putWord16be value
     Swap -> putWord8 MagicNumbers.instruction_swap
     TableSwitch{} -> undefined -- TODO: figure this out
-    Wide opcode index -> putWord8 MagicNumbers.instruction_wide *> putWord8 opcode *> putWord16be index
+    Wide1 opcode index ->
+        putWord8 MagicNumbers.instruction_wide
+            *> putWord8 opcode
+            *> putWord16be index
+    WideIInc index increment ->
+        putWord8 MagicNumbers.instruction_wide
+            *> putWord8 MagicNumbers.instruction_iInc
+            *> putWord16be index
+            *> putWord16be increment
 
 instance WriteBinary Instruction where
     writeBinary = putInstruction

@@ -1,3 +1,5 @@
+{-# LANGUAGE DefaultSignatures #-}
+
 -- | Types and type synonyms for raw JVM data
 module JVM.Data.Raw.Types where
 
@@ -39,3 +41,41 @@ type ConstantPoolIndex = U2
 
 -- | An "array type code" for the `newarray` instruction
 type ArrayType = U1
+
+-- | Conversions between numbers that will never overflow or underflow
+class SafeNumConvert a b where
+    safeNumConvert :: a -> b
+
+instance SafeNumConvert U1 Int where
+    safeNumConvert = fromIntegral
+
+instance SafeNumConvert U2 Int where
+    safeNumConvert = fromIntegral
+
+instance SafeNumConvert U4 Int where
+    safeNumConvert = fromIntegral
+
+instance SafeNumConvert U1 U2 where
+    safeNumConvert = fromIntegral
+
+instance SafeNumConvert U2 U4 where
+    safeNumConvert = fromIntegral
+
+instance SafeNumConvert U1 U4 where
+    safeNumConvert = fromIntegral
+
+class (SafeNumConvert b a, Integral a, Integral b) => UnsafeNumConvert a b where
+    unsafeNumConvert :: a -> Maybe b
+    default unsafeNumConvert :: (Bounded b) => a -> Maybe b
+    unsafeNumConvert x
+        | fromIntegral @a @Integer x >= fromIntegral (minBound :: b)
+            && fromIntegral @a @Integer x
+                <= fromIntegral (maxBound :: b) =
+            Just (fromIntegral x)
+        | otherwise = Nothing
+
+instance UnsafeNumConvert Int U1
+
+instance UnsafeNumConvert Int U2
+
+instance UnsafeNumConvert U2 U1 

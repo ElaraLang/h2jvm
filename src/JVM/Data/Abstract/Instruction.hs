@@ -21,8 +21,8 @@ type Reference = Int
 
 type Instruction = Instruction' Label
 data Instruction' label
-    = ALoad U1
-    | AStore U1
+    = ALoad U2
+    | AStore U2
     | AReturn
     | AConstNull
     | Dup
@@ -38,8 +38,8 @@ data Instruction' label
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | InvokeDynamic BootstrapMethod Text MethodDescriptor
     | InvokeSpecial ClassInfoType Text MethodDescriptor
-    | ILoad U1
-    | IStore U1
+    | ILoad U2
+    | IStore U2
     | Label label
     | LDC LDCEntry
     | PutStatic ClassInfoType Text FieldType

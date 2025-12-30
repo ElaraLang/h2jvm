@@ -18,10 +18,12 @@ import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
 import Data.Word (Word16)
-import JVM.Data.Convert.Monad
 import Effectful
 import Effectful.Error.Static
 import Effectful.State.Static.Local
+import JVM.Data.Convert.Monad
+import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
+import JVM.Data.Raw.Types (U1, U2, UnsafeNumConvert (unsafeNumConvert), safeNumConvert)
 
 type CodeConverterEff r = (ConstantPool :> r, State ConvertState :> r, Error CodeConverterError :> r)
 
@@ -45,26 +47,22 @@ countArguments (MethodDescriptor args _) = 1 + sum (map countArgument args)
 
 -- | The size of an instruction in bytes, used for calculating jump offsets
 instructionSize :: Abs.Instruction -> Word16
-instructionSize (Abs.ALoad 0) = 1
-instructionSize (Abs.ALoad 1) = 1
-instructionSize (Abs.ALoad 2) = 1
-instructionSize (Abs.ALoad 3) = 1
-instructionSize (Abs.ALoad _) = 2
-instructionSize (Abs.AStore 0) = 1
-instructionSize (Abs.AStore 1) = 1
-instructionSize (Abs.AStore 2) = 1
-instructionSize (Abs.AStore 3) = 1
-instructionSize (Abs.AStore _) = 2
-instructionSize (Abs.ILoad 0) = 1
-instructionSize (Abs.ILoad 1) = 1
-instructionSize (Abs.ILoad 2) = 1
-instructionSize (Abs.ILoad 3) = 1
-instructionSize (Abs.ILoad _) = 2
-instructionSize (Abs.IStore 0) = 1
-instructionSize (Abs.IStore 1) = 1
-instructionSize (Abs.IStore 2) = 1
-instructionSize (Abs.IStore 3) = 1
-instructionSize (Abs.IStore _) = 2
+instructionSize (Abs.ALoad n)
+    | n <= 3 = 1
+    | n <= 255 = 2
+    | otherwise = 4 -- wide (1) + opcode (1) + index (2)
+instructionSize (Abs.AStore n)
+    | n <= 3 = 1
+    | n <= 255 = 2
+    | otherwise = 4
+instructionSize (Abs.ILoad n)
+    | n <= 3 = 1
+    | n <= 255 = 2
+    | otherwise = 4
+instructionSize (Abs.IStore n)
+    | n <= 3 = 1
+    | n <= 255 = 2
+    | otherwise = 4
 instructionSize Abs.AReturn = 1
 instructionSize Abs.AConstNull = 1
 instructionSize (Abs.IfEq _) = 3
@@ -172,22 +170,30 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.ALoad 1) = pure Raw.ALoad1
     convertInstruction (Abs.ALoad 2) = pure Raw.ALoad2
     convertInstruction (Abs.ALoad 3) = pure Raw.ALoad3
-    convertInstruction (Abs.ALoad idx) = pure (Raw.ALoad idx)
+    convertInstruction (Abs.ALoad idx)
+        | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.ALoad i)
+        | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_aLoad idx)
     convertInstruction (Abs.AStore 0) = pure Raw.AStore0
     convertInstruction (Abs.AStore 1) = pure Raw.AStore1
     convertInstruction (Abs.AStore 2) = pure Raw.AStore2
     convertInstruction (Abs.AStore 3) = pure Raw.AStore3
-    convertInstruction (Abs.AStore idx) = pure (Raw.AStore idx)
+    convertInstruction (Abs.AStore idx)
+        | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.AStore i)
+        | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_aStore idx)
     convertInstruction (Abs.ILoad 0) = pure Raw.ILoad0
     convertInstruction (Abs.ILoad 1) = pure Raw.ILoad1
     convertInstruction (Abs.ILoad 2) = pure Raw.ILoad2
     convertInstruction (Abs.ILoad 3) = pure Raw.ILoad3
-    convertInstruction (Abs.ILoad idx) = pure (Raw.ILoad idx)
+    convertInstruction (Abs.ILoad idx)
+        | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.ILoad i)
+        | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_iLoad idx)
     convertInstruction (Abs.IStore 0) = pure Raw.IStore0
     convertInstruction (Abs.IStore 1) = pure Raw.IStore1
     convertInstruction (Abs.IStore 2) = pure Raw.IStore2
     convertInstruction (Abs.IStore 3) = pure Raw.IStore3
-    convertInstruction (Abs.IStore idx) = pure (Raw.IStore idx)
+    convertInstruction (Abs.IStore idx)
+        | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.IStore i)
+        | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_iStore idx)
     convertInstruction Abs.AConstNull = pure Raw.AConstNull
     convertInstruction (Abs.Instanceof t) = do
         idx <- findIndexOf (CPClassEntry t)
@@ -217,7 +223,7 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
 
         pure (Raw.LDC_W idx) -- TODO: handle LDC vs LDC_W properly
 
-        -- TODO: this should probably do a bounds check on the index
+    -- TODO: this should probably do a bounds check on the index
     convertInstruction (Abs.PutStatic c n t) = do
         idx <- findIndexOf (CPFieldRefEntry (FieldRef c n t))
         pure (Raw.PutStatic idx)

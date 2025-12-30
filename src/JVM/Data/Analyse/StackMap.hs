@@ -11,7 +11,7 @@ module JVM.Data.Analyse.StackMap where
 import Control.Lens.Fold
 import Data.Generics.Sum (AsAny (_As))
 import Data.List
-import Data.Maybe (fromJust, maybeToList)
+import Data.Maybe (fromJust)
 import Effectful (Eff, runPureEff)
 import Effectful.Reader.Static (Reader, ask, runReader)
 import Effectful.State.Static.Local (State, execState, get, gets, modify, put)
@@ -127,16 +127,19 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
                 pops (length md.params)
                 pushesMaybe (returnDescriptorType md.returnDesc)
             InvokeVirtual _ _ md -> do
-                pops (1 + length md.params)
+                pops 1 -- pop receiver
+                pops (length md.params)
                 pushesMaybe (returnDescriptorType md.returnDesc)
             InvokeInterface _ _ md -> do
-                pops (1 + length md.params)
+                pops 1 -- pop receiver
+                pops (length md.params)
                 pushesMaybe (returnDescriptorType md.returnDesc)
             InvokeDynamic _ _ md -> do
                 pops (length md.params)
                 pushesMaybe (returnDescriptorType md.returnDesc)
             InvokeSpecial _ _ md -> do
-                pops (1 + length md.params)
+                pops 1 -- pop receiver
+                pops (length md.params)
                 pushesMaybe (returnDescriptorType md.returnDesc)
             PutStatic{} -> pops 1
             GetField _ _ ft -> do
@@ -225,7 +228,7 @@ replaceTop ft = do
     pushes ft
 
 -- | Loads a local variable onto the stack
-loads :: String -> U1 -> Analyser
+loads :: String -> U2 -> Analyser
 loads instName i = do
     f <- get
     block <- ask
@@ -253,7 +256,7 @@ stores i = do
                     }
 
 -- | Error for index out of bounds
-indexOOBError :: (HasCallStack) => String -> U1 -> Frame -> BasicBlock -> a
+indexOOBError :: (HasCallStack) => String -> U2 -> Frame -> BasicBlock -> a
 indexOOBError instName i ba block =
     error $
         showPretty
