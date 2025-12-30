@@ -11,6 +11,8 @@ hix-build-tools = {
 };
 hls = {
 };
+latest = {
+};
 min = {
 };
 profiled = {
