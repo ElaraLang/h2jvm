@@ -23,7 +23,7 @@ jobs:
           nix build .#h2jvm.doc
 
           mkdir -p public
-          cp -rvL result-docs/share/doc/*/html/* public/
+          cp -rvL result-doc/share/doc/*/html/* public/
           chmod -R +w public
 
           echo '<meta http-equiv="refresh" content="0; url=H2JVM.html">' > public/index.html
