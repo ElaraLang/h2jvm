@@ -13,7 +13,7 @@ data PrimitiveType
     | Long
     | Short
     | Boolean
-    deriving (Show, Eq, Ord, Data)
+    deriving (Show, Eq, Ord, Data, Enum, Bounded)
 
 instance Pretty PrimitiveType where
     pretty Byte = "byte"
