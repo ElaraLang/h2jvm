@@ -76,14 +76,14 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current (takeW
     isConditionalJump (IfLe _) = True
     isConditionalJump _ = False
 
-    analyseInstruction :: Instruction -> Frame -> Frame
+    analyseInstruction :: HasCallStack => Instruction -> Frame -> Frame
     analyseInstruction (Label _) ba = error "Label should not be encountered in analyseInstruction"
     analyseInstruction (ALoad i) ba =
-        if i > genericLength ba.locals
+        if i >= genericLength ba.locals
             then error $ "ALoad index out of bounds. Given: " <> show i <> " Locals: " <> show ba.locals
             else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
     analyseInstruction (ILoad i) ba =
-        if i > genericLength ba.locals
+        if i >= genericLength ba.locals
             then error $ "ILoad index out of bounds. Given: " <> show i <> " Locals: " <> show ba.locals
             else ba{stack = lvToStackEntry (ba.locals !! fromIntegral i) : ba.stack}
     analyseInstruction (AStore i) ba = ba{locals = replaceAtOrGrow (fromIntegral i) (stackEntryToLV $ head ba.stack) ba.locals, stack = tail ba.stack}
