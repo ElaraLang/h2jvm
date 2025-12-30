@@ -1,0 +1,35 @@
+# borrowed from https://github.com/tek/polysemy-conc/blob/main/.github/workflows/bump.yaml
+name: bump
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: "45 6 * * 6"
+
+permissions:
+    contents: write
+    pull-requests: write
+    id-token: write
+
+jobs:
+    bump-pr:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: DeterminateSystems/nix-installer-action@v16
+              with:
+                  extra-conf: |
+                      access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+            - uses: cachix/cachix-action@v16
+              with:
+                  name: elara
+                  authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+            - id: bounds
+              name: Bump dependency bounds
+              run: nix run .#bump -- --output=ga-pr
+
+            - name: pr
+              if: steps.bounds.outputs.commit-message
+              uses: peter-evans/create-pull-request@v5
+              with: ${{ steps.bounds.outputs }}
