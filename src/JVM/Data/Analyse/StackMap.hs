@@ -185,7 +185,15 @@ calculateStackMapFrames md code = do
     let top = topFrame md
     let frames = scanl analyseBlockDiff top blocks
 
-    zipWith frameDiffToSMF frames (init blocks)
+    
+    let framesWithBlocks = zip (tail frames) (init blocks)
+    let validFrames =
+            filter
+                -- remove any same_frame at the start which is not valid
+                (\(_, block) -> not (block.index == 0 && null block.instructions))
+                framesWithBlocks
+
+    map (uncurry frameDiffToSMF) validFrames
 
 replaceAtOrGrow :: Int -> LocalVariable -> [LocalVariable] -> [LocalVariable]
 replaceAtOrGrow i x xs
