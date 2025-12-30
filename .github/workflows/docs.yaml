@@ -2,14 +2,25 @@ name: Deploy Documentation
 on:
   push:
     branches: ["master"]
+
+
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
       - uses: DeterminateSystems/nix-installer-action@v19
         with:
@@ -29,7 +40,11 @@ jobs:
           echo '<meta http-equiv="refresh" content="0; url=H2JVM.html">' > public/index.html
 
 
-      - name: Deploy to Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: ./public
+          path: './public'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
