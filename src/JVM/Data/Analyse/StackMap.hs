@@ -242,10 +242,11 @@ getSuccessors block =
     isTerminator _ = False
 
 -- | Build a map from labels to block indices
+-- When block i has end = Just label, that label marks the start of block i+1
 buildLabelToBlockMap :: [BasicBlock] -> Map Label Int
 buildLabelToBlockMap blocks =
     Map.fromList
-        [(label, block.index) | block <- blocks, Just label <- [block.end]]
+        [(label, block.index + 1) | block <- blocks, Just label <- [block.end]]
 
 -- | Worklist algorithm to compute frames at each block entry
 computeBlockFrames :: Frame -> [BasicBlock] -> Map Int Frame
@@ -296,33 +297,27 @@ calculateStackMapFrames md code = do
     -- Use worklist algorithm to compute frame at entry of each block
     let blockFrames = computeBlockFrames top blocks
 
-    -- Build a map from labels to the block index they start
-    -- If block i has end = Just label, then label starts block (i+1)
-    let labelToBlockIndex :: Map Label Int
-        labelToBlockIndex = Map.fromList
-            [ (label, block.index + 1)
-            | block <- blocks
+    -- Collect all (label, frameAtLabel) pairs
+    -- For each block with end = Just label, the frame at that label
+    -- is the frame at the START of the next block
+    let labelFramePairs =
+            [ (label, frame)
+            | i <- [0 .. length blocks - 2]  -- all blocks except last
+            , let block = blocks !! i
             , Just label <- [block.end]
-            ]
-
-    -- Extract frames for labels (jump targets), in order they appear in code
-    let labelledFrames =
-            [ (blockFrames Map.! blockIdx, label)
-            | block <- blocks
-            , Just label <- [block.end]
-            , Just blockIdx <- [Map.lookup label labelToBlockIndex]
-            , Map.member blockIdx blockFrames
+            , let nextBlockIdx = i + 1
+            , Just frame <- [Map.lookup nextBlockIdx blockFrames]
             ]
 
     -- Generate stack map frames as deltas from previous frame
-    case labelledFrames of
+    case labelFramePairs of
         [] -> []
-        ((firstFrame, firstLabel) : rest) ->
+        ((firstLabel, firstFrame) : rest) ->
             let firstSMF = diffFrames top firstFrame firstLabel
                 restSMFs =
                     zipWith
-                        (\(prevFrame, _) (currFrame, currLabel) -> diffFrames prevFrame currFrame currLabel)
-                        labelledFrames
+                        (\(_, prevFrame) (currLabel, currFrame) -> diffFrames prevFrame currFrame currLabel)
+                        labelFramePairs
                         rest
              in firstSMF : restSMFs
 
