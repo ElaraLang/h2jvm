@@ -122,6 +122,7 @@ insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
             case Map.lookup l s.labelOffsets of
                 Just _ -> throwError (DuplicateLabel l currentOffset)
                 Nothing -> do
+                    traceM $ "Inserting label " ++ show l ++ " at offset " ++ show currentOffset
                     pure (s{labelOffsets = Map.insert l currentOffset s.labelOffsets})
         pure (OffsetInstruction (error "Label offset should not be evaluated") (Label l))
     insertLabel x = do
