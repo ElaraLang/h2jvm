@@ -157,12 +157,16 @@ diffFrames (Frame locals1 stack1) (Frame locals2 stack2) label
     -- same locals, one stack item
     | [x] <- stack2, locals1 == locals2 = SameLocals1StackItemFrame (seToVerificationTypeInfo x) label
     -- stack empty, locals appended
-    | null stack2 && locals1 `isPrefixOf` locals2 =
+    | null stack2
+        && locals1 `isPrefixOf` locals2
+        && length locals2 - length locals1 <= 3 =
         let difference = drop (length locals1) locals2
          in AppendFrame (map lvToVerificationTypeInfo difference) label
-
     -- stack empty, locals chopped
-    | null stack2 && locals2 `isPrefixOf` locals1 = ChopFrame (fromIntegral $ length locals1 - length locals2) label
+    | null stack2
+        && locals2 `isPrefixOf` locals1
+        && length locals1 - length locals2 <= 3 =
+        ChopFrame (fromIntegral $ length locals1 - length locals2) label
     -- full frame otherwise
     | otherwise = FullFrame (map lvToVerificationTypeInfo locals2) (map seToVerificationTypeInfo stack2) label
 
