@@ -10,7 +10,11 @@ module JVM.Data.Analyse.StackMap where
 import Control.Lens.Fold
 import Data.Generics.Sum (AsAny (_As))
 import Data.List
-import Data.Maybe (fromJust)
+import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
+import Data.Maybe (mapMaybe)
+import Data.Set (Set)
+import Data.Set qualified as Set
 import Effectful (Eff, runPureEff)
 import Effectful.Reader.Static (Reader, ask, runReader)
 import Effectful.State.Static.Local (State, execState, get, gets, modify, put)
@@ -154,8 +158,8 @@ diffFrames :: Frame -> Frame -> Label -> StackMapFrame
 diffFrames (Frame locals1 stack1) (Frame locals2 stack2) label
     -- locals the same, stack empty
     | locals1 == locals2 && null stack2 = SameFrame label
-    -- same locals, one stack item
-    | [x] <- stack2, locals1 == locals2 = SameLocals1StackItemFrame (seToVerificationTypeInfo x) label
+    -- same locals, one stack item (previous stack must be empty)
+    | [x] <- stack2, locals1 == locals2, null stack1 = SameLocals1StackItemFrame (seToVerificationTypeInfo x) label
     -- stack empty, locals appended
     | null stack2
         && locals1 `isPrefixOf` locals2
@@ -189,35 +193,125 @@ seToVerificationTypeInfo StackEntryTop = TopVariableInfo
 seToVerificationTypeInfo StackEntryNull = NullVariableInfo
 seToVerificationTypeInfo (StackEntry ft) = case ft of
     PrimitiveFieldType Int -> IntegerVariableInfo
+    PrimitiveFieldType Byte -> IntegerVariableInfo
+    PrimitiveFieldType Char -> IntegerVariableInfo
+    PrimitiveFieldType Short -> IntegerVariableInfo
+    PrimitiveFieldType Boolean -> IntegerVariableInfo
     PrimitiveFieldType Float -> FloatVariableInfo
     PrimitiveFieldType Long -> LongVariableInfo
     PrimitiveFieldType Double -> DoubleVariableInfo
     _ -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
 
+-- | Merge two frames that could both reach the same point.
+-- Returns Nothing if frames are identical, Just merged if they differ.
+mergeFrames :: Frame -> Frame -> Maybe Frame
+mergeFrames (Frame locals1 stack1) (Frame locals2 stack2)
+    | locals1 == locals2 && stack1 == stack2 = Nothing
+    | otherwise = Just $ Frame
+        { locals = zipWithDefault Uninitialised mergeLocal locals1 locals2
+        , stack = if stack1 == stack2 then stack1 else []  -- Conservative: empty if different
+        }
+  where
+    mergeLocal :: LocalVariable -> LocalVariable -> LocalVariable
+    mergeLocal Uninitialised x = x
+    mergeLocal x Uninitialised = x
+    mergeLocal x y = if x == y then x else Uninitialised
+
+    zipWithDefault :: a -> (a -> a -> a) -> [a] -> [a] -> [a]
+    zipWithDefault def f xs ys = go xs ys
+      where
+        go [] [] = []
+        go (a : as) [] = f a def : go as []
+        go [] (b : bs) = f def b : go [] bs
+        go (a : as) (b : bs) = f a b : go as bs
+
+-- | Get successors of a block (labels that can be reached from this block)
+getSuccessors :: BasicBlock -> [Maybe Label]
+getSuccessors block =
+    let lastInst = if null block.instructions then Nothing else Just (last block.instructions)
+        jump = lastInst >>= jumpTarget
+        fallThrough = if isTerminator lastInst then Nothing else block.end
+    in [jump, fallThrough]
+  where
+    isTerminator (Just (Goto _)) = True
+    isTerminator (Just AReturn) = True
+    isTerminator (Just Return) = True
+    isTerminator _ = False
+
+-- | Build a map from labels to block indices
+buildLabelToBlockMap :: [BasicBlock] -> Map Label Int
+buildLabelToBlockMap blocks = Map.fromList
+    [(label, block.index) | block <- blocks, Just label <- [block.end]]
+
+-- | Worklist algorithm to compute frames at each block entry
+computeBlockFrames :: Frame -> [BasicBlock] -> Map Int Frame
+computeBlockFrames initialFrame blocks =
+    let labelToBlock = buildLabelToBlockMap blocks
+        blockArray = Map.fromList [(b.index, b) | b <- blocks]
+        
+        -- Initialize: block 0 has initialFrame
+        initialFrames = Map.singleton 0 initialFrame
+        initialWorklist = Set.singleton 0
+        
+    in worklistLoop initialWorklist initialFrames labelToBlock blockArray
+  where
+    worklistLoop :: Set Int -> Map Int Frame -> Map Label Int -> Map Int BasicBlock -> Map Int Frame
+    worklistLoop worklist frames labelToBlock blockArray
+        | Set.null worklist = frames
+        | otherwise =
+            let (blockIdx, worklist') = Set.deleteFindMin worklist
+                block = blockArray Map.! blockIdx
+                inputFrame = frames Map.! blockIdx
+                outputFrame = analyseBlockDiff inputFrame block
+                
+                -- Get successors
+                successorLabels = getSuccessors block
+                successorIndices = mapMaybe (\lbl -> lbl >>= (`Map.lookup` labelToBlock)) successorLabels
+                
+                -- Propagate to successors
+                (frames', worklist'') = foldl' (propagateFrame outputFrame) (frames, worklist') successorIndices
+                
+            in worklistLoop worklist'' frames' labelToBlock blockArray
+    
+    propagateFrame :: Frame -> (Map Int Frame, Set Int) -> Int -> (Map Int Frame, Set Int)
+    propagateFrame outFrame (frames, worklist) succIdx =
+        case Map.lookup succIdx frames of
+            Nothing ->
+                -- First time reaching this block
+                (Map.insert succIdx outFrame frames, Set.insert succIdx worklist)
+            Just existingFrame ->
+                case mergeFrames existingFrame outFrame of
+                    Nothing -> (frames, worklist)  -- No change
+                    Just mergedFrame ->
+                        -- Frame changed, update and add to worklist
+                        (Map.insert succIdx mergedFrame frames, Set.insert succIdx worklist)
+
 calculateStackMapFrames :: (HasCallStack) => MethodDescriptor -> [Instruction] -> [StackMapFrame]
 calculateStackMapFrames md code = do
     let blocks = splitIntoBasicBlocks code
     let top = topFrame md
-
-    -- frames contains the state at the start of each block
-    -- eg frames !! 0 = top
-    --    frames !! 1 = top + analysis of block 0
-    let frames = scanl analyseBlockDiff top blocks
-
-    let blockOutputs = zip (tail frames) blocks
-
+    
+    -- Use worklist algorithm to compute frame at entry of each block
+    let blockFrames = computeBlockFrames top blocks
+    
+    -- Extract frames for blocks that have labels (jump targets), in order
     let labelledFrames =
-            [ (frame, label)
-            | (frame, block) <- blockOutputs
-            , -- Filter out the frame if it is the implicit Frame @ 0
-            not (block.index == 0 && null block.instructions)
+            [ (blockFrames Map.! block.index, label)
+            | block <- blocks
             , Just label <- [block.end]
+            , Map.member block.index blockFrames
             ]
-
-    zipWith mkFrameDiff (top : map fst labelledFrames) labelledFrames
-  where
-    mkFrameDiff prevFrame (thisFrame, label) =
-        diffFrames prevFrame thisFrame label
+    
+    -- Generate stack map frames as deltas from previous frame
+    case labelledFrames of
+        [] -> []
+        ((firstFrame, firstLabel) : rest) ->
+            let firstSMF = diffFrames top firstFrame firstLabel
+                restSMFs = zipWith
+                    (\(prevFrame, _) (currFrame, currLabel) -> diffFrames prevFrame currFrame currLabel)
+                    labelledFrames
+                    rest
+            in firstSMF : restSMFs
 
 replaceAtOrGrow :: Int -> LocalVariable -> [LocalVariable] -> [LocalVariable]
 replaceAtOrGrow i x xs
