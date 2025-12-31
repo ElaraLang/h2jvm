@@ -254,10 +254,18 @@ computeBlockFrames initialFrame blocks =
     let labelToBlock = buildLabelToBlockMap blocks
         blockArray = Map.fromList [(b.index, b) | b <- blocks]
 
+        -- Debug: check if all jump targets are in labelToBlock
+        allJumpTargets = [lbl | block <- blocks, inst <- block.instructions, Just lbl <- [jumpTarget inst]]
+        missingLabels = filter (`Map.notMember` labelToBlock) allJumpTargets
+
         -- Initialize: block 0 has initialFrame
         initialFrames = Map.singleton 0 initialFrame
         initialWorklist = Set.singleton 0
-     in worklistLoop initialWorklist initialFrames labelToBlock blockArray
+
+        result = worklistLoop initialWorklist initialFrames labelToBlock blockArray
+     in if null missingLabels
+            then result
+            else error $ "Jump targets without corresponding Label instructions: " ++ show missingLabels
   where
     worklistLoop :: Set Int -> Map Int Frame -> Map Label Int -> Map Int BasicBlock -> Map Int Frame
     worklistLoop worklist frames labelToBlock blockArray
@@ -297,27 +305,34 @@ calculateStackMapFrames md code = do
     -- Use worklist algorithm to compute frame at entry of each block
     let blockFrames = computeBlockFrames top blocks
 
-    -- Collect all (label, frameAtLabel) pairs
-    -- For each block with end = Just label, the frame at that label
-    -- is the frame at the START of the next block
-    let labelFramePairs =
-            [ (label, frame)
-            | i <- [0 .. length blocks - 2]  -- all blocks except last
+    -- Build map from label to the block it starts
+    let labelToBlockIdx = Map.fromList
+            [ (label, i + 1)
+            | i <- [0 .. length blocks - 1]
             , let block = blocks !! i
             , Just label <- [block.end]
-            , let nextBlockIdx = i + 1
-            , Just frame <- [Map.lookup nextBlockIdx blockFrames]
+            , i + 1 < length blocks
+            ]
+
+    -- Collect labels in the order they appear in original code
+    let orderedPairs =
+            [ (label, blockFrames Map.! blockIdx)
+            | i <- [0 .. length blocks - 1]
+            , let block = blocks !! i
+            , Just label <- [block.end]
+            , Just blockIdx <- [Map.lookup label labelToBlockIdx]
+            , Map.member blockIdx blockFrames
             ]
 
     -- Generate stack map frames as deltas from previous frame
-    case labelFramePairs of
+    case orderedPairs of
         [] -> []
         ((firstLabel, firstFrame) : rest) ->
             let firstSMF = diffFrames top firstFrame firstLabel
                 restSMFs =
                     zipWith
                         (\(_, prevFrame) (currLabel, currFrame) -> diffFrames prevFrame currFrame currLabel)
-                        labelFramePairs
+                        orderedPairs
                         rest
              in firstSMF : restSMFs
 
