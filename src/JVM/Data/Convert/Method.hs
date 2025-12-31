@@ -68,24 +68,27 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
 
         convertStackMapFrame :: (CodeConverterEff r) => U2 -> Abs.StackMapFrame -> Eff r (U2, Raw.StackMapFrame)
         convertStackMapFrame prev (Abs.SameFrame x) = do
-            label <- (- 1) . (- prev) <$> fullyResolveAbs x
+            absLabel <- fullyResolveAbs x
+            let delta = absLabel - prev - 1
             pure
-                ( label
-                , if label <= 63
-                    then Raw.SameFrame (fromIntegral label)
+                ( absLabel
+                , if delta <= 63
+                    then Raw.SameFrame (fromIntegral delta)
                     else
-                        if label <= 32767
-                            then Raw.SameFrameExtended label
+                        if delta <= 32767
+                            then Raw.SameFrameExtended delta
                             else error "Label too large"
                 )
         convertStackMapFrame prev (Abs.ChopFrame x stack) = do
-            label <- (- 1) . (- prev) <$> fullyResolveAbs stack
+            absLabel <- fullyResolveAbs stack
+            let label = absLabel - prev - 1
             pure
                 ( label
                 , Raw.ChopFrame x (fromIntegral label)
                 )
         convertStackMapFrame prev (Abs.SameLocals1StackItemFrame x stack) = do
-            label <- (- 1) . (- prev) <$> fullyResolveAbs stack
+            absLabel <- fullyResolveAbs stack
+            let label = absLabel - prev - 1
             x' <- convertVerificationTypeInfo x
             pure
                 ( label
@@ -97,7 +100,8 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
                             else error "Label too large"
                 )
         convertStackMapFrame prev (Abs.AppendFrame x stack) = do
-            label <- (- 1) . (- prev) <$> fullyResolveAbs stack
+            absLabel <- fullyResolveAbs stack
+            let label = absLabel - prev - 1
             x' <- traverse convertVerificationTypeInfo x
             pure
                 ( label
@@ -106,7 +110,8 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
                     else error "Label too large"
                 )
         convertStackMapFrame prev (Abs.FullFrame x y stack) = do
-            label <- (- 1) . (- prev) <$> fullyResolveAbs stack
+            absLabel <- fullyResolveAbs stack
+            let label = absLabel - prev - 1
             x' <- traverse convertVerificationTypeInfo x
             y' <- traverse convertVerificationTypeInfo y
             pure
