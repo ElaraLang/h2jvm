@@ -16,6 +16,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+
+
       - id: bounds
         run: nix run .#lower -- --output=ga-pr
 
