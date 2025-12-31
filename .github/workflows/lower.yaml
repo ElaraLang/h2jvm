@@ -27,5 +27,5 @@ jobs:
 
       - name: pr
         if: steps.bounds.outputs.commit-message
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v8
         with: ${{ steps.bounds.outputs }}
