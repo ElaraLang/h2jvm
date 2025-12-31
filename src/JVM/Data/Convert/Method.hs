@@ -6,6 +6,7 @@ module JVM.Data.Convert.Method where
 import Control.Applicative (liftA2)
 import Data.TypeMergingList qualified as TML
 import Data.Vector qualified as V
+import Effectful
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.ClassFile.Method
 import JVM.Data.Abstract.ClassFile.Method qualified as Abs
@@ -17,7 +18,6 @@ import JVM.Data.Convert.Instruction (CodeConverterEff, convertInstructions, full
 import JVM.Data.Convert.Monad
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.Types
-import Effectful
 
 -- >>> foldMWith (\a b -> pure (a + b, a + b)) 0 [1, 2, 3]
 -- (6,[1,3,6])
@@ -69,21 +69,21 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
         convertStackMapFrame :: (CodeConverterEff r) => U2 -> Abs.StackMapFrame -> Eff r (U2, Raw.StackMapFrame)
         convertStackMapFrame prev (Abs.SameFrame x) = do
             absLabel <- fullyResolveAbs x
-            let delta = absLabel - prev - 1
+            let label = absLabel - prev - 1
             pure
                 ( absLabel
-                , if delta <= 63
-                    then Raw.SameFrame (fromIntegral delta)
+                , if label <= 63
+                    then Raw.SameFrame (fromIntegral label)
                     else
-                        if delta <= 32767
-                            then Raw.SameFrameExtended delta
+                        if label <= 32767
+                            then Raw.SameFrameExtended label
                             else error "Label too large"
                 )
         convertStackMapFrame prev (Abs.ChopFrame x stack) = do
             absLabel <- fullyResolveAbs stack
             let label = absLabel - prev - 1
             pure
-                ( label
+                ( absLabel
                 , Raw.ChopFrame x (fromIntegral label)
                 )
         convertStackMapFrame prev (Abs.SameLocals1StackItemFrame x stack) = do
@@ -91,7 +91,7 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
             let label = absLabel - prev - 1
             x' <- convertVerificationTypeInfo x
             pure
-                ( label
+                ( absLabel
                 , if label <= 63
                     then Raw.SameLocals1StackItemFrame x' (fromIntegral label)
                     else
@@ -104,7 +104,7 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
             let label = absLabel - prev - 1
             x' <- traverse convertVerificationTypeInfo x
             pure
-                ( label
+                ( absLabel
                 , if label <= 32767
                     then Raw.AppendFrame (V.fromList x') label
                     else error "Label too large"
@@ -115,7 +115,7 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
             x' <- traverse convertVerificationTypeInfo x
             y' <- traverse convertVerificationTypeInfo y
             pure
-                ( label
+                ( absLabel
                 , if label <= 32767
                     then Raw.FullFrame (V.fromList x') (V.fromList y') label
                     else error "Label too large"
