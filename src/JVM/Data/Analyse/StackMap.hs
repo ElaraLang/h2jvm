@@ -236,7 +236,9 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current block.
 diffFrames :: Frame -> Frame -> Label -> StackMapFrame
 diffFrames (Frame locals1 stack1) (Frame locals2 stack2) label
     | locals1 == locals2 && null stack2 = SameFrame label
+    -- same locals, one stack item (previous stack must be empty)
     | [x] <- stack2, locals1 == locals2, null stack1 = SameLocals1StackItemFrame (seToVerificationTypeInfo x) label
+    -- stack empty, locals appended
     | null stack2
         && locals1 `isPrefixOf` locals2
         && let diff = length locals2 - length locals1 in diff > 0 && diff <= 3 =
