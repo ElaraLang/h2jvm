@@ -4,8 +4,11 @@
 module JVM.Data.Convert.Method where
 
 import Control.Applicative (liftA2)
+import Control.Monad (foldM)
+import Data.List (mapAccumL, nubBy, sortOn)
 import Data.TypeMergingList qualified as TML
 import Data.Vector qualified as V
+import Data.Word (Word16)
 import Effectful
 import GHC.Stack (HasCallStack)
 import JVM.Data.Abstract.ClassFile.Method
@@ -64,62 +67,53 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
         pure $ Raw.AttributeInfo (fromIntegral nameIndex) (Raw.StackMapTableAttribute frames')
       where
         convertStackMapTable :: (CodeConverterEff r) => [Abs.StackMapFrame] -> Eff r (V.Vector Raw.StackMapFrame)
-        convertStackMapTable = fmap (V.fromList . snd) . foldMWith convertStackMapFrame -1
+        convertStackMapTable fs = do
+            resolvedFrames <- traverse resolveFrame fs
+            let uniqueFrames =
+                    nubBy (\(o1, _) (o2, _) -> o1 == o2) $
+                        sortOn fst resolvedFrames
+            V.fromList . reverse . snd <$> foldM convertAndAccumulate (-1, []) uniqueFrames
 
-        convertStackMapFrame :: (CodeConverterEff r) => U2 -> Abs.StackMapFrame -> Eff r (U2, Raw.StackMapFrame)
-        convertStackMapFrame prev (Abs.SameFrame x) = do
-            absLabel <- fullyResolveAbs x
-            let label = absLabel - prev - 1
-            pure
-                ( absLabel
-                , if label <= 63
-                    then Raw.SameFrame (fromIntegral label)
-                    else
-                        if label <= 32767
-                            then Raw.SameFrameExtended label
-                            else error "Label too large"
-                )
-        convertStackMapFrame prev (Abs.ChopFrame x stack) = do
-            absLabel <- fullyResolveAbs stack
-            let label = absLabel - prev - 1
-            pure
-                ( absLabel
-                , Raw.ChopFrame x (fromIntegral label)
-                )
-        convertStackMapFrame prev (Abs.SameLocals1StackItemFrame x stack) = do
-            absLabel <- fullyResolveAbs stack
-            let label = absLabel - prev - 1
-            x' <- convertVerificationTypeInfo x
-            pure
-                ( absLabel
-                , if label <= 63
-                    then Raw.SameLocals1StackItemFrame x' (fromIntegral label)
-                    else
-                        if label <= 32767
-                            then Raw.SameLocals1StackItemFrameExtended x' label
-                            else error "Label too large"
-                )
-        convertStackMapFrame prev (Abs.AppendFrame x stack) = do
-            absLabel <- fullyResolveAbs stack
-            let label = absLabel - prev - 1
-            x' <- traverse convertVerificationTypeInfo x
-            pure
-                ( absLabel
-                , if label <= 32767
-                    then Raw.AppendFrame (V.fromList x') label
-                    else error "Label too large"
-                )
-        convertStackMapFrame prev (Abs.FullFrame x y stack) = do
-            absLabel <- fullyResolveAbs stack
-            let label = absLabel - prev - 1
-            x' <- traverse convertVerificationTypeInfo x
-            y' <- traverse convertVerificationTypeInfo y
-            pure
-                ( absLabel
-                , if label <= 32767
-                    then Raw.FullFrame (V.fromList x') (V.fromList y') label
-                    else error "Label too large"
-                )
+        resolveFrame :: (CodeConverterEff r) => Abs.StackMapFrame -> Eff r (Word16, Abs.StackMapFrame)
+        resolveFrame f = do
+            off <- fullyResolveAbs (getFrameLabel f)
+            pure (off, f)
+
+        getFrameLabel (Abs.SameFrame l) = l
+        getFrameLabel (Abs.ChopFrame _ l) = l
+        getFrameLabel (Abs.SameLocals1StackItemFrame _ l) = l
+        getFrameLabel (Abs.AppendFrame _ l) = l
+        getFrameLabel (Abs.FullFrame _ _ l) = l
+
+        convertAndAccumulate :: (CodeConverterEff r) => (Int, [Raw.StackMapFrame]) -> (Word16, Abs.StackMapFrame) -> Eff r (Int, [Raw.StackMapFrame])
+        convertAndAccumulate (prev, acc) (absLabel16, frame) = do
+            let current = fromIntegral absLabel16
+            let delta = current - prev - 1
+
+            rawFrame <- case frame of
+                Abs.SameFrame _ ->
+                    pure $
+                        if delta <= 63
+                            then Raw.SameFrame (fromIntegral delta)
+                            else Raw.SameFrameExtended (fromIntegral delta)
+                Abs.ChopFrame x _ ->
+                    pure $ Raw.ChopFrame x (fromIntegral delta)
+                Abs.SameLocals1StackItemFrame x _ -> do
+                    x' <- convertVerificationTypeInfo x
+                    pure $
+                        if delta <= 63
+                            then Raw.SameLocals1StackItemFrame x' (fromIntegral delta)
+                            else Raw.SameLocals1StackItemFrameExtended x' (fromIntegral delta)
+                Abs.AppendFrame x _ -> do
+                    x' <- traverse convertVerificationTypeInfo x
+                    pure $ Raw.AppendFrame (V.fromList x') (fromIntegral delta)
+                Abs.FullFrame x y _ -> do
+                    x' <- traverse convertVerificationTypeInfo x
+                    y' <- traverse convertVerificationTypeInfo y
+                    pure $ Raw.FullFrame (V.fromList x') (V.fromList y') (fromIntegral delta)
+
+            -- Check for overflow explicitly if you want, otherwise fromIntegral handles it
+            pure (current, rawFrame : acc)
 
 convertVerificationTypeInfo :: (CodeConverterEff r) => Abs.VerificationTypeInfo -> Eff r Raw.VerificationTypeInfo
 convertVerificationTypeInfo Abs.TopVariableInfo = pure Raw.TopVariableInfo

@@ -25,6 +25,9 @@ instance Pretty PrimitiveType where
     pretty Short = "short"
     pretty Boolean = "boolean"
 
+{- | JVM field type.
+Used in places such as method descriptors and field descriptors.
+-}
 data FieldType
     = PrimitiveFieldType PrimitiveType
     | ObjectFieldType QualifiedClassName
@@ -41,6 +44,9 @@ fieldTypeToClassInfoType (PrimitiveFieldType p) = PrimitiveClassInfoType p
 fieldTypeToClassInfoType (ObjectFieldType c) = ClassInfoType c
 fieldTypeToClassInfoType (ArrayFieldType f) = ArrayClassInfoType (fieldTypeToClassInfoType f)
 
+{- | JVM class info type.
+Used in places such as the constant pool and exception tables.
+-}
 data ClassInfoType
     = ClassInfoType QualifiedClassName
     | PrimitiveClassInfoType PrimitiveType

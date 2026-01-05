@@ -26,6 +26,7 @@ data Instruction' label
     | AReturn
     | AConstNull
     | Dup
+    | IAnd
     | IfEq label
     | IfNe label
     | IfLt label
@@ -38,6 +39,7 @@ data Instruction' label
     | InvokeVirtual ClassInfoType Text MethodDescriptor
     | InvokeDynamic BootstrapMethod Text MethodDescriptor
     | InvokeSpecial ClassInfoType Text MethodDescriptor
+    | IOr
     | ILoad U2
     | IStore U2
     | Label label
@@ -49,6 +51,9 @@ data Instruction' label
     | Goto label
     | CheckCast ClassInfoType
     | Return
+    | IReturn
+    | IConst0
+    | IConst1
     | New ClassInfoType
     deriving (Show, Eq, Ord, Functor, Generic, Data)
 
@@ -58,6 +63,7 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty AReturn = "areturn"
     pretty AConstNull = "aconst_null"
     pretty Dup = "dup"
+    pretty IAnd = "iand"
     pretty (IfEq l) = "ifeq" <+> pretty l
     pretty (IfNe l) = "ifne" <+> pretty l
     pretty (IfLt l) = "iflt" <+> pretty l
@@ -70,6 +76,7 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty (InvokeVirtual c n d) = "invokevirtual" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (InvokeDynamic b n d) = "invokedynamic" <+> pretty b <> "." <> pretty n <> pretty d
     pretty (InvokeSpecial c n d) = "invokespecial" <+> pretty c <> "." <> pretty n <> pretty d
+    pretty IOr = "ior"
     pretty (ILoad x) = "iload" <+> pretty x
     pretty (IStore x) = "istore" <+> pretty x
     pretty (Label l) = ":" <> pretty l
@@ -81,6 +88,9 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty (Goto l) = "goto" <+> pretty l
     pretty (CheckCast c) = "checkcast" <+> pretty c
     pretty Return = "return"
+    pretty IReturn = "ireturn"
+    pretty IConst0 = "iconst_0"
+    pretty IConst1 = "iconst_1"
     pretty (New c) = "new" <+> pretty c
 
 jumpTarget :: Instruction' label -> Maybe label

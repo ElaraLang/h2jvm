@@ -22,6 +22,8 @@ import JVM.Data.Raw.Instruction qualified as Raw
 import Test.Hspec hiding (shouldContain)
 import Test.Hspec.Hedgehog
 import Util
+import JVM.Data.Convert (jloName)
+import JVM.Data.Abstract.ClassFile.AccessFlags
 
 
 spec :: Spec
@@ -93,7 +95,7 @@ frameAnalysis = describe "Stack Map Frame Analysis" $ do
                 mapM_ emitOp ops
                 emit Return
         let blocks = splitIntoBasicBlocks code
-        let top = topFrame (MethodDescriptor [] VoidReturn)
+        let top = topFrame jloName [MStatic] (MethodDescriptor [] VoidReturn)
         let endFrame = analyseBlockDiff top (head blocks)
 
         -- The final stack height should be the sum of all operations

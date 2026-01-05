@@ -17,15 +17,13 @@ import JVM.Data.Abstract.Type
 import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
 
-import Control.Monad (void)
 import Data.Word (Word16)
-import Debug.Trace (traceM)
 import Effectful
 import Effectful.Error.Static
 import Effectful.State.Static.Local
 import JVM.Data.Convert.Monad
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
-import JVM.Data.Raw.Types (U1, U2, UnsafeNumConvert (unsafeNumConvert), safeNumConvert)
+import JVM.Data.Raw.Types (U1, U2, UnsafeNumConvert (unsafeNumConvert))
 
 type CodeConverterEff r = (ConstantPool :> r, State ConvertState :> r, Error CodeConverterError :> r)
 
@@ -67,6 +65,7 @@ instructionSize (Abs.IStore n)
     | otherwise = 4
 instructionSize Abs.AReturn = 1
 instructionSize Abs.AConstNull = 1
+instructionSize Abs.IAnd = 1
 instructionSize (Abs.IfEq _) = 3
 instructionSize (Abs.IfNe _) = 3
 instructionSize (Abs.IfLt _) = 3
@@ -79,6 +78,7 @@ instructionSize (Abs.InvokeVirtual{}) = 3
 instructionSize (Abs.InvokeInterface{}) = 5
 instructionSize (Abs.InvokeDynamic{}) = 5
 instructionSize (Abs.InvokeSpecial{}) = 3
+instructionSize Abs.IOr = 1
 instructionSize (Abs.Label _) = 0
 instructionSize (Abs.LDC _) = 3
 instructionSize (Abs.PutStatic{}) = 3
@@ -87,6 +87,9 @@ instructionSize (Abs.GetStatic{}) = 3
 instructionSize (Abs.PutField{}) = 3
 instructionSize (Abs.CheckCast _) = 3
 instructionSize Abs.Return = 1
+instructionSize Abs.IReturn = 1
+instructionSize Abs.IConst0 = 1
+instructionSize Abs.IConst1 = 1
 instructionSize Abs.Dup = 1
 instructionSize (Abs.Goto _) = 3
 instructionSize (Abs.New _) = 3
@@ -111,7 +114,6 @@ insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
     incOffset inst = do
         offset <- gets (.currentOffset)
         let size = instructionSize inst
-        traceM $ "Offset: " ++ show offset ++ " | Size: " ++ show size ++ " | Inst: " ++ show (void inst)
         modify (\s -> s{currentOffset = offset + size})
 
     insertLabel :: (CodeConverterEff r) => Abs.Instruction -> Eff r (OffsetInstruction Abs.Instruction)
@@ -122,7 +124,6 @@ insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
             case Map.lookup l s.labelOffsets of
                 Just _ -> throwError (DuplicateLabel l currentOffset)
                 Nothing -> do
-                    traceM $ "Inserting label " ++ show l ++ " at offset " ++ show currentOffset
                     pure (s{labelOffsets = Map.insert l currentOffset s.labelOffsets})
         pure (OffsetInstruction (error "Label offset should not be evaluated") (Label l))
     insertLabel x = do
@@ -243,6 +244,9 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
         pure (Raw.PutField idx)
     convertInstruction Abs.AReturn = pure Raw.AReturn
     convertInstruction Abs.Return = pure Raw.Return
+    convertInstruction Abs.IReturn = pure Raw.IReturn
+    convertInstruction Abs.IConst0 = pure Raw.IConst0
+    convertInstruction Abs.IConst1 = pure Raw.IConst1
     convertInstruction Abs.Dup = pure Raw.Dup
     convertInstruction (Abs.CheckCast t) = do
         idx <- findIndexOf (CPClassEntry t)
@@ -261,3 +265,5 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.New t) = do
         idx <- findIndexOf (CPClassEntry t)
         pure (Raw.New idx)
+    convertInstruction Abs.IAnd = pure Raw.IAnd
+    convertInstruction Abs.IOr = pure Raw.IOr

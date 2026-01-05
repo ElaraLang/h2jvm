@@ -40,7 +40,7 @@ data MethodAccessFlag
     | MAbstract
     | MStrict
     | MSynthetic
-    deriving (Show, Data)
+    deriving (Show, Data, Eq)
 
 instance Pretty ClassAccessFlag where
     pretty Public = "public"
