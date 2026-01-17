@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           h2jvm
-version:        0.6.3.9
+version:        0.6.3.8
 synopsis:       Haskell library for writing JVM bytecode in a high level format
 description:    See https://hackage.haskell.org/package/h2jvm/docs/H2jvm.html
 author:         Alexander Wood
@@ -62,8 +62,7 @@ library
       OverloadedRecordDot
       OverloadedStrings
       TypeFamilies
-  ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -Wmissing-exported-signatures
-        -fplugin=Effectful.Plugin
+  ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -fplugin=Effectful.Plugin
   build-depends:
       base >=4.19.2.0 && <4.22
     , binary >=0.8.9.1 && <0.9
