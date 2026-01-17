@@ -89,10 +89,10 @@
       hedgehog = "1.7";
       hspec = "2.11.16";
       hspec-hedgehog = "0.3.0.0";
-      lens = "5.3.5";
+      lens = "5.3.6";
       prettyprinter = "1.7.1";
       split = "0.2.5";
-      text = "2.1.2";
+      text = "2.1.3";
       vector = "0.13.2.0";
     };
     lower = {
@@ -138,6 +138,36 @@
   };
   overrides = {
     latest = {
+      adjunctions = {
+        version = "4.4.4";
+        hash = "0bqp5wmabksajw50bcfhvab3gda9hsp04y5abkp6zfnhmq2v1r2y";
+        repo = "hackage.haskell.org";
+      };
+      async = {
+        version = "2.2.6";
+        hash = "1731pcifiskq6g1b72p34phx85l65ax7mbjw11310b3zwzk0ldyn";
+        repo = "hackage.haskell.org";
+      };
+      concurrent-output = {
+        version = "1.10.21";
+        hash = "1w87rrf337s8wc4z3dkh2mk990003jsk18ry5yawv4465k4yvamw";
+        repo = "hackage.haskell.org";
+      };
+      constraints = {
+        version = "0.14.3";
+        hash = "19wjba08k68qz7bylc2h5f22vxw4bfk9jpzkdji6zqp87ps82phm";
+        repo = "hackage.haskell.org";
+      };
+      effectful = {
+        version = "2.6.1.0";
+        hash = "1nph9pr2v0q8z236dg7ji6swda75vms6ldsqnxln2vlx38dn7cwj";
+        repo = "hackage.haskell.org";
+      };
+      free = {
+        version = "5.2";
+        hash = "0b646kh0jwyswi548z1maqjircac4c80zfm0fz06jr0yd0ydrjq1";
+        repo = "hackage.haskell.org";
+      };
       generic-lens = {
         version = "2.3.0.0";
         hash = "06q0ghaj90hqp0chb3z5qzr3cx8ypanjk24d4wnb1b7b8s13rhsp";
@@ -146,6 +176,21 @@
       generic-lens-core = {
         version = "2.3.0.0";
         hash = "05im3y27lhjjy6hi0i85rlqsan510fmp63lqfwg18cnlzn0yvf81";
+        repo = "hackage.haskell.org";
+      };
+      happy = {
+        version = "2.2";
+        hash = "11xfm7y0dxb676635xqcfgqr0syq9j3hy1157f3kxpb3ljsyg85a";
+        repo = "hackage.haskell.org";
+      };
+      happy-lib = {
+        version = "2.2";
+        hash = "1j83gcfi1w11p9yb87b543lmkbf3xajyfbid7y2mv0s75jsvqgym";
+        repo = "hackage.haskell.org";
+      };
+      hashable = {
+        version = "1.5.1.0";
+        hash = "02mk0fxkqrx11qffs7jl231bfflz10vyx5s5xqn8y7ayyndmb6db";
         repo = "hackage.haskell.org";
       };
       hedgehog = {
@@ -171,6 +216,76 @@
       hspec-hedgehog = {
         version = "0.3.0.0";
         hash = "0v6y085nfhb4dwwk3xjmbfnf20fjb9im0q4z68pfgfb9byw9dvly";
+        repo = "hackage.haskell.org";
+      };
+      indexed-traversable-instances = {
+        version = "0.1.2";
+        hash = "05vpkasz70yjf09hsmbw7nap70sr8p5b7hrsdbmij8k8xqf3qg8r";
+        repo = "hackage.haskell.org";
+      };
+      invariant = {
+        version = "0.6.5";
+        hash = "1arihzidi3jkn26l01mgql4dk3iqm5rl6ns4swr79vqi8i3k4qkx";
+        repo = "hackage.haskell.org";
+      };
+      kan-extensions = {
+        version = "5.2.8";
+        hash = "002j5356ls1gcik2rrmjg10vk1p6g6n0hjf7h1x96zab1k4z21bc";
+        repo = "hackage.haskell.org";
+      };
+      lens = {
+        version = "5.3.6";
+        hash = "17g77mqcyy83lxrhb9lnjnp6m38mgphyzkaajy8kf00c0a41lyya";
+        repo = "hackage.haskell.org";
+      };
+      lifted-async = {
+        version = "0.11.0";
+        hash = "0c0njy8k70swqnp16wyrrkd1bxjsf3pxi34hxka1y1ifp3haccap";
+        repo = "hackage.haskell.org";
+      };
+      pretty-show = {
+        version = "1.10";
+        hash = "1q3pkp0ly221yf2r3skr6v0664bb0a6z7x82hvy6yl02ds2g9b1n";
+        repo = "hackage.haskell.org";
+      };
+      prettyprinter = {
+        version = "1.7.1";
+        hash = "0ddf0wb06sqipklh00ah3wazy37g8hnnm99n8g96xmwbhakmpaz2";
+        repo = "hackage.haskell.org";
+      };
+      semigroupoids = {
+        version = "6.0.2";
+        hash = "0nc2c573inxnp4nz3pbahb66ca9750zdgashwnak7kxyrq7d763l";
+        repo = "hackage.haskell.org";
+      };
+      strict = {
+        version = "0.5.1";
+        hash = "06y3ab0nsdbrkrxzc7hgy6cwxl72wcgqn52bs1vvi5lkp64v559y";
+        repo = "hackage.haskell.org";
+      };
+      text = {
+        version = "2.1.3";
+        hash = "1wwbsjp63s0g0cb57rrgracvkjnsymcjsxwgfm6waw3dgczi3qpc";
+        repo = "hackage.haskell.org";
+      };
+      these = {
+        version = "1.2.1";
+        hash = "0jqchlmycfcvkff48shhkswansnzrw57q8945m483mrd59zpg27k";
+        repo = "hackage.haskell.org";
+      };
+      unliftio = {
+        version = "0.2.25.1";
+        hash = "0cp92d9f2hzya636y7w8m0gw7ik6ri2clzpdnz5klh917nnbd7ii";
+        repo = "hackage.haskell.org";
+      };
+      unordered-containers = {
+        version = "0.2.21";
+        hash = "0na84q5vxxww3pmz72ihpx4j7dhk71z28r55i7j0pq7mj27jasb0";
+        repo = "hackage.haskell.org";
+      };
+      wl-pprint-annotated = {
+        version = "0.1.0.1";
+        hash = "0qq7707syvawg5pd4gb6z88klr0fw8c6ncmqpcpqkf3sc34wfljx";
         repo = "hackage.haskell.org";
       };
     };
