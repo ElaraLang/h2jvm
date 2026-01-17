@@ -65,19 +65,19 @@ library
   ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -Wmissing-exported-signatures
         -fplugin=Effectful.Plugin
   build-depends:
-      base <5
-    , binary <0.9
-    , bytestring <0.13
-    , containers <0.8
-    , effectful-core <2.7
-    , effectful-plugin <2.1
-    , effectful-th <1.1
-    , generic-lens <2.4
-    , lens <5.4
-    , prettyprinter <1.8
-    , split <0.3
-    , text <2.2
-    , vector <0.14
+      base >=4.19.2.0 && <4.22
+    , binary >=0.8.9.1 && <0.9
+    , bytestring >=0.12.1.0 && <0.13
+    , containers >=0.6.8 && <0.8
+    , effectful-core >=2.2.2.0 && <2.7
+    , effectful-plugin >=1.1.0.2 && <2.1
+    , effectful-th >=1.0.0.2 && <1.1
+    , generic-lens >=2.2.1.0 && <2.4
+    , lens >=5.2.3 && <5.4
+    , prettyprinter >=1.7.0 && <1.8
+    , split >=0.1.2.3 && <0.3
+    , text >=1.2.5.0 && <2.2
+    , vector >=0.12.3.1 && <0.14
   default-language: GHC2021
 
 test-suite h2jvm-test
@@ -99,13 +99,13 @@ test-suite h2jvm-test
       TypeFamilies
   ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base <5
-    , binary <0.9
-    , bytestring <0.13
-    , effectful <2.7
-    , effectful-plugin <2.1
+      base >=4.19.2.0 && <4.22
+    , binary >=0.8.9.1 && <0.9
+    , bytestring >=0.12.1.0 && <0.13
+    , effectful >=2.2.2.0 && <2.7
+    , effectful-plugin >=1.1.0.2 && <2.1
     , h2jvm
-    , hedgehog <1.8
-    , hspec <2.12
-    , hspec-hedgehog <0.4
+    , hedgehog >=1.4 && <1.8
+    , hspec >=2.11.0 && <2.12
+    , hspec-hedgehog >=0.0.1.0 && <0.4
   default-language: GHC2021
