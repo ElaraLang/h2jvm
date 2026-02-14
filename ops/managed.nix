@@ -92,7 +92,7 @@
       lens = "5.3.6";
       prettyprinter = "1.7.1";
       split = "0.2.5";
-      text = "2.1.3";
+      text = "2.1.4";
       vector = "0.13.2.0";
     };
     lower = {
@@ -264,8 +264,8 @@
         repo = "hackage.haskell.org";
       };
       text = {
-        version = "2.1.3";
-        hash = "1wwbsjp63s0g0cb57rrgracvkjnsymcjsxwgfm6waw3dgczi3qpc";
+        version = "2.1.4";
+        hash = "1rdjjanxj5pr5y73h7bss3lh0x8w9yml9kzir4amlh1sxqlf17rd";
         repo = "hackage.haskell.org";
       };
       these = {
