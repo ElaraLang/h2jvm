@@ -322,17 +322,17 @@ mkDerivation {
 ;
   hspec = {
   meta = {
-    sha256 = "05yij7v8ai1rqfq531h41p6qan9mq8vxdjilxdacbszi2v12i5jw";
+    sha256 = "1yizn83bvzml9bgsk052kapnqb8vnpgfqngr1a2485wm7c4gy509";
     url = "https://hackage.haskell.org";
-    ver = "2.11.16";
+    ver = "2.11.17";
   };
   drv = { mkDerivation, base, hspec-core, hspec-discover
 , hspec-expectations, lib, QuickCheck
 }:
 mkDerivation {
   pname = "hspec";
-  version = "2.11.16";
-  src = /nix/store/xmy0kq1alvzgkcfz55vyybz87lwzzqa5-source;
+  version = "2.11.17";
+  src = /nix/store/jk5qm4dll5vy2zrmapa6w0q69asixk5k-source;
   libraryHaskellDepends = [
     base hspec-core hspec-discover hspec-expectations QuickCheck
   ];
@@ -345,9 +345,9 @@ mkDerivation {
 ;
   hspec-core = {
   meta = {
-    sha256 = "11m5b0gvld3k3v1dpx95dib1y3g0znyrfhf6jq9jgwrd529hni0p";
+    sha256 = "06sj5kdz8k0q1fk0wg0s8v0h5vkxmhcca3adycxs2y0k4iasq9fv";
     url = "https://hackage.haskell.org";
-    ver = "2.11.16";
+    ver = "2.11.17";
   };
   drv = { mkDerivation, ansi-terminal, array, base, base-orphans
 , call-stack, containers, deepseq, directory, filepath
@@ -357,8 +357,8 @@ mkDerivation {
 }:
 mkDerivation {
   pname = "hspec-core";
-  version = "2.11.16";
-  src = /nix/store/m04vbifpilvjd4hl5926dciab84kmvk6-source;
+  version = "2.11.17";
+  src = /nix/store/lgvxjdvsvk6dnqn8n67za9v8gg05515c-source;
   libraryHaskellDepends = [
     ansi-terminal array base call-stack containers deepseq directory
     filepath haskell-lexer hspec-expectations HUnit process QuickCheck
@@ -384,17 +384,17 @@ mkDerivation {
 ;
   hspec-discover = {
   meta = {
-    sha256 = "1zw59zjbf9ibw7nx7s2bahdb7i96j3szl73y1bf95yp2h5x7psbn";
+    sha256 = "1yfh8q9809vfczmf3n148r5kl87nd44qwcl1ac07rh6g4wlz7d15";
     url = "https://hackage.haskell.org";
-    ver = "2.11.16";
+    ver = "2.11.17";
   };
   drv = { mkDerivation, base, directory, filepath, hspec-meta, lib, mockery
 , QuickCheck
 }:
 mkDerivation {
   pname = "hspec-discover";
-  version = "2.11.16";
-  src = /nix/store/4ayvvqhhpzv8i238zbgv2rx6gmc8p9g9-source;
+  version = "2.11.17";
+  src = /nix/store/7q0r7is26x6h52xiyliac8q12rrpq7pg-source;
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [ base directory filepath ];
