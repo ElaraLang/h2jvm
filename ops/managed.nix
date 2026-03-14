@@ -87,7 +87,7 @@
       effectful-th = "1.0.0.3";
       generic-lens = "2.3.0.0";
       hedgehog = "1.7";
-      hspec = "2.11.16";
+      hspec = "2.11.17";
       hspec-hedgehog = "0.3.0.0";
       lens = "5.3.6";
       prettyprinter = "1.7.1";
@@ -199,18 +199,18 @@
         repo = "hackage.haskell.org";
       };
       hspec = {
-        version = "2.11.16";
-        hash = "05yij7v8ai1rqfq531h41p6qan9mq8vxdjilxdacbszi2v12i5jw";
+        version = "2.11.17";
+        hash = "1yizn83bvzml9bgsk052kapnqb8vnpgfqngr1a2485wm7c4gy509";
         repo = "hackage.haskell.org";
       };
       hspec-core = {
-        version = "2.11.16";
-        hash = "11m5b0gvld3k3v1dpx95dib1y3g0znyrfhf6jq9jgwrd529hni0p";
+        version = "2.11.17";
+        hash = "06sj5kdz8k0q1fk0wg0s8v0h5vkxmhcca3adycxs2y0k4iasq9fv";
         repo = "hackage.haskell.org";
       };
       hspec-discover = {
-        version = "2.11.16";
-        hash = "1zw59zjbf9ibw7nx7s2bahdb7i96j3szl73y1bf95yp2h5x7psbn";
+        version = "2.11.17";
+        hash = "1yfh8q9809vfczmf3n148r5kl87nd44qwcl1ac07rh6g4wlz7d15";
         repo = "hackage.haskell.org";
       };
       hspec-hedgehog = {
