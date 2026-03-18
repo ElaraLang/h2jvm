@@ -20,7 +20,7 @@ runs:
           extra-substituters = https://elara.cachix.org https://tek.cachix.org
           extra-trusted-public-keys = elara.cachix.org-1:d129AMaRCJ6Q86oVUvIccZ1NsRZ6kyL5IkceevfQDWI= tek.cachix.org-1:+sdc73WFq8aEKnrVv5j/kuhmnW2hQJuqdPJF5SnaCBk=
 
-    - uses: cachix/cachix-action@v16
+    - uses: cachix/cachix-action@v17
       with:
         name: elara
         authToken: ${{ inputs.cachix-auth-token }}
