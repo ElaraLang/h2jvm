@@ -69,7 +69,7 @@ library
     , bytestring >=0.12.1.0 && <0.13
     , containers >=0.6.8 && <0.9
     , effectful-core >=2.2.2.0 && <2.7
-    , effectful-plugin >=1.1.0.2 && <2.1
+    , effectful-plugin >=1.1.0.2 && <2.2
     , effectful-th >=1.0.0.2 && <1.1
     , generic-lens >=2.2.1.0 && <2.4
     , lens >=5.2.3 && <5.4
@@ -102,7 +102,7 @@ test-suite h2jvm-test
     , binary >=0.8.9.1 && <0.9
     , bytestring >=0.12.1.0 && <0.13
     , effectful >=2.2.2.0 && <2.7
-    , effectful-plugin >=1.1.0.2 && <2.1
+    , effectful-plugin >=1.1.0.2 && <2.2
     , h2jvm
     , hedgehog >=1.4 && <1.8
     , hspec >=2.11.0 && <2.12
