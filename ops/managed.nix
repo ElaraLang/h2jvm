@@ -27,7 +27,7 @@
       };
       effectful-plugin = {
         lower = "1.1.0.2";
-        upper = "2.1";
+        upper = "2.2";
       };
       effectful-th = {
         lower = "1.0.0.2";
@@ -83,7 +83,7 @@
       containers = "0.7";
       effectful = "2.6.1.0";
       effectful-core = "2.6.1.0";
-      effectful-plugin = "2.0.0.1";
+      effectful-plugin = "2.1.0.0";
       effectful-th = "1.0.0.3";
       generic-lens = "2.3.0.0";
       hedgehog = "1.7";
@@ -161,6 +161,11 @@
       effectful = {
         version = "2.6.1.0";
         hash = "1nph9pr2v0q8z236dg7ji6swda75vms6ldsqnxln2vlx38dn7cwj";
+        repo = "hackage.haskell.org";
+      };
+      effectful-plugin = {
+        version = "2.1.0.0";
+        hash = "1gn4429dy6pbpg0hmj16nb1yp098cpn0fmr7m5v9k557azzixh7a";
         repo = "hackage.haskell.org";
       };
       free = {
