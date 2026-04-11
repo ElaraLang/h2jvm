@@ -145,6 +145,25 @@ mkDerivation {
 ;
 }
 ;
+  effectful-plugin = {
+  meta = {
+    sha256 = "1gn4429dy6pbpg0hmj16nb1yp098cpn0fmr7m5v9k557azzixh7a";
+    url = "https://hackage.haskell.org";
+    ver = "2.1.0.0";
+  };
+  drv = { mkDerivation, base, containers, effectful-core, ghc, lib }:
+mkDerivation {
+  pname = "effectful-plugin";
+  version = "2.1.0.0";
+  src = /nix/store/ias60mnn964si8p20s46fpb255jnc07j-source;
+  libraryHaskellDepends = [ base containers ghc ];
+  testHaskellDepends = [ base effectful-core ];
+  description = "A GHC plugin for improving disambiguation of effects";
+  license = lib.licenses.bsd3;
+}
+;
+}
+;
   free = {
   meta = {
     sha256 = "0b646kh0jwyswi548z1maqjircac4c80zfm0fz06jr0yd0ydrjq1";
