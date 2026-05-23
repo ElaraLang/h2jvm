@@ -247,6 +247,7 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current block.
             PutField{} -> pops 2
             Goto _ -> pure ()
             New t -> pushes (classInfoTypeToFieldType t)
+            IfICmp _cmp -> pops 2
 
 -- | Compute the delta between two frames to produce a StackMapFrame
 diffFrames :: Frame -> Frame -> Label -> StackMapFrame

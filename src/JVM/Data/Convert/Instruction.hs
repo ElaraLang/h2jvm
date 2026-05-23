@@ -12,7 +12,7 @@ import Data.Maybe
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), FieldRef (..), MethodRef (..))
 import JVM.Data.Abstract.Descriptor
-import JVM.Data.Abstract.Instruction as Abs (Instruction, Instruction' (..), LDCEntry (..))
+import JVM.Data.Abstract.Instruction as Abs (Instruction, Instruction' (..), LDCEntry (..), ICmp (..))
 import JVM.Data.Abstract.Type
 import JVM.Data.Convert.ConstantPool
 import JVM.Data.Raw.Instruction as Raw (Instruction (..))
@@ -95,6 +95,7 @@ instructionSize Abs.IConst1 = 1
 instructionSize Abs.Dup = 1
 instructionSize (Abs.Goto _) = 3
 instructionSize (Abs.New _) = 3
+instructionSize (Abs.IfICmp _) = 3
 
 convertInstructions :: (CodeConverterEff r) => [Abs.Instruction] -> Eff r [Raw.Instruction]
 convertInstructions xs = do
@@ -271,3 +272,11 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
         pure (Raw.New idx)
     convertInstruction Abs.IAnd = pure Raw.IAnd
     convertInstruction Abs.IOr = pure Raw.IOr
+
+    convertInstruction (Abs.IfICmp cmp) = case cmp of
+        Abs.IFEq l -> Raw.IfIcmpEq <$> mustBeResolved instOffset l
+        Abs.IFNe l -> Raw.IfIcmpNe <$> mustBeResolved instOffset l
+        Abs.IFLt l -> Raw.IfIcmpLt <$> mustBeResolved instOffset l
+        Abs.IFGe l -> Raw.IfIcmpGe <$> mustBeResolved instOffset l
+        Abs.IFGt l -> Raw.IfIcmpGt <$> mustBeResolved instOffset l
+        Abs.IFLe l -> Raw.IfIcmpLe <$> mustBeResolved instOffset l

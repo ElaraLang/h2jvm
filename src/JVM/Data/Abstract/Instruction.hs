@@ -57,7 +57,19 @@ data Instruction' label
     | New ClassInfoType
     | ArrayLength 
     | AALoad
+    | IfICmp (ICmp label)
     deriving (Show, Eq, Ord, Functor, Generic, Data)
+
+data ICmp label = IFEq label | IFNe label | IFLt label | IFGe label | IFGt label | IFLe label
+    deriving (Show, Eq, Ord, Generic, Data, Functor)
+
+instance Pretty label => Pretty (ICmp label) where
+    pretty (IFEq l) = "ifeq" <+> pretty l
+    pretty (IFNe l) = "ifne" <+> pretty l
+    pretty (IFLt l) = "iflt" <+> pretty l
+    pretty (IFGe l) = "ifge" <+> pretty l
+    pretty (IFGt l) = "ifgt" <+> pretty l
+    pretty (IFLe l) = "ifle" <+> pretty l
 
 instance (Pretty label) => Pretty (Instruction' label) where
     pretty AALoad = "aaload"
@@ -96,6 +108,7 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty IConst0 = "iconst_0"
     pretty IConst1 = "iconst_1"
     pretty (New c) = "new" <+> pretty c
+    pretty (IfICmp cmp) = "if_icmp" <> pretty cmp
 
 jumpTarget :: Instruction' label -> Maybe label
 jumpTarget (IfEq l) = Just l
