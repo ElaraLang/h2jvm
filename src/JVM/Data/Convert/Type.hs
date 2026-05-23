@@ -26,5 +26,6 @@ fieldTypeDescriptor = \case
 classInfoTypeDescriptor :: Abs.ClassInfoType -> Text
 classInfoTypeDescriptor = \case
     Abs.ClassInfoType name -> toInternalName name
-    Abs.ArrayClassInfoType classInfoType -> "[" <> classInfoTypeDescriptor classInfoType
+    arrayType@(Abs.ArrayClassInfoType _) ->
+        fieldTypeDescriptor (Abs.classInfoTypeToFieldType arrayType)
     Abs.PrimitiveClassInfoType base -> baseTypeDescriptor base
