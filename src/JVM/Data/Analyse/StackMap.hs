@@ -175,6 +175,22 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current block.
         analyse :: Instruction -> Analyser
         analyse = \case
             (Label _) -> error "Label should not be encountered in analyseInstruction"
+            AALoad -> do
+                s <- gets (.stack)
+                case s of
+                    (_index : StackEntry (ArrayFieldType innerType) : _) -> do
+                        pops 2 -- index, arrayref
+                        pushes innerType
+                    (_index : StackEntryTop : _) ->
+                        error "AAload: arrayref is Uninitialised (Top)"
+                    (_index : StackEntryNull : _) -> do
+                        -- this will npe at runtime but isn't technically invalid
+                        pops 2
+                        pushesEntry StackEntryTop
+                    _ -> error $ "Stack underflow or invalid types for AAload. Stack: " <> show s
+            ArrayLength -> do 
+                pops 1 -- arrayref
+                pushes (PrimitiveFieldType Int)
             (ALoad i) -> loads "ALoad" i
             (ILoad i) -> loads "ILoad" i
             (AStore i) -> stores (fromIntegral i)

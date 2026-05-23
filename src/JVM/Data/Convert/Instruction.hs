@@ -47,6 +47,7 @@ countArguments (MethodDescriptor args _) = 1 + sum (map countArgument args)
 
 -- | The size of an instruction in bytes, used for calculating jump offsets
 instructionSize :: Abs.Instruction -> Word16
+instructionSize Abs.AALoad = 1
 instructionSize (Abs.ALoad n)
     | n <= 3 = 1
     | n <= 255 = 2
@@ -64,6 +65,7 @@ instructionSize (Abs.IStore n)
     | n <= 255 = 2
     | otherwise = 4
 instructionSize Abs.AReturn = 1
+instructionSize Abs.ArrayLength = 1
 instructionSize Abs.AConstNull = 1
 instructionSize Abs.IAnd = 1
 instructionSize (Abs.IfEq _) = 3
@@ -200,6 +202,8 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.IStore idx)
         | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.IStore i)
         | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_iStore idx)
+    convertInstruction Abs.ArrayLength = pure Raw.ArrayLength
+    convertInstruction Abs.AALoad = pure Raw.AALoad
     convertInstruction Abs.AConstNull = pure Raw.AConstNull
     convertInstruction (Abs.Instanceof t) = do
         idx <- findIndexOf (CPClassEntry t)

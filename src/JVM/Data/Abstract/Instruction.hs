@@ -55,9 +55,13 @@ data Instruction' label
     | IConst0
     | IConst1
     | New ClassInfoType
+    | ArrayLength 
+    | AALoad
     deriving (Show, Eq, Ord, Functor, Generic, Data)
 
 instance (Pretty label) => Pretty (Instruction' label) where
+    pretty AALoad = "aaload"
+    pretty ArrayLength = "arraylength"
     pretty (ALoad x) = "aload" <+> pretty x
     pretty (AStore x) = "astore" <+> pretty x
     pretty AReturn = "areturn"
