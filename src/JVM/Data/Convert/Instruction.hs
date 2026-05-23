@@ -147,6 +147,14 @@ resolveLabel (OffsetInstruction instOffset inst) =
         Abs.IfGt l -> Abs.IfGt <$> resolveLabelAbs l
         Abs.IfLe l -> Abs.IfLe <$> resolveLabelAbs l
         Abs.Goto l -> Abs.Goto <$> resolveLabelAbs l
+
+        Abs.IfICmp cmp -> Abs.IfICmp <$> case cmp of
+            Abs.IFEq l -> Abs.IFEq <$> resolveLabelAbs l
+            Abs.IFNe l -> Abs.IFNe <$> resolveLabelAbs l
+            Abs.IFLt l -> Abs.IFLt <$> resolveLabelAbs l
+            Abs.IFGe l -> Abs.IFGe <$> resolveLabelAbs l
+            Abs.IFGt l -> Abs.IFGt <$> resolveLabelAbs l
+            Abs.IFLe l -> Abs.IFLe <$> resolveLabelAbs l
         _ -> pure inst
 
 fullyResolveAbs :: (CodeConverterEff r) => Label -> Eff r Word16

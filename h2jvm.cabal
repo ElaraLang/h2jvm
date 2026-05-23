@@ -1,11 +1,11 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.38.2.
+-- This file has been generated from package.yaml by hpack version 0.38.3.
 --
 -- see: https://github.com/sol/hpack
 
 name:           h2jvm
-version:        0.6.5.0
+version:        0.6.5.1
 synopsis:       Haskell library for writing JVM bytecode in a high level format
 description:    See https://hackage.haskell.org/package/h2jvm/docs/H2jvm.html
 author:         Alexander Wood
@@ -64,7 +64,7 @@ library
       TypeFamilies
   ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -fplugin=Effectful.Plugin
   build-depends:
-      base >=4.19.2.0 && <4.23
+      base >=4.19.2.0 && <4.22
     , binary >=0.8.9.1 && <0.9
     , bytestring >=0.12.1.0 && <0.13
     , containers >=0.6.8 && <0.8
@@ -98,7 +98,7 @@ test-suite h2jvm-test
       TypeFamilies
   ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.19.2.0 && <4.23
+      base >=4.19.2.0 && <4.22
     , binary >=0.8.9.1 && <0.9
     , bytestring >=0.12.1.0 && <0.13
     , effectful >=2.2.2.0 && <2.7
