@@ -126,6 +126,13 @@ jumpTarget (IfGe l) = Just l
 jumpTarget (IfGt l) = Just l
 jumpTarget (IfLe l) = Just l
 jumpTarget (Goto l) = Just l
+jumpTarget (IfICmp cmp) = case cmp of
+    IFEq l -> Just l
+    IFNe l -> Just l
+    IFLt l -> Just l
+    IFGe l -> Just l
+    IFGt l -> Just l
+    IFLe l -> Just l
 jumpTarget _ = Nothing
 
 data LDCEntry

@@ -141,6 +141,7 @@ splitOnLabels xs = go xs [] Nothing
     isBranchInstruction (IfGe _) = True
     isBranchInstruction (IfGt _) = True
     isBranchInstruction (IfLe _) = True
+    isBranchInstruction (IfICmp _) = True
     isBranchInstruction (Goto _) = True
     isBranchInstruction AReturn = True
     isBranchInstruction Return = True
