@@ -96,6 +96,10 @@ instructionSize Abs.Dup = 1
 instructionSize (Abs.Goto _) = 3
 instructionSize (Abs.New _) = 3
 instructionSize (Abs.IfICmp _) = 3
+instructionSize Abs.IAdd = 1
+instructionSize Abs.ISub = 1
+instructionSize Abs.IMul = 1
+instructionSize Abs.IDiv = 1
 
 convertInstructions :: (CodeConverterEff r) => [Abs.Instruction] -> Eff r [Raw.Instruction]
 convertInstructions xs = do
@@ -288,3 +292,8 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
         Abs.IFGe l -> Raw.IfIcmpGe <$> mustBeResolved instOffset l
         Abs.IFGt l -> Raw.IfIcmpGt <$> mustBeResolved instOffset l
         Abs.IFLe l -> Raw.IfIcmpLe <$> mustBeResolved instOffset l
+    
+    convertInstruction Abs.IAdd = pure Raw.IAdd
+    convertInstruction Abs.ISub = pure Raw.ISub
+    convertInstruction Abs.IMul = pure Raw.IMul
+    convertInstruction Abs.IDiv = pure Raw.IDiv

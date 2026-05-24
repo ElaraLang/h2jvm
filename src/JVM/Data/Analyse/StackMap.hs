@@ -248,6 +248,18 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current block.
             Goto _ -> pure ()
             New t -> pushes (classInfoTypeToFieldType t)
             IfICmp _cmp -> pops 2
+            IAdd -> do
+                pops 2
+                pushes (PrimitiveFieldType Int)
+            ISub -> do
+                pops 2
+                pushes (PrimitiveFieldType Int)
+            IMul -> do
+                pops 2
+                pushes (PrimitiveFieldType Int)
+            IDiv -> do
+                pops 2
+                pushes (PrimitiveFieldType Int)
 
 -- | Compute the delta between two frames to produce a StackMapFrame
 diffFrames :: Frame -> Frame -> Label -> StackMapFrame

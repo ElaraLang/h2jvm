@@ -58,6 +58,10 @@ data Instruction' label
     | ArrayLength 
     | AALoad
     | IfICmp (ICmp label)
+    | IAdd
+    | ISub
+    | IMul
+    | IDiv
     deriving (Show, Eq, Ord, Functor, Generic, Data)
 
 data ICmp label = IFEq label | IFNe label | IFLt label | IFGe label | IFGt label | IFLe label
@@ -109,6 +113,10 @@ instance (Pretty label) => Pretty (Instruction' label) where
     pretty IConst1 = "iconst_1"
     pretty (New c) = "new" <+> pretty c
     pretty (IfICmp cmp) = "if_icmp" <> pretty cmp
+    pretty IAdd = "iadd"
+    pretty ISub = "isub"
+    pretty IMul = "imul"
+    pretty IDiv = "idiv"
 
 jumpTarget :: Instruction' label -> Maybe label
 jumpTarget (IfEq l) = Just l
