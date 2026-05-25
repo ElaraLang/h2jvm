@@ -1,6 +1,6 @@
 module JVM.Data.Abstract.Name (
     PackageName (..),
-    ClassName,
+    ClassName (..),
     QualifiedClassName (..),
     parsePackageName,
     parseClassName,
