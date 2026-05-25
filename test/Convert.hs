@@ -28,6 +28,7 @@ import Data.IndexedMap qualified as IM
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.ConstantPool qualified as Raw
 import JVM.Data.Raw.Instruction qualified as Raw
+import Data.Word (Word32)
 
 spec :: Spec
 spec = describe "test conversions" $ do
@@ -83,8 +84,8 @@ spec = describe "test conversions" $ do
         bms === IM.singleton (Raw.BootstrapMethod (fromIntegral indexOfMethodHandle) [fromIntegral strArgIndex])
         inst === Raw.InvokeDynamic (fromIntegral indexOfIndy)
 
-findCPIndex :: MonadTest m => (a -> Bool) -> IM.IndexedMap a -> m Int
-findCPIndex pred cp = shouldBeJust $ IM.lookupIndexWhere pred cp
+findCPIndex :: MonadTest m => (a -> Bool) -> IM.IndexedMap a -> m Word32
+findCPIndex pred cp = fmap IM.indexValue $ shouldBeJust $ IM.lookupIndexWhere pred cp
 
 frameAnalysis :: SpecWith ()
 frameAnalysis = describe "Stack Map Frame Analysis" $ do

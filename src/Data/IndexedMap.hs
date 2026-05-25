@@ -7,6 +7,8 @@ Because of the specialised nature, its indexes start at 1, not 0. I would apolog
 module Data.IndexedMap (
     -- * Types
     IndexedMap,
+    Index,
+    indexValue,
 
     -- * Construction
     empty,
@@ -40,6 +42,14 @@ import Prelude hiding (lookup)
 import Data.IntMap qualified as IM
 import Data.Map qualified as M
 import Data.Vector qualified as V
+import Data.Word (Word32)
+
+-- | An index into the map
+newtype Index = Index Word32 deriving (Eq, Ord, Show, Num)
+
+-- | Get the raw value of an index
+indexValue :: Index -> Word32
+indexValue (Index i) = i
 
 data IndexedMap a = IndexedMap !(IM.IntMap a) !(M.Map a Int)
 
@@ -59,8 +69,8 @@ Nothing
 singleton :: Ord a => a -> IndexedMap a
 singleton a = IndexedMap (IM.singleton 1 a) (M.singleton a 1)
 
-lookup :: Int -> IndexedMap a -> Maybe a
-lookup i (IndexedMap m _) = IM.lookup i m
+lookup :: Index -> IndexedMap a -> Maybe a
+lookup (Index i) (IndexedMap m _) = IM.lookup (fromIntegral i) m
 
 {- | Lookup a value in the map
 >>> lookupIndex @String "hello" (singleton "hello")
@@ -70,8 +80,8 @@ Nothing
 >>> lookupIndex @String "hello" (singleton "world" <> singleton "hello")
 Just 2
 -}
-lookupIndex :: Ord a => a -> IndexedMap a -> Maybe Int
-lookupIndex a (IndexedMap _ m) = M.lookup a m
+lookupIndex :: Ord a => a -> IndexedMap a -> Maybe Index
+lookupIndex a (IndexedMap _ m) = Index . fromIntegral <$> M.lookup a m
 
 {- | Find the index of the first element that satisfies the predicate, if any
 >>> lookupIndexWhere (== "hello") (singleton "hello")
@@ -80,25 +90,25 @@ Just 1
 >>> lookupIndexWhere (== "hello") (singleton "world")
 Nothing
 -}
-lookupIndexWhere :: (a -> Bool) -> IndexedMap a -> Maybe Int
-lookupIndexWhere f (IndexedMap m _) = fst <$> IM.lookupMin (IM.filter f m)
+lookupIndexWhere :: (a -> Bool) -> IndexedMap a -> Maybe Index
+lookupIndexWhere f (IndexedMap m _) = Index . fromIntegral . fst <$> IM.lookupMin (IM.filter f m)
 
 -- | Insert a value into the map without checking if it already exists
-insert :: Ord a => a -> IndexedMap a -> (Int, IndexedMap a)
-insert a (IndexedMap m m') = (i, IndexedMap (IM.insert i a m) (M.insert a i m'))
+insert :: Ord a => a -> IndexedMap a -> (Index, IndexedMap a)
+insert a (IndexedMap m m') = (Index $ fromIntegral i, IndexedMap (IM.insert i a m) (M.insert a i m'))
   where
     i = 1 + IM.size m
 
 -- | Lookup a value in the map, or insert it if it doesn't exist
-lookupOrInsert :: Ord a => a -> IndexedMap a -> (Int, IndexedMap a)
+lookupOrInsert :: Ord a => a -> IndexedMap a -> (Index, IndexedMap a)
 lookupOrInsert a (IndexedMap m m') = case M.lookup a m' of
-    Just i -> (i, IndexedMap m m')
+    Just i -> (Index $ fromIntegral i, IndexedMap m m')
     Nothing -> insert a (IndexedMap m m')
 
-lookupOrInsertM :: (State (IndexedMap a) :> r, Ord a) => a -> Eff r Int
+lookupOrInsertM :: (State (IndexedMap a) :> r, Ord a) => a -> Eff r Index
 lookupOrInsertM = lookupOrInsertMOver id
 
-lookupOrInsertMOver :: (State a :> r, Ord b) => Lens' a (IndexedMap b) -> b -> Eff r Int
+lookupOrInsertMOver :: (State a :> r, Ord b) => Lens' a (IndexedMap b) -> b -> Eff r Index
 lookupOrInsertMOver lens a = do
     i <- gets (view lens)
     let (idx, new) = lookupOrInsert a i
