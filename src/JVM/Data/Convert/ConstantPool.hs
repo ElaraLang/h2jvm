@@ -47,7 +47,7 @@ lookupOrInsertMBM bmInfo = lookupOrInsertMOver bmInfo (.bootstrapMethods) (\s x 
 
 transformEntry :: (HasCallStack, ConstantPool :> r) => ConstantPoolEntry -> Eff r Word32
 transformEntry (CPUTF8Entry text) = lookupOrInsertMCP (UTF8Info $ encodeUtf8 text)
-transformEntry (CPIntegerEntry i) = lookupOrInsertMCP (IntegerInfo $ unsafeInto i)
+transformEntry (CPIntegerEntry i) = lookupOrInsertMCP (IntegerInfo $ fromIntegral i)
 transformEntry (CPFloatEntry f) = lookupOrInsertMCP (FloatInfo (toJVMFloat f))
 transformEntry (CPStringEntry msg) = do
   i <- transformEntry (CPUTF8Entry msg)
