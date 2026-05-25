@@ -1,12 +1,14 @@
 {-# LANGUAGE LambdaCase #-}
 
-module JVM.Data.Raw.Instruction where
+module JVM.Data.Raw.Instruction (Instruction (..)) where
 
 import Data.Binary.Put
-import Data.Binary.Write (WriteBinary (writeBinary))
 import Data.Word
-import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
+
+import Data.Binary.Write (WriteBinary (writeBinary))
 import JVM.Data.Raw.Types
+
+import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
 
 data Instruction
     = AALoad

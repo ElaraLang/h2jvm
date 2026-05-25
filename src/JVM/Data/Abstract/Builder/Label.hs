@@ -15,13 +15,17 @@ could be written as follows, using 'JVM.Data.Abstract.Builder.Code.CodeBuilder':
 > emit (Label label)
 > emit Return
 -}
-module JVM.Data.Abstract.Builder.Label where
+module JVM.Data.Abstract.Builder.Label (Label, unsafeMkLabel) where
 
 import Data.Data
+
 import JVM.Data.Pretty
 
 newtype Label = MkLabel Int
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
+
+unsafeMkLabel :: Int -> Label
+unsafeMkLabel = MkLabel
 
 instance Pretty Label where
     pretty (MkLabel i) = "label_" <> pretty i

@@ -1,17 +1,19 @@
 {-# LANGUAGE LambdaCase #-}
 
-module JVM.Data.Convert.AccessFlag where
+module JVM.Data.Convert.AccessFlag (ConvertAccessFlag (..), accessFlagsToWord16) where
 
 import Data.Bits ((.|.))
 import Data.Word (Word16)
+
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag (..), FieldAccessFlag (..), MethodAccessFlag (..))
 import JVM.Data.Raw.AccessFlags (accessFlagValue)
+
 import JVM.Data.Raw.AccessFlags qualified as Raw
 
 class ConvertAccessFlag a where
     convertAccessFlag :: a -> Raw.AccessFlag
 
-accessFlagsToWord16 :: (ConvertAccessFlag a) => [a] -> Word16
+accessFlagsToWord16 :: ConvertAccessFlag a => [a] -> Word16
 accessFlagsToWord16 = foldr (\flag acc -> acc .|. accessFlagValue (convertAccessFlag flag)) 0
 
 instance ConvertAccessFlag ClassAccessFlag where

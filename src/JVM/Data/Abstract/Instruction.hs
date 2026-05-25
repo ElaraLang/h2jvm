@@ -2,24 +2,33 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 {- | High level representation of a JVM instruction, with type-safe arguments and no stack manipulation needed.
- This is not a 1-1 mapping to the actual instructions, use 'JVM.Data.Raw.Instruction' for that.
- Instead, this includes some conveniences like the 'Label' instruction to avoid manually dealing with jump offsets.
+This is not a 1-1 mapping to the actual instructions, use "JVM.Data.Raw.Instruction" for that.
+Instead, this includes some conveniences like the 'Label' instruction to avoid manually dealing with jump offsets.
 -}
-module JVM.Data.Abstract.Instruction where
+module JVM.Data.Abstract.Instruction (
+    Instruction,
+    Instruction' (..),
+    LDCEntry (..),
+    ICmp (..),
+    jumpTarget,
+    ldcEntryToFieldType,
+)
+where
 
 import Data.Data (Data)
 import Data.Text (Text)
 import GHC.Generics (Generic)
+
 import JVM.Data.Abstract.Builder.Label (Label)
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Abstract.Descriptor
 import JVM.Data.Abstract.Type
 import JVM.Data.Pretty
+import JVM.Data.Raw.Instruction ()
 import JVM.Data.Raw.Types
 
-type Reference = Int
-
 type Instruction = Instruction' Label
+
 data Instruction' label
     = ALoad U2
     | AStore U2
@@ -55,17 +64,17 @@ data Instruction' label
     | IConst0
     | IConst1
     | New ClassInfoType
-    | ArrayLength 
+    | ArrayLength
     | AALoad
     | IfICmp (ICmp label)
     | IAdd
     | ISub
     | IMul
     | IDiv
-    deriving (Show, Eq, Ord, Functor, Generic, Data)
+    deriving (Data, Eq, Functor, Generic, Ord, Show)
 
 data ICmp label = IFEq label | IFNe label | IFLt label | IFGe label | IFGt label | IFLe label
-    deriving (Show, Eq, Ord, Generic, Data, Functor)
+    deriving (Data, Eq, Functor, Generic, Ord, Show)
 
 instance Pretty label => Pretty (ICmp label) where
     pretty (IFEq l) = "ifeq" <+> pretty l
@@ -75,7 +84,7 @@ instance Pretty label => Pretty (ICmp label) where
     pretty (IFGt l) = "ifgt" <+> pretty l
     pretty (IFLe l) = "ifle" <+> pretty l
 
-instance (Pretty label) => Pretty (Instruction' label) where
+instance Pretty label => Pretty (Instruction' label) where
     pretty AALoad = "aaload"
     pretty ArrayLength = "arraylength"
     pretty (ALoad x) = "aload" <+> pretty x
@@ -136,11 +145,11 @@ jumpTarget (IfICmp cmp) = case cmp of
 jumpTarget _ = Nothing
 
 data LDCEntry
-    = LDCInt Int
+    = LDCInt JVMInt
     | LDCFloat Float
     | LDCString Text
     | LDCClass ClassInfoType
-    deriving (Show, Eq, Ord, Data, Generic)
+    deriving (Data, Eq, Generic, Ord, Show)
 
 instance Pretty LDCEntry where
     pretty (LDCInt x) = pretty x

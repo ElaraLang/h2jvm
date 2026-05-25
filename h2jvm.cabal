@@ -62,7 +62,7 @@ library
       OverloadedRecordDot
       OverloadedStrings
       TypeFamilies
-  ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -fplugin=Effectful.Plugin
+  ghc-options: -Wall -Werror=missing-export-lists -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -fplugin=Effectful.Plugin
   build-depends:
       base >=4.19.2.0 && <4.22
     , binary >=0.8.9.1 && <0.9
@@ -74,9 +74,9 @@ library
     , generic-lens >=2.2.1.0 && <2.4
     , lens >=5.2.3 && <5.4
     , prettyprinter >=1.7.0 && <1.8
-    , split >=0.1.2.3 && <0.3
     , text >=1.2.5.0 && <2.2
     , vector >=0.12.3.1 && <0.14
+    , witch
   default-language: GHC2021
 
 test-suite h2jvm-test
@@ -87,6 +87,7 @@ test-suite h2jvm-test
       Builder
       Convert
       Util
+      StackMap
   hs-source-dirs:
       test
   default-extensions:
@@ -105,6 +106,6 @@ test-suite h2jvm-test
     , effectful-plugin >=1.1.0.2 && <2.2
     , h2jvm
     , hedgehog >=1.4 && <1.8
-    , hspec >=2.11.0 && <2.12
-    , hspec-hedgehog >=0.0.1.0 && <0.4
+    , sydtest
+    , sydtest-hedgehog
   default-language: GHC2021

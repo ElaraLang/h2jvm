@@ -1,15 +1,43 @@
 -- | Information about JVM Versions
-module JVM.Data.JVMVersion where
+module JVM.Data.JVMVersion (
+    JVMVersion,
+    MajorVersion,
+    MinorVersion,
+    getMajor,
+    getMinor,
+    unwrapMajor,
+    unwrapMinor,
+    java6,
+    java7,
+    java8,
+    java9,
+    java10,
+    java11,
+    java12,
+    java13,
+    java14,
+    java15,
+    java16,
+    java17,
+    java18,
+    java19,
+    java20,
+    java21,
+    isLTS,
+    isEOL,
+)
+where
 
 import Data.Binary (Word16)
+
 import JVM.Data.Pretty
 
 -- | A JVM Version Number
 newtype JVMVersion = JVMVersion Word16 deriving (Eq, Ord, Show)
 
-newtype MajorVersion = MajorVersion Word16 deriving (Eq, Ord, Num, Show)
+newtype MajorVersion = MajorVersion Word16 deriving (Eq, Num, Ord, Show)
 
-newtype MinorVersion = MinorVersion Word16 deriving (Eq, Ord, Num, Show)
+newtype MinorVersion = MinorVersion Word16 deriving (Eq, Num, Ord, Show)
 
 unwrapMajor :: MajorVersion -> Word16
 unwrapMajor (MajorVersion v) = v

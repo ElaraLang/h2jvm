@@ -1,10 +1,23 @@
-{-# LANGUAGE DefaultSignatures #-}
-
 -- | Types and type synonyms for raw JVM data
-module JVM.Data.Raw.Types where
+module JVM.Data.Raw.Types (
+    U1,
+    U2,
+    U4,
+    U8,
+    InstOffsetBytes,
+    ConstantPoolIndex,
+    ArrayType,
+    JVMInt,
+    JVMFloat,
+    JVMLong,
+    JVMDouble,
+    JVMString,
+)
+where
 
 import Data.Binary
 import Data.Bits (shiftR)
+import Data.Int (Int32, Int64)
 import Data.Text (Text)
 
 type U1 = Word8
@@ -15,11 +28,11 @@ type U4 = Word32
 
 type U8 = Word64
 
-type JVMInt = U4
+type JVMInt = Int32
 
 type JVMFloat = Float
 
-type JVMLong = U8
+type JVMLong = Int64
 
 type JVMDouble = Double
 
@@ -29,9 +42,11 @@ type JVMString = Text
 type InstOffsetBytes = U2
 
 {- | Converts an 'InstOffsetBytes' to a pair of bytes, encoding it a way that the JVM will correctly interpret it
- In other words, this function does the opposite of @(branchbyte1 << 8) | branchbyte2@
- >>> instOffsetBytesToU2 39
- (0,39)
+In other words, this function does the opposite of @(branchbyte1 << 8) | branchbyte2@
+>>> instOffsetBytesToU2 39
+(0,39)
+>>> instOffsetBytesToU2 256
+(1,0)
 -}
 instOffsetBytesToU2 :: InstOffsetBytes -> (U1, U1)
 instOffsetBytesToU2 value = (fromIntegral (value `shiftR` 8), fromIntegral value)
@@ -41,41 +56,3 @@ type ConstantPoolIndex = U2
 
 -- | An "array type code" for the `newarray` instruction
 type ArrayType = U1
-
--- | Conversions between numbers that will never overflow or underflow
-class SafeNumConvert a b where
-    safeNumConvert :: a -> b
-
-instance SafeNumConvert U1 Int where
-    safeNumConvert = fromIntegral
-
-instance SafeNumConvert U2 Int where
-    safeNumConvert = fromIntegral
-
-instance SafeNumConvert U4 Int where
-    safeNumConvert = fromIntegral
-
-instance SafeNumConvert U1 U2 where
-    safeNumConvert = fromIntegral
-
-instance SafeNumConvert U2 U4 where
-    safeNumConvert = fromIntegral
-
-instance SafeNumConvert U1 U4 where
-    safeNumConvert = fromIntegral
-
-class (SafeNumConvert b a, Integral a, Integral b) => UnsafeNumConvert a b where
-    unsafeNumConvert :: a -> Maybe b
-    default unsafeNumConvert :: (Bounded b) => a -> Maybe b
-    unsafeNumConvert x
-        | fromIntegral @a @Integer x >= fromIntegral (minBound :: b)
-            && fromIntegral @a @Integer x
-                <= fromIntegral (maxBound :: b) =
-            Just (fromIntegral x)
-        | otherwise = Nothing
-
-instance UnsafeNumConvert Int U1
-
-instance UnsafeNumConvert Int U2
-
-instance UnsafeNumConvert U2 U1 

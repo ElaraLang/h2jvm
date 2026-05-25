@@ -1,61 +1,59 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedRecordDot #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module JVM.Data.Convert.ConstantPool where
+module JVM.Data.Convert.ConstantPool (ConstantPool, ConstantPoolState (..), runConstantPool, runConstantPoolWith, findIndexOf) where
+
+import Data.Text.Encoding
+import Effectful
+import Effectful.State.Static.Local
+import GHC.Stack
+import Witch
+
+import Data.Vector qualified as V
 
 import Data.IndexedMap (IndexedMap)
-import Data.IndexedMap qualified as IM
-import Data.Text.Encoding
-import Data.Tuple (swap)
-import Data.Vector qualified as V
 import JVM.Data.Abstract.ConstantPool
 import JVM.Data.Convert.Descriptor
 import JVM.Data.Convert.Numbers
 import JVM.Data.Convert.Type
-import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.ConstantPool
 import JVM.Data.Raw.MagicNumbers
 import JVM.Data.Raw.Types
-import Effectful
-import Effectful.State.Static.Local
-import Effectful.TH (makeEffect)
-import Effectful.Dispatch.Dynamic (interpret)
+
+import Data.IndexedMap qualified as IM
+import JVM.Data.Raw.ClassFile qualified as Raw
 
 data ConstantPoolState = ConstantPoolState
     { constantPool :: IndexedMap ConstantPoolInfo
     , bootstrapMethods :: IndexedMap Raw.BootstrapMethod
     }
-    deriving (Show, Eq, Ord)
+    deriving (Eq, Ord, Show)
 
--- | Effect for managing the constant pool state
-data ConstantPool m a where
-    GetCP :: ConstantPool m ConstantPoolState
-    SetCP :: ConstantPoolState -> ConstantPool m ()
-
-makeEffect ''ConstantPool
-
-lookupOrInsertMOver :: (ConstantPool  :> r, Ord a) => a -> (ConstantPoolState -> IndexedMap a) -> (ConstantPoolState -> IndexedMap a -> ConstantPoolState) -> Eff  r Int
-lookupOrInsertMOver cpInfo get set = do
-    cp <- getCP
-    let (i, newCP) = IM.lookupOrInsert cpInfo (get cp)
-    setCP (set cp newCP)
+lookupOrInsertMOver ::
+    (ConstantPool :> r, Ord a) =>
+    a ->
+    (ConstantPoolState -> IndexedMap a) ->
+    (ConstantPoolState -> IndexedMap a -> ConstantPoolState) ->
+    Eff r Int
+lookupOrInsertMOver cpInfo getter setter = do
+    cp <- get
+    let (i, newCP) = IM.lookupOrInsert cpInfo (getter cp)
+    put (setter cp newCP)
     pure i
 
-lookupOrInsertMCP :: (ConstantPool :> r) => ConstantPoolInfo -> Eff r Int
+lookupOrInsertMCP :: ConstantPool :> r => ConstantPoolInfo -> Eff r Int
 lookupOrInsertMCP cpInfo = lookupOrInsertMOver cpInfo (.constantPool) (\s x -> s{constantPool = x})
 
-lookupOrInsertMBM :: (ConstantPool :> r) => Raw.BootstrapMethod -> Eff r Int
+lookupOrInsertMBM :: ConstantPool :> r => Raw.BootstrapMethod -> Eff r Int
 lookupOrInsertMBM bmInfo = lookupOrInsertMOver bmInfo (.bootstrapMethods) (\s x -> s{bootstrapMethods = x})
 
-transformEntry :: (ConstantPool :> r) => ConstantPoolEntry -> Eff r Int
+transformEntry :: (HasCallStack, ConstantPool :> r) => ConstantPoolEntry -> Eff r Int
 transformEntry (CPUTF8Entry text) = lookupOrInsertMCP (UTF8Info $ encodeUtf8 text)
-transformEntry (CPIntegerEntry i) = lookupOrInsertMCP (IntegerInfo $ fromIntegral i)
+transformEntry (CPIntegerEntry i) = lookupOrInsertMCP (IntegerInfo $ unsafeInto i)
 transformEntry (CPFloatEntry f) = lookupOrInsertMCP (FloatInfo (toJVMFloat f))
 transformEntry (CPStringEntry msg) = do
     i <- transformEntry (CPUTF8Entry msg)
-    lookupOrInsertMCP (StringInfo $ fromIntegral i)
+    lookupOrInsertMCP (StringInfo $ unsafeInto i)
 transformEntry (CPLongEntry i) = do
     let (high, low) = toJVMLong i
     lookupOrInsertMCP (LongInfo high low)
@@ -65,23 +63,23 @@ transformEntry (CPDoubleEntry d) = do
 transformEntry (CPClassEntry name) = do
     let className = classInfoTypeDescriptor name
     nameIndex <- transformEntry (CPUTF8Entry className)
-    lookupOrInsertMCP (ClassInfo $ fromIntegral nameIndex)
+    lookupOrInsertMCP (ClassInfo $ unsafeInto nameIndex)
 transformEntry (CPMethodRefEntry (MethodRef classRef name methodDescriptor)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
-    lookupOrInsertMCP (MethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
+    lookupOrInsertMCP (MethodRefInfo (unsafeInto classIndex) (unsafeInto nameAndTypeIndex))
 transformEntry (CPInterfaceMethodRefEntry (MethodRef classRef name methodDescriptor)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
-    lookupOrInsertMCP (InterfaceMethodRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
+    lookupOrInsertMCP (InterfaceMethodRefInfo (unsafeInto classIndex) (unsafeInto nameAndTypeIndex))
 transformEntry (CPNameAndTypeEntry name descriptor) = do
     nameIndex <- transformEntry (CPUTF8Entry name)
     descriptorIndex <- transformEntry (CPUTF8Entry descriptor)
-    lookupOrInsertMCP (NameAndTypeInfo (fromIntegral nameIndex) (fromIntegral descriptorIndex))
+    lookupOrInsertMCP (NameAndTypeInfo (unsafeInto nameIndex) (unsafeInto descriptorIndex))
 transformEntry (CPFieldRefEntry (FieldRef classRef name fieldType)) = do
     classIndex <- transformEntry (CPClassEntry classRef)
     nameAndTypeIndex <- transformEntry (CPNameAndTypeEntry name (fieldTypeDescriptor fieldType))
-    lookupOrInsertMCP (FieldRefInfo (fromIntegral classIndex) (fromIntegral nameAndTypeIndex))
+    lookupOrInsertMCP (FieldRefInfo (unsafeInto classIndex) (unsafeInto nameAndTypeIndex))
 transformEntry (CPMethodHandleEntry methodHandleEntry) = do
     let transformFieldMHE f@(FieldRef{}) = findIndexOf (CPFieldRefEntry f)
     let transformMethodMHE m@(MethodRef{}) = findIndexOf (CPMethodRefEntry m)
@@ -120,19 +118,18 @@ transformEntry (CPInvokeDynamicEntry bootstrapMethod name methodDescriptor) = do
     bmIndex <- convertBootstrapMethod bootstrapMethod
     lookupOrInsertMCP
         ( InvokeDynamicInfo
-            ( fromIntegral bmIndex - 1 -- bootstrap methods are 0 indexed because of course they are
-            )
-            (fromIntegral nameAndTypeIndex)
+            (unsafeInto bmIndex - 1) -- bootstrap methods are 0 indexed because of course they are
+            (into nameAndTypeIndex)
         )
 transformEntry (CPMethodTypeEntry methodDescriptor) = do
     descriptorIndex <- transformEntry (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
-    lookupOrInsertMCP (MethodTypeInfo (fromIntegral descriptorIndex))
+    lookupOrInsertMCP (MethodTypeInfo (unsafeInto descriptorIndex))
 
-convertBootstrapMethod :: (ConstantPool :> r) => BootstrapMethod -> Eff r Int
+convertBootstrapMethod :: ConstantPool :> r => BootstrapMethod -> Eff r Int
 convertBootstrapMethod (BootstrapMethod mhEntry args) = do
     mhIndex <- findIndexOf (CPMethodHandleEntry mhEntry)
     bsArgs <- traverse (findIndexOf . bmArgToCPEntry) args
-    let bootstrapMethod = Raw.BootstrapMethod (fromIntegral mhIndex) (V.fromList bsArgs)
+    let bootstrapMethod = Raw.BootstrapMethod (into mhIndex) (V.fromList bsArgs)
     lookupOrInsertMBM bootstrapMethod
 
 instance Semigroup ConstantPoolState where
@@ -141,25 +138,21 @@ instance Semigroup ConstantPoolState where
 instance Monoid ConstantPoolState where
     mempty = ConstantPoolState mempty mempty
 
-findIndexOf :: (ConstantPool :> r) => ConstantPoolEntry -> Eff  r U2
+-- | Find the index of a constant pool entry, inserting it in the first free location if it doesn't exist.
+findIndexOf :: ConstantPool :> r => ConstantPoolEntry -> Eff r U2
 findIndexOf = fmap toU2OrError . transformEntry
   where
     toU2OrError :: Int -> U2
     toU2OrError i =
-        if i > fromIntegral (maxBound @U2)
+        if i > into (maxBound @U2)
             then error "Constant pool index out of bounds, too many entries?"
-            else fromIntegral i
+            else unsafeInto i
 
-constantPoolToState :: State ConstantPoolState :> r => Eff (ConstantPool ': r) a -> Eff r a
-constantPoolToState = interpret $ \_ -> \case
-    GetCP -> gets id
-    SetCP s -> modify (const s)
+type ConstantPool = State ConstantPoolState
 
 runConstantPoolWith :: ConstantPoolState -> Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
 runConstantPoolWith s =
-    
-        runState s
-        . constantPoolToState
+    runState s
         . inject
 
 runConstantPool :: Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)

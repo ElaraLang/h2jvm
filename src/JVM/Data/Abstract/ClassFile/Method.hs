@@ -1,13 +1,24 @@
-module JVM.Data.Abstract.ClassFile.Method where
-
-import Data.Text (Text)
-import JVM.Data.Abstract.ClassFile.AccessFlags (MethodAccessFlag)
-import JVM.Data.Abstract.Descriptor (MethodDescriptor)
+module JVM.Data.Abstract.ClassFile.Method (
+    CodeAttribute (..),
+    StackMapFrame (..),
+    VerificationTypeInfo (..),
+    LineNumberTableEntry (..),
+    ClassFileMethod (..),
+    MethodAttribute (..),
+    ExceptionTableEntry (..),
+    CodeAttributeData (..),
+)
+where
 
 import Data.Data
-import Data.TypeMergingList (DataMergeable (merge), TypeMergingList, errorDifferentConstructors)
+import Data.List.NonEmpty (NonEmpty)
+import Data.Text (Text)
 import GHC.Generics (Generic)
+
+import Data.TypeMergingList (DataMergeable (merge), TypeMergingList, errorDifferentConstructors)
 import JVM.Data.Abstract.Builder.Label
+import JVM.Data.Abstract.ClassFile.AccessFlags (MethodAccessFlag)
+import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 import JVM.Data.Abstract.Instruction
 import JVM.Data.Abstract.Type (ClassInfoType)
 import JVM.Data.Pretty (Pretty (pretty))
@@ -21,18 +32,18 @@ data ClassFileMethod = ClassFileMethod
     }
     deriving (Show)
 
-data MethodAttribute
+newtype MethodAttribute
     = Code !CodeAttributeData
-    deriving (Show, Generic, Data)
+    deriving (Data, Generic, Show)
 
 data CodeAttributeData = CodeAttributeData
     { maxStack :: U2
     , maxLocals :: U2
-    , code :: [Instruction]
+    , code :: NonEmpty Instruction
     , exceptionTable :: [ExceptionTableEntry]
     , codeAttributes :: [CodeAttribute]
     }
-    deriving (Show, Data, Generic)
+    deriving (Data, Generic, Show)
 
 data ExceptionTableEntry = ExceptionTableEntry
     { startPc :: Int
@@ -40,12 +51,12 @@ data ExceptionTableEntry = ExceptionTableEntry
     , handlerPc :: Int
     , catchType :: Maybe ClassInfoType
     }
-    deriving (Show, Data, Generic)
+    deriving (Data, Generic, Show)
 
 data CodeAttribute
     = LineNumberTable [LineNumberTableEntry]
     | StackMapTable [StackMapFrame]
-    deriving (Show, Eq, Data, Generic)
+    deriving (Data, Eq, Generic, Show)
 
 instance DataMergeable CodeAttribute where
     merge (LineNumberTable a) (LineNumberTable b) = LineNumberTable (a <> b)
@@ -54,7 +65,6 @@ instance DataMergeable CodeAttribute where
 
 instance DataMergeable MethodAttribute where
     merge (Code a) (Code b) = Code (merge a b)
-    merge x y = errorDifferentConstructors x y
 
 instance DataMergeable CodeAttributeData where
     merge (CodeAttributeData a b c d e) (CodeAttributeData a' b' c' d' e') =
@@ -70,7 +80,7 @@ data StackMapFrame
     | SameLocals1StackItemFrame !VerificationTypeInfo Label
     | AppendFrame ![VerificationTypeInfo] !Label
     | FullFrame ![VerificationTypeInfo] ![VerificationTypeInfo] !Label
-    deriving (Show, Data, Eq)
+    deriving (Data, Eq, Show)
 
 data VerificationTypeInfo
     = TopVariableInfo
@@ -82,13 +92,13 @@ data VerificationTypeInfo
     | UninitializedThisVariableInfo
     | ObjectVariableInfo !ClassInfoType
     | UninitializedVariableInfo !Label
-    deriving (Show, Data, Eq)
+    deriving (Data, Eq, Show)
 
 data LineNumberTableEntry = LineNumberTableEntry
     { lineNumberTableEntryStartPc :: U2
     , lineNumberTableEntryLineNumber :: U2
     }
-    deriving (Show, Data, Eq)
+    deriving (Data, Eq, Show)
 
 instance Pretty ClassFileMethod where
     pretty (ClassFileMethod accessFlags name descriptor attributes) =

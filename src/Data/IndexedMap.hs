@@ -4,19 +4,42 @@
 This is used to efficiently build up a constant pool without duplicating entries.
 Because of the specialised nature, its indexes start at 1, not 0. I would apologise but I'm not sorry.
 -}
-module Data.IndexedMap where
+module Data.IndexedMap (
+    -- * Types
+    IndexedMap,
+
+    -- * Construction
+    empty,
+    singleton,
+
+    -- * Lookup
+    lookup,
+    lookupIndex,
+    lookupIndexWhere,
+    isEmpty,
+
+    -- * Insertion
+    insert,
+    lookupOrInsert,
+    lookupOrInsertM,
+    lookupOrInsertMOver,
+
+    -- * Conversion
+    toVector,
+)
+where
 
 import Control.Lens (Lens', set, view)
 import Control.Monad (forM_)
-
-import Data.IntMap qualified as IM
-import Data.Map qualified as M
 import Data.Vector (Vector)
-import Data.Vector qualified as V
 import Effectful
 import Effectful.State.Static.Local
 import GHC.Exts (IsList (..))
 import Prelude hiding (lookup)
+
+import Data.IntMap qualified as IM
+import Data.Map qualified as M
+import Data.Vector qualified as V
 
 data IndexedMap a = IndexedMap !(IM.IntMap a) !(M.Map a Int)
 
@@ -33,7 +56,7 @@ Just "hello"
 >>> lookup @String 2 (singleton "hello")
 Nothing
 -}
-singleton :: (Ord a) => a -> IndexedMap a
+singleton :: Ord a => a -> IndexedMap a
 singleton a = IndexedMap (IM.singleton 1 a) (M.singleton a 1)
 
 lookup :: Int -> IndexedMap a -> Maybe a
@@ -47,7 +70,7 @@ Nothing
 >>> lookupIndex @String "hello" (singleton "world" <> singleton "hello")
 Just 2
 -}
-lookupIndex :: (Ord a) => a -> IndexedMap a -> Maybe Int
+lookupIndex :: Ord a => a -> IndexedMap a -> Maybe Int
 lookupIndex a (IndexedMap _ m) = M.lookup a m
 
 {- | Find the index of the first element that satisfies the predicate, if any
@@ -61,13 +84,13 @@ lookupIndexWhere :: (a -> Bool) -> IndexedMap a -> Maybe Int
 lookupIndexWhere f (IndexedMap m _) = fst <$> IM.lookupMin (IM.filter f m)
 
 -- | Insert a value into the map without checking if it already exists
-insert :: (Ord a) => a -> IndexedMap a -> (Int, IndexedMap a)
+insert :: Ord a => a -> IndexedMap a -> (Int, IndexedMap a)
 insert a (IndexedMap m m') = (i, IndexedMap (IM.insert i a m) (M.insert a i m'))
   where
     i = 1 + IM.size m
 
 -- | Lookup a value in the map, or insert it if it doesn't exist
-lookupOrInsert :: (Ord a) => a -> IndexedMap a -> (Int, IndexedMap a)
+lookupOrInsert :: Ord a => a -> IndexedMap a -> (Int, IndexedMap a)
 lookupOrInsert a (IndexedMap m m') = case M.lookup a m' of
     Just i -> (i, IndexedMap m m')
     Nothing -> insert a (IndexedMap m m')
@@ -107,32 +130,32 @@ toVector (IndexedMap im _) = do
 -- Instances
 --
 
-instance (Show a) => Show (IndexedMap a) where
+instance Show a => Show (IndexedMap a) where
     show (IndexedMap im _) = show im
 
-instance (Eq a) => Eq (IndexedMap a) where
+instance Eq a => Eq (IndexedMap a) where
     (IndexedMap im _) == (IndexedMap im' _) = im == im'
 
-instance (Ord a) => Ord (IndexedMap a) where
+instance Ord a => Ord (IndexedMap a) where
     compare (IndexedMap im _) (IndexedMap im' _) = compare im im'
 
 instance Foldable IndexedMap where
     foldMap f (IndexedMap im _) = foldMap f im
 
-instance (Ord a) => IsList (IndexedMap a) where
+instance Ord a => IsList (IndexedMap a) where
     type Item (IndexedMap a) = a
     fromList = foldr (\a b -> snd $ insert a b) empty
     toList = toList . toVector
 
 {- | Semigroup instance for IndexedMap
- | This is a left-biased union of the two maps
+| This is a left-biased union of the two maps
 -}
-instance (Ord a) => Semigroup (IndexedMap a) where
+instance Ord a => Semigroup (IndexedMap a) where
     l <> r =
         runPureEff $ execState empty $ do
             forM_ (toVector l) lookupOrInsertM
             forM_ (toVector r) lookupOrInsertM
 
 -- | Monoid instance for IndexedMap
-instance (Ord a) => Monoid (IndexedMap a) where
+instance Ord a => Monoid (IndexedMap a) where
     mempty = empty

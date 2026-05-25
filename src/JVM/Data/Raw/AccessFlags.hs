@@ -1,8 +1,10 @@
-module JVM.Data.Raw.AccessFlags where
+module JVM.Data.Raw.AccessFlags (AccessFlag (..), accessFlagValue) where
 
 import Data.Binary (Word16)
 import Data.Binary.Put (putWord16be)
+
 import Data.Binary.Write (WriteBinary (writeBinary))
+
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
 
 {- | Very thin wrapper around the access flags defined in the JVM spec.

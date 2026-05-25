@@ -1,15 +1,27 @@
-module JVM.Data.Abstract.Name where
+module JVM.Data.Abstract.Name (
+    PackageName (..),
+    ClassName,
+    QualifiedClassName (..),
+    parsePackageName,
+    parseClassName,
+    parseQualifiedClassName,
+    toInternalName,
+    suitableFilePath,
+)
+where
 
 import Data.Data
 import Data.String (IsString (fromString))
 import Data.Text (Text)
+
 import Data.Text qualified as T
+
 import JVM.Data.Pretty
 
 {- | A JVM package name
 This is defined as a potentially empty list of identifiers, which would be separated by dots in the source code
 -}
-newtype PackageName = PackageName [Text] deriving (Show, Eq, Ord, Data)
+newtype PackageName = PackageName [Text] deriving (Data, Eq, Ord, Show)
 
 {- | Parse a 'PackageName' from a 'Text'
 
@@ -25,13 +37,13 @@ parsePackageName t = case T.splitOn "." t of
     xs -> PackageName xs
 
 -- | A JVM class name
-newtype ClassName = ClassName Text deriving (Show, Eq, Ord, Data)
+newtype ClassName = ClassName Text deriving (Data, Eq, Ord, Show)
 
 -- | Parse a 'ClassName' from a 'Text'
 parseClassName :: Text -> ClassName
 parseClassName = ClassName
 
-data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Show, Eq, Ord, Data)
+data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Data, Eq, Ord, Show)
 
 instance Pretty QualifiedClassName where
     pretty (QualifiedClassName (PackageName []) (ClassName c)) = pretty c

@@ -1,6 +1,7 @@
-module JVM.Data.Abstract.Descriptor where
+module JVM.Data.Abstract.Descriptor (MethodDescriptor (..), ReturnDescriptor (..), returnDescriptorType, methodParam) where
 
 import Data.Data
+
 import JVM.Data.Abstract.Type (FieldType)
 import JVM.Data.Pretty
 
@@ -8,11 +9,12 @@ data MethodDescriptor = MethodDescriptor
     { params :: [FieldType]
     , returnDesc :: ReturnDescriptor
     }
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 instance Pretty MethodDescriptor where
     pretty (MethodDescriptor params ret) = "(" <> hsep (pretty <$> params) <> ")" <> pretty ret
 
+-- | Get the type of the i-th parameter of a method descriptor, if it exists.
 methodParam :: MethodDescriptor -> Int -> Maybe FieldType
 methodParam (MethodDescriptor params _) i = params !!? i
   where
@@ -23,7 +25,7 @@ methodParam (MethodDescriptor params _) i = params !!? i
 data ReturnDescriptor
     = VoidReturn
     | TypeReturn FieldType
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 instance Pretty ReturnDescriptor where
     pretty VoidReturn = "V"

@@ -1,20 +1,37 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module JVM.Data.Raw.ClassFile where
+module JVM.Data.Raw.ClassFile (
+    BootstrapMethod (..),
+    FieldInfo (..),
+    MethodInfo (..),
+    ClassFile (..),
+    VerificationTypeInfo (..),
+    Attribute (..),
+    AttributeInfo (..),
+    LineNumberTableEntry (..),
+    StackMapFrame (..),
+    ExceptionTableEntry (..),
+    InnerClassInfo (..),
+)
+where
 
 import Data.Binary.Builder (toLazyByteString)
 import Data.Binary.Put
-import Data.Binary.Write (WriteBinary (writeBinary), writeList)
-import Data.ByteString qualified as B
 import Data.Vector (Vector)
-import Data.Vector qualified as V
 import Data.Word
-import JVM.Data.JVMVersion (MajorVersion (..), MinorVersion, unwrapMajor, unwrapMinor)
+import Witch (unsafeInto)
+
+import Data.ByteString qualified as B
+import Data.Vector qualified as V
+
+import Data.Binary.Write (WriteBinary (writeBinary), writeList)
+import JVM.Data.JVMVersion (MajorVersion, MinorVersion, unwrapMajor, unwrapMinor)
 import JVM.Data.Raw.ConstantPool (ConstantPoolInfo)
 import JVM.Data.Raw.Instruction (Instruction)
-import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
 import JVM.Data.Raw.Types
+
+import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
 
 {-
 ClassFile {
@@ -115,11 +132,12 @@ data LineNumberTableEntry = LineNumberTableEntry
 data StackMapFrame
     = -- | 0-63
       SameFrame U1
-    | -- |
-      -- >       same_locals_1_stack_item_frame {
-      -- >          u1 frame_type = SAME_LOCALS_1_STACK_ITEM; /* 64-127 */
-      -- >          verification_type_info stack[1];
-      -- >      }
+    | {- |
+      >       same_locals_1_stack_item_frame {
+      >          u1 frame_type = SAME_LOCALS_1_STACK_ITEM; /* 64-127 */
+      >          verification_type_info stack[1];
+      >      }
+      -}
       SameLocals1StackItemFrame VerificationTypeInfo U1
     | SameLocals1StackItemFrameExtended VerificationTypeInfo U2
     | SameFrameExtended U2
@@ -144,7 +162,7 @@ data BootstrapMethod = BootstrapMethod
     { bootstrapMethodRef :: Word16
     , bootstrapArguments :: Vector Word16
     }
-    deriving (Show, Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 data ExceptionTableEntry = ExceptionTableEntry
     { startPc :: Word16
@@ -164,7 +182,7 @@ data MethodInfo = MethodInfo
 
 putConstantPool :: V.Vector ConstantPoolInfo -> Put
 putConstantPool entries = do
-    putWord16be $ fromIntegral (length entries + 1)
+    putWord16be $ unsafeInto (length entries + 1)
     mapM_ writeBinary entries
 
 putInterfaceTable :: Vector Word16 -> Put
@@ -188,7 +206,7 @@ instance WriteBinary AttributeInfo where
         putWord16be nameIndex
         let infoBS = B.toStrict $ runPut $ putAttribute info
         let aiLength = B.length infoBS
-        putWord32be $ fromIntegral aiLength
+        putWord32be $ unsafeInto aiLength
         putByteString infoBS
 
 -- | Puts the attribute data. This must not include length or name, just the actual value
@@ -198,12 +216,12 @@ putAttribute (CodeAttribute maxStack maxLocals code exceptionTable codeAttribute
     putWord16be maxStack
     putWord16be maxLocals
     let codeStr = B.toStrict $ toLazyByteString $ execPut $ mapM_ writeBinary code
-    putWord32be $ fromIntegral $ B.length codeStr
+    putWord32be $ unsafeInto $ B.length codeStr
     putByteString codeStr
     putExceptionTable exceptionTable
     putAttributes codeAttributes
 putAttribute (InnerClassesAttribute classes) = do
-    putWord16be $ fromIntegral $ V.length classes
+    putWord16be $ unsafeInto $ V.length classes
     mapM_ putInnerClassInfo classes
   where
     putInnerClassInfo :: InnerClassInfo -> Put
@@ -215,10 +233,10 @@ putAttribute (InnerClassesAttribute classes) = do
 putAttribute (SourceFileAttribute sfIndex) = do
     putWord16be sfIndex
 putAttribute (BootstrapMethodsAttribute bms) = do
-    putWord16be $ fromIntegral $ V.length bms
+    putWord16be $ unsafeInto $ V.length bms
     mapM_ putBootstrapMethod bms
 putAttribute (LineNumberTableAttribute lns) = do
-    putWord16be $ fromIntegral $ V.length lns
+    putWord16be $ unsafeInto $ V.length lns
     mapM_ putLineNumberEntry lns
   where
     putLineNumberEntry :: LineNumberTableEntry -> Put
@@ -226,7 +244,7 @@ putAttribute (LineNumberTableAttribute lns) = do
         putWord16be startPc
         putWord16be lineNumber
 putAttribute (StackMapTableAttribute frames) = do
-    putWord16be $ fromIntegral $ V.length frames
+    putWord16be $ unsafeInto $ V.length frames
     mapM_ putStackMapFrame frames
   where
     putStackMapFrame :: StackMapFrame -> Put
@@ -245,15 +263,15 @@ putAttribute (StackMapTableAttribute frames) = do
         putWord8 (251 - chop) -- chop = 251 - frame_type => frame_type = 251 - chop
         putWord16be label
     putStackMapFrame (AppendFrame infos offset) = do
-        putWord8 (251 + fromIntegral (V.length infos)) -- frame_type = 251 + number_of_locals
+        putWord8 (251 + unsafeInto (V.length infos)) -- frame_type = 251 + number_of_locals
         putWord16be offset
         mapM_ putVerificationTypeInfo infos
     putStackMapFrame (FullFrame locals stack offset) = do
         putWord8 255
         putWord16be offset
-        putWord16be (fromIntegral $ V.length locals)
+        putWord16be (unsafeInto $ V.length locals)
         mapM_ putVerificationTypeInfo locals
-        putWord16be (fromIntegral $ V.length stack)
+        putWord16be (unsafeInto $ V.length stack)
         mapM_ putVerificationTypeInfo stack
 
     putVerificationTypeInfo :: VerificationTypeInfo -> Put
@@ -274,7 +292,7 @@ putAttribute (StackMapTableAttribute frames) = do
 putBootstrapMethod :: BootstrapMethod -> Put
 putBootstrapMethod BootstrapMethod{..} = do
     putWord16be bootstrapMethodRef
-    putWord16be $ fromIntegral $ V.length bootstrapArguments
+    putWord16be $ unsafeInto $ V.length bootstrapArguments
     mapM_ putWord16be bootstrapArguments
 
 putExceptionTable :: Vector ExceptionTableEntry -> Put

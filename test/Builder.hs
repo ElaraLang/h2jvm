@@ -2,14 +2,16 @@
 
 module Builder where
 
+import Effectful
 import Hedgehog
+import Test.Syd
+import Test.Syd.Hedgehog ()
+
 import JVM.Data.Abstract.Builder.Code
 import JVM.Data.Abstract.Instruction
-import JVM.Data.Raw.Instruction qualified as Raw
-import Effectful
-import Test.Hspec
-import Test.Hspec.Hedgehog
 import Util (runConv)
+
+import JVM.Data.Raw.Instruction qualified as Raw
 
 spec :: Spec
 spec = describe "test code building" $ do
@@ -26,7 +28,7 @@ spec = describe "test code building" $ do
                 emit (IfEq label)
                 emit (Label label)
                 emit Return
-        hedgehog $ do
+        property $ do
             (insts, _) <- runConv code
             insts
                 === [ Raw.ALoad0

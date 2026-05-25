@@ -1,10 +1,11 @@
 {-# LANGUAGE ConstraintKinds #-}
 
-module JVM.Data.Convert.Monad where
+module JVM.Data.Convert.Monad (ConvertEff, runConvertM, CodeConverterError (..)) where
 
 import Data.Word (Word16)
 import Effectful
 import Effectful.Error.Static
+
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Convert.ConstantPool (ConstantPool, ConstantPoolState, runConstantPool)
 

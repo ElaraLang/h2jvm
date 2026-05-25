@@ -5,11 +5,11 @@
 -}
 module JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), MethodHandleEntry (..), FieldRef (..), MethodRef (..), BootstrapMethod (..), BootstrapArgument (..), bmArgToCPEntry) where
 
-import Data.Int (Int64)
-import Data.Text (Text)
-import JVM.Data.Abstract.Descriptor (MethodDescriptor)
-
 import Data.Data
+import Data.Int (Int32, Int64)
+import Data.Text (Text)
+
+import JVM.Data.Abstract.Descriptor (MethodDescriptor)
 import JVM.Data.Abstract.Type (ClassInfoType, FieldType)
 import JVM.Data.Pretty
 
@@ -26,7 +26,7 @@ data ConstantPoolEntry
     | CPMethodRefEntry MethodRef
     | CPInterfaceMethodRefEntry MethodRef
     | CPStringEntry Text
-    | CPIntegerEntry Int
+    | CPIntegerEntry Int32
     | CPFloatEntry Float
     | CPLongEntry Int64
     | CPDoubleEntry Double
@@ -42,10 +42,10 @@ data ConstantPoolEntry
         Text
         -- | (name_and_)type(_index)
         MethodDescriptor
-    deriving (Show, Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 data FieldRef = FieldRef ClassInfoType Text FieldType
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 instance Pretty FieldRef where
     pretty (FieldRef c n t) = pretty c <> "." <> pretty n <> ":" <> pretty t
@@ -58,14 +58,14 @@ data MethodRef
         Text
         -- | The descriptor of the method
         MethodDescriptor
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 instance Pretty MethodRef where
     pretty (MethodRef c n d) = pretty c <> "." <> pretty n <> pretty d
 
 data BootstrapMethod
     = BootstrapMethod MethodHandleEntry [BootstrapArgument]
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 instance Pretty BootstrapMethod where
     pretty (BootstrapMethod mh args) = pretty mh <+> hsep (map pretty args)
@@ -73,10 +73,10 @@ instance Pretty BootstrapMethod where
 data BootstrapArgument
     = BMClassArg ClassInfoType
     | BMStringArg Text
-    | BMIntArg Int
+    | BMIntArg Int32
     | BMMethodArg MethodDescriptor
     | BMMethodHandleArg MethodHandleEntry
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 instance Pretty BootstrapArgument where
     pretty (BMClassArg c) = pretty c
@@ -102,7 +102,7 @@ data MethodHandleEntry
     | MHInvokeStatic MethodRef
     | MHInvokeSpecial MethodRef
     | MHInvokeInterface MethodRef
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 instance Pretty MethodHandleEntry where
     pretty (MHGetField f) = "getField" <+> pretty f

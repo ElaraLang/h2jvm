@@ -2,17 +2,28 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module JVM.Data.Abstract.Builder.Code where
+module JVM.Data.Abstract.Builder.Code (
+    CodeBuilder,
+    emit,
+    runCodeBuilder,
+    newLabel,
+)
+where
 
-import Data.TypeMergingList (TypeMergingList)
-import Data.TypeMergingList qualified as TML
+import Data.List.NonEmpty (NonEmpty)
 import Effectful
 import Effectful.Dispatch.Dynamic
 import Effectful.State.Static.Local
 import Effectful.TH (makeEffect)
+
+import Data.List.NonEmpty qualified as NE
+
+import Data.TypeMergingList (TypeMergingList)
 import JVM.Data.Abstract.Builder.Label
 import JVM.Data.Abstract.ClassFile.Method (CodeAttribute)
 import JVM.Data.Abstract.Instruction
+
+import Data.TypeMergingList qualified as TML
 
 data CodeBuilder m a where
     AddCodeAttribute :: CodeAttribute -> CodeBuilder m ()
@@ -29,14 +40,12 @@ data CodeState = CodeState
     }
 
 initialCodeState :: CodeState
-initialCodeState = CodeState{labelSource = MkLabel <$> [0 ..], attributes = mempty, code = []}
+initialCodeState = CodeState{labelSource = unsafeMkLabel <$> [0 ..], attributes = mempty, code = []}
 
--- snoc list
-
-emit :: (CodeBuilder :> r) => Instruction -> Eff r ()
+emit :: CodeBuilder :> r => Instruction -> Eff r ()
 emit = emit' . pure
 
-codeBuilderToState :: ((State CodeState) :> r) => Eff (CodeBuilder ': r) a -> Eff r a
+codeBuilderToState :: State CodeState :> r => Eff (CodeBuilder ': r) a -> Eff r a
 codeBuilderToState = interpret $ \_ -> \case
     AddCodeAttribute ca -> modify (\s -> s{attributes = s.attributes `TML.snoc` ca})
     NewLabel -> do
@@ -47,10 +56,9 @@ codeBuilderToState = interpret $ \_ -> \case
                 put (s{labelSource = ls'})
                 pure l
     Emit' is -> modify (\s -> s{code = reverse is <> s.code})
-    -- code is a snoc list (kind of)
     GetCode -> gets (.code)
 
-runCodeBuilder :: forall r a. Eff (CodeBuilder ': r) a -> Eff r (a, [CodeAttribute], [Instruction])
+runCodeBuilder :: forall r a. HasCallStack => Eff (CodeBuilder ': r) a -> Eff r (a, [CodeAttribute], NonEmpty Instruction)
 runCodeBuilder =
     fmap rr
         . runState initialCodeState
@@ -60,5 +68,7 @@ runCodeBuilder =
     rr (a, s) =
         ( a
         , TML.toList s.attributes
-        , reverse s.code
+        , case reverse s.code of
+            [] -> error "runCodeBuilder: No code emitted"
+            is -> NE.fromList is
         )

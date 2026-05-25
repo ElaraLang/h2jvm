@@ -1,6 +1,7 @@
-module JVM.Data.Convert.Descriptor where
+module JVM.Data.Convert.Descriptor (convertMethodDescriptor) where
 
 import Data.Text (Text)
+
 import JVM.Data.Abstract.Descriptor (MethodDescriptor (..), ReturnDescriptor (..))
 import JVM.Data.Convert.Type (fieldTypeDescriptor)
 

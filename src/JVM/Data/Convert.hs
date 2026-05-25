@@ -3,13 +3,13 @@
 {-# LANGUAGE RecordWildCards #-}
 
 -- | Converts between high level and low level representations
-module JVM.Data.Convert where
+module JVM.Data.Convert (jloName, convert) where
 
-import Data.IndexedMap qualified as IM
 import Data.Maybe (fromMaybe)
-import Data.TypeMergingList qualified as TML
+import Effectful
+
 import Data.Vector qualified as V
-import JVM.Data.Abstract.ClassFile qualified as Abs
+
 import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (CPClassEntry, CPUTF8Entry))
 import JVM.Data.Abstract.Name (QualifiedClassName, parseQualifiedClassName)
 import JVM.Data.Abstract.Type (ClassInfoType (..))
@@ -20,14 +20,17 @@ import JVM.Data.Convert.Method (convertMethod)
 import JVM.Data.Convert.Monad
 import JVM.Data.JVMVersion (getMajor, getMinor)
 import JVM.Data.Raw.ClassFile (Attribute (BootstrapMethodsAttribute))
+
+import Data.IndexedMap qualified as IM
+import Data.TypeMergingList qualified as TML
+import JVM.Data.Abstract.ClassFile qualified as Abs
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
-import Effectful
 
 jloName :: QualifiedClassName
 jloName = parseQualifiedClassName "java.lang.Object"
 
-convertClassAttributes :: (ConvertEff r) => [Abs.ClassFileAttribute] -> Eff r [Raw.AttributeInfo]
+convertClassAttributes :: ConvertEff r => [Abs.ClassFileAttribute] -> Eff r [Raw.AttributeInfo]
 convertClassAttributes = traverse convertClassAttribute
   where
     convertClassAttribute (Abs.SourceFile text) = do

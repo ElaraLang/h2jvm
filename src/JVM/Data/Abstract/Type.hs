@@ -1,6 +1,14 @@
-module JVM.Data.Abstract.Type where
+module JVM.Data.Abstract.Type (
+    ClassInfoType (..),
+    PrimitiveType (..),
+    FieldType (..),
+    fieldTypeToClassInfoType,
+    classInfoTypeToFieldType,
+)
+where
 
 import Data.Data
+
 import JVM.Data.Abstract.Name (QualifiedClassName)
 import JVM.Data.Pretty (Pretty (pretty))
 
@@ -13,7 +21,7 @@ data PrimitiveType
     | Long
     | Short
     | Boolean
-    deriving (Show, Eq, Ord, Data, Enum, Bounded)
+    deriving (Bounded, Data, Enum, Eq, Ord, Show)
 
 instance Pretty PrimitiveType where
     pretty Byte = "byte"
@@ -32,7 +40,7 @@ data FieldType
     = PrimitiveFieldType PrimitiveType
     | ObjectFieldType QualifiedClassName
     | ArrayFieldType FieldType
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 instance Pretty FieldType where
     pretty (PrimitiveFieldType p) = pretty p
@@ -51,7 +59,7 @@ data ClassInfoType
     = ClassInfoType QualifiedClassName
     | PrimitiveClassInfoType PrimitiveType
     | ArrayClassInfoType ClassInfoType
-    deriving (Show, Eq, Ord, Data)
+    deriving (Data, Eq, Ord, Show)
 
 classInfoTypeToFieldType :: ClassInfoType -> FieldType
 classInfoTypeToFieldType (ClassInfoType c) = ObjectFieldType c

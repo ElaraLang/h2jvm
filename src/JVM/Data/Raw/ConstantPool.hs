@@ -1,15 +1,19 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module JVM.Data.Raw.ConstantPool where
+module JVM.Data.Raw.ConstantPool (ConstantPoolInfo (..)) where
 
 import Data.Binary
 import Data.Binary.Put
-import Data.Binary.Write (WriteBinary (writeBinary))
 import Data.ByteString
+import Witch (unsafeInto)
+
 import Data.ByteString qualified as BS
-import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
+
+import Data.Binary.Write (WriteBinary (writeBinary))
 import JVM.Data.Raw.Types
+
+import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
 
 data ConstantPoolInfo
     = -- | https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4.1
@@ -27,7 +31,7 @@ data ConstantPoolInfo
     | MethodHandleInfo {referenceKind :: U1, referenceIndex :: U2}
     | MethodTypeInfo {descriptorIndex :: U2}
     | InvokeDynamicInfo {bootstrapMethodAttrIndex :: U2, nameAndTypeIndex :: U2}
-    deriving (Show, Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 instance WriteBinary ConstantPoolInfo where
     writeBinary (ClassInfo{..}) = do
@@ -68,7 +72,7 @@ instance WriteBinary ConstantPoolInfo where
         putWord16be descriptorIndex
     writeBinary (UTF8Info{..}) = do
         putWord8 MagicNumbers.constant_Utf8
-        putWord16be (fromIntegral $ BS.length utfBytes)
+        putWord16be (unsafeInto $ BS.length utfBytes)
         putByteString utfBytes
     writeBinary (MethodHandleInfo{..}) = do
         putWord8 MagicNumbers.constant_MethodHandle

@@ -1,18 +1,19 @@
-{-# LANGUAGE OverloadedLists #-}
-
 module Main where
+
+import Test.Syd (Spec, sydTest)
 
 import Analyse qualified (spec)
 import Builder qualified (spec)
 import Convert qualified (spec)
-import Test.Hspec (Spec, hspec)
+import StackMap qualified (spec)
 
 spec :: Spec
 spec = do
     Convert.spec
     Builder.spec
     Analyse.spec
+    StackMap.spec
 
 main :: IO ()
 main = do
-    hspec spec
+    sydTest spec

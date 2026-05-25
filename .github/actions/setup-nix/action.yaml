@@ -5,22 +5,19 @@ inputs:
     description: "GitHub Token for Nix access-tokens"
     required: true
     default: ${{ github.token }}
-  
   cachix-auth-token:
     description: "Cachix Auth Token"
     required: true
-
 runs:
   using: "composite"
   steps:
     - uses: DeterminateSystems/nix-installer-action@v22
       with:
         extra-conf: |
-          
           extra-substituters = https://elara.cachix.org https://tek.cachix.org
           extra-trusted-public-keys = elara.cachix.org-1:d129AMaRCJ6Q86oVUvIccZ1NsRZ6kyL5IkceevfQDWI= tek.cachix.org-1:+sdc73WFq8aEKnrVv5j/kuhmnW2hQJuqdPJF5SnaCBk=
-
     - uses: cachix/cachix-action@v17
       with:
         name: elara
         authToken: ${{ inputs.cachix-auth-token }}
+    - uses: wimpysworld/nothing-but-nix@main

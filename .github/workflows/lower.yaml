@@ -12,22 +12,17 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-
       - uses: ./.github/actions/setup-nix
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-
-
       - id: bounds
         run: nix run .#lower -- --output=ga-pr
-
       - name: pr
         if: steps.bounds.outputs.commit-message
         uses: peter-evans/create-pull-request@v8
-        with: ${{ steps.bounds.outputs }}
+        with:
+          commit-message: ${{ steps.bounds.outputs.commit-message }}
+          title: ${{ steps.bounds.outputs.title }}
+          body: ${{ steps.bounds.outputs.body }}
+          branch: ${{ steps.bounds.outputs.branch }}

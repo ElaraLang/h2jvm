@@ -1,6 +1,7 @@
-module JVM.Data.Abstract.ClassFile.AccessFlags where
+module JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag (..), FieldAccessFlag (..), MethodAccessFlag (..)) where
 
 import Data.Data
+
 import JVM.Data.Pretty (Pretty (pretty))
 
 -- | Access flags for a class
@@ -13,7 +14,7 @@ data ClassAccessFlag
     | Synthetic
     | Annotation
     | Enum
-    deriving (Show, Eq, Data)
+    deriving (Data, Eq, Show)
 
 data FieldAccessFlag
     = FPublic
@@ -25,7 +26,7 @@ data FieldAccessFlag
     | FTransient
     | FSynthetic
     | FEnum
-    deriving (Show, Data)
+    deriving (Data, Show)
 
 data MethodAccessFlag
     = MPublic
@@ -40,7 +41,7 @@ data MethodAccessFlag
     | MAbstract
     | MStrict
     | MSynthetic
-    deriving (Show, Data, Eq)
+    deriving (Data, Eq, Show)
 
 instance Pretty ClassAccessFlag where
     pretty Public = "public"

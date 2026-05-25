@@ -1,9 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
 
-module JVM.Data.Convert.Type where
+module JVM.Data.Convert.Type (fieldTypeDescriptor, classInfoTypeDescriptor, baseTypeDescriptor) where
 
 import Data.Text (Text)
+
 import JVM.Data.Abstract.Name (toInternalName)
+
 import JVM.Data.Abstract.Type qualified as Abs
 
 baseTypeDescriptor :: Abs.PrimitiveType -> Text

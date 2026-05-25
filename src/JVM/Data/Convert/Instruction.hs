@@ -1,33 +1,39 @@
+{-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE LexicalNegation #-}
 
 {- | Converts abstract instructions into raw instructions
- This includes resolving labels into offsets
- TODO: this is very inefficient, requiring three passes over the instructions
+This includes resolving labels into offsets
+TODO: this is very inefficient, requiring three passes over the instructions
 -}
-module JVM.Data.Convert.Instruction (CodeConverterEff, fullyRunCodeConverter, convertInstructions, fullyResolveAbs) where
+module JVM.Data.Convert.Instruction (CodeConverterEff, fullyRunCodeConverter, convertInstructions, fullyResolveAbs, ConvertState (..)) where
 
+import Data.List.NonEmpty (NonEmpty)
 import Data.Map (Map)
-import Data.Map qualified as Map
 import Data.Maybe
-import JVM.Data.Abstract.Builder.Label
-import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), FieldRef (..), MethodRef (..))
-import JVM.Data.Abstract.Descriptor
-import JVM.Data.Abstract.Instruction as Abs (Instruction, Instruction' (..), LDCEntry (..), ICmp (..))
-import JVM.Data.Abstract.Type
-import JVM.Data.Convert.ConstantPool
-import JVM.Data.Raw.Instruction as Raw (Instruction (..))
-
 import Data.Word (Word16)
 import Effectful
 import Effectful.Error.Static
-import Effectful.State.Static.Local
+import Effectful.State.Static.Local hiding (modifyM)
+import Witch
+
+import Data.List.NonEmpty qualified as NE
+import Data.Map qualified as Map
+
+import JVM.Data.Abstract.Builder.Label
+import JVM.Data.Abstract.ConstantPool (ConstantPoolEntry (..), FieldRef (..), MethodRef (..))
+import JVM.Data.Abstract.Descriptor
+import JVM.Data.Abstract.Instruction as Abs (ICmp (..), Instruction, Instruction' (..), LDCEntry (..))
+import JVM.Data.Abstract.Type
+import JVM.Data.Convert.ConstantPool
 import JVM.Data.Convert.Monad
+import JVM.Data.Raw.Instruction as Raw (Instruction (..))
+import JVM.Data.Raw.Types (U1, U2)
+
 import JVM.Data.Raw.MagicNumbers qualified as MagicNumbers
-import JVM.Data.Raw.Types (U1, U2, UnsafeNumConvert (unsafeNumConvert))
 
 type CodeConverterEff r = (ConstantPool :> r, State ConvertState :> r, Error CodeConverterError :> r)
 
-fullyRunCodeConverter :: (ConvertEff r') => Eff (State ConvertState : r') a -> Eff r' a
+fullyRunCodeConverter :: ConvertEff r' => Eff (State ConvertState : r') a -> Eff r' a
 fullyRunCodeConverter r = do
     (a, _) <- runState (ConvertState 0 Map.empty) r
     pure a
@@ -101,47 +107,50 @@ instructionSize Abs.ISub = 1
 instructionSize Abs.IMul = 1
 instructionSize Abs.IDiv = 1
 
-convertInstructions :: (CodeConverterEff r) => [Abs.Instruction] -> Eff r [Raw.Instruction]
+convertInstructions :: (CodeConverterEff r, HasCallStack) => NonEmpty Abs.Instruction -> Eff r (NonEmpty Raw.Instruction)
 convertInstructions xs = do
     withOffsets <- insertAllLabels xs
     insts <- traverse (resolveLabel . fmap (fmap UnresolvedLabel)) withOffsets
-    catMaybes <$> traverse convertInstruction insts
+    finalInsts <- catMaybes <$> traverse convertInstruction (NE.toList insts)
+    case NE.nonEmpty finalInsts of
+        Just ne -> pure ne
+        Nothing -> error "All instructions were invalid"
 
 data MaybeResolvedLabel = ResolvedLabel Word16 | UnresolvedLabel Label
 
 data OffsetInstruction a = OffsetInstruction Word16 a
-    deriving (Show, Eq, Ord, Functor)
+    deriving (Eq, Functor, Ord, Show)
 
 -- | Inserts the corresponding label offsets into the state
-insertAllLabels :: (CodeConverterEff r) => [Abs.Instruction] -> Eff r [OffsetInstruction Abs.Instruction]
+insertAllLabels :: CodeConverterEff r => NonEmpty Abs.Instruction -> Eff r (NonEmpty (OffsetInstruction Abs.Instruction))
 insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
   where
-    incOffset :: (CodeConverterEff r) => Abs.Instruction -> Eff r ()
+    incOffset :: CodeConverterEff r => Abs.Instruction -> Eff r ()
     incOffset (Label _) = pure () -- Label instructions have no representation in the bytecode, so they don't affect the offset
     incOffset inst = do
-        offset <- gets (.currentOffset)
+        offset <- gets @ConvertState (.currentOffset)
         let size = instructionSize inst
         modify (\s -> s{currentOffset = offset + size})
 
-    insertLabel :: (CodeConverterEff r) => Abs.Instruction -> Eff r (OffsetInstruction Abs.Instruction)
+    insertLabel :: CodeConverterEff r => Abs.Instruction -> Eff r (OffsetInstruction Abs.Instruction)
     insertLabel (Label l) = do
-        currentOffset <- gets (.currentOffset)
+        currentOffset <- gets @ConvertState (.currentOffset)
 
-        JVM.Data.Convert.Instruction.modifyM $ \s -> do
+        modifyM $ \s -> do
             case Map.lookup l s.labelOffsets of
                 Just _ -> throwError (DuplicateLabel l currentOffset)
                 Nothing -> do
                     pure (s{labelOffsets = Map.insert l currentOffset s.labelOffsets})
         pure (OffsetInstruction (error "Label offset should not be evaluated") (Label l))
     insertLabel x = do
-        offset <- gets (.currentOffset)
+        offset <- gets @ConvertState (.currentOffset)
         pure (OffsetInstruction (offset - instructionSize x) x)
 
-modifyM :: ((State s) :> r) => (s -> Eff r s) -> Eff r ()
+modifyM :: State s :> r => (s -> Eff r s) -> Eff r ()
 modifyM f = get >>= f >>= put
 
 -- | Turns labels into offsets where possible
-resolveLabel :: (CodeConverterEff r) => OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> Eff r (OffsetInstruction (Abs.Instruction' MaybeResolvedLabel))
+resolveLabel :: CodeConverterEff r => OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> Eff r (OffsetInstruction (Abs.Instruction' MaybeResolvedLabel))
 resolveLabel (OffsetInstruction instOffset inst) =
     OffsetInstruction instOffset <$> case inst of
         Abs.IfEq l -> Abs.IfEq <$> resolveLabelAbs l
@@ -151,39 +160,39 @@ resolveLabel (OffsetInstruction instOffset inst) =
         Abs.IfGt l -> Abs.IfGt <$> resolveLabelAbs l
         Abs.IfLe l -> Abs.IfLe <$> resolveLabelAbs l
         Abs.Goto l -> Abs.Goto <$> resolveLabelAbs l
-
-        Abs.IfICmp cmp -> Abs.IfICmp <$> case cmp of
-            Abs.IFEq l -> Abs.IFEq <$> resolveLabelAbs l
-            Abs.IFNe l -> Abs.IFNe <$> resolveLabelAbs l
-            Abs.IFLt l -> Abs.IFLt <$> resolveLabelAbs l
-            Abs.IFGe l -> Abs.IFGe <$> resolveLabelAbs l
-            Abs.IFGt l -> Abs.IFGt <$> resolveLabelAbs l
-            Abs.IFLe l -> Abs.IFLe <$> resolveLabelAbs l
+        Abs.IfICmp cmp ->
+            Abs.IfICmp <$> case cmp of
+                Abs.IFEq l -> Abs.IFEq <$> resolveLabelAbs l
+                Abs.IFNe l -> Abs.IFNe <$> resolveLabelAbs l
+                Abs.IFLt l -> Abs.IFLt <$> resolveLabelAbs l
+                Abs.IFGe l -> Abs.IFGe <$> resolveLabelAbs l
+                Abs.IFGt l -> Abs.IFGt <$> resolveLabelAbs l
+                Abs.IFLe l -> Abs.IFLe <$> resolveLabelAbs l
         _ -> pure inst
 
-fullyResolveAbs :: (CodeConverterEff r) => Label -> Eff r Word16
+fullyResolveAbs :: CodeConverterEff r => Label -> Eff r Word16
 fullyResolveAbs l = do
     x <- resolveLabelAbs (UnresolvedLabel l)
     mustBeResolvedAbs x
 
 -- | Attempt to resolve a label to an __absolute__ offset
-resolveLabelAbs :: (CodeConverterEff r) => MaybeResolvedLabel -> Eff r MaybeResolvedLabel
+resolveLabelAbs :: CodeConverterEff r => MaybeResolvedLabel -> Eff r MaybeResolvedLabel
 resolveLabelAbs r@(ResolvedLabel _) = pure r
 resolveLabelAbs (UnresolvedLabel l) = do
-    offset <- gets (Map.lookup l . (.labelOffsets))
+    offset <- gets @ConvertState (Map.lookup l . (.labelOffsets))
     case offset of
         Just o -> pure (ResolvedLabel o)
         Nothing -> pure (UnresolvedLabel l)
 
 -- | Attempt to resolve a label to an __absolute__ offset, throwing an error if it cannot be resolved
-mustBeResolvedAbs :: (CodeConverterEff r) => MaybeResolvedLabel -> Eff r Word16
+mustBeResolvedAbs :: CodeConverterEff r => MaybeResolvedLabel -> Eff r Word16
 mustBeResolvedAbs (ResolvedLabel i) = pure i
 mustBeResolvedAbs (UnresolvedLabel l) = throwError (UnmarkedLabel l)
 
-mustBeResolved :: (CodeConverterEff r) => Word16 -> MaybeResolvedLabel -> Eff r Word16
+mustBeResolved :: CodeConverterEff r => Word16 -> MaybeResolvedLabel -> Eff r Word16
 mustBeResolved instOffset = fmap (- instOffset) . mustBeResolvedAbs
 
-convertInstruction :: (CodeConverterEff r) => OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> Eff r (Maybe Raw.Instruction)
+convertInstruction :: CodeConverterEff r => OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> Eff r (Maybe Raw.Instruction)
 convertInstruction (OffsetInstruction _ (Abs.Label _)) = pure Nothing
 convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstruction o
   where
@@ -192,28 +201,28 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.ALoad 2) = pure Raw.ALoad2
     convertInstruction (Abs.ALoad 3) = pure Raw.ALoad3
     convertInstruction (Abs.ALoad idx)
-        | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.ALoad i)
+        | Right i <- tryInto @U1 idx = pure (Raw.ALoad i)
         | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_aLoad idx)
     convertInstruction (Abs.AStore 0) = pure Raw.AStore0
     convertInstruction (Abs.AStore 1) = pure Raw.AStore1
     convertInstruction (Abs.AStore 2) = pure Raw.AStore2
     convertInstruction (Abs.AStore 3) = pure Raw.AStore3
     convertInstruction (Abs.AStore idx)
-        | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.AStore i)
+        | Right i <- tryInto @U1 idx = pure (Raw.AStore i)
         | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_aStore idx)
     convertInstruction (Abs.ILoad 0) = pure Raw.ILoad0
     convertInstruction (Abs.ILoad 1) = pure Raw.ILoad1
     convertInstruction (Abs.ILoad 2) = pure Raw.ILoad2
     convertInstruction (Abs.ILoad 3) = pure Raw.ILoad3
     convertInstruction (Abs.ILoad idx)
-        | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.ILoad i)
+        | Right i <- tryInto @U1 idx = pure (Raw.ILoad i)
         | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_iLoad idx)
     convertInstruction (Abs.IStore 0) = pure Raw.IStore0
     convertInstruction (Abs.IStore 1) = pure Raw.IStore1
     convertInstruction (Abs.IStore 2) = pure Raw.IStore2
     convertInstruction (Abs.IStore 3) = pure Raw.IStore3
     convertInstruction (Abs.IStore idx)
-        | Just i <- unsafeNumConvert @U2 @U1 idx = pure (Raw.IStore i)
+        | Right i <- tryInto @U1 idx = pure (Raw.IStore i)
         | otherwise = pure (Raw.Wide1 MagicNumbers.instruction_iStore idx)
     convertInstruction Abs.ArrayLength = pure Raw.ArrayLength
     convertInstruction Abs.AALoad = pure Raw.AALoad
@@ -230,7 +239,7 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
     convertInstruction (Abs.InvokeInterface c n m) = do
         idx <- findIndexOf (CPInterfaceMethodRefEntry (MethodRef c n m))
         let count = countArguments m
-        pure (Raw.InvokeInterface idx (fromIntegral count))
+        pure (Raw.InvokeInterface idx (unsafeInto count))
     convertInstruction (Abs.InvokeSpecial c n m) = do
         idx <- findIndexOf (CPMethodRefEntry (MethodRef c n m))
         pure (Raw.InvokeSpecial idx)
@@ -284,7 +293,6 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
         pure (Raw.New idx)
     convertInstruction Abs.IAnd = pure Raw.IAnd
     convertInstruction Abs.IOr = pure Raw.IOr
-
     convertInstruction (Abs.IfICmp cmp) = case cmp of
         Abs.IFEq l -> Raw.IfIcmpEq <$> mustBeResolved instOffset l
         Abs.IFNe l -> Raw.IfIcmpNe <$> mustBeResolved instOffset l
@@ -292,7 +300,6 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
         Abs.IFGe l -> Raw.IfIcmpGe <$> mustBeResolved instOffset l
         Abs.IFGt l -> Raw.IfIcmpGt <$> mustBeResolved instOffset l
         Abs.IFLe l -> Raw.IfIcmpLe <$> mustBeResolved instOffset l
-    
     convertInstruction Abs.IAdd = pure Raw.IAdd
     convertInstruction Abs.ISub = pure Raw.ISub
     convertInstruction Abs.IMul = pure Raw.IMul

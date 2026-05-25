@@ -1,10 +1,12 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
 -- | High level representation of a class file
-module JVM.Data.Abstract.ClassFile where
+module JVM.Data.Abstract.ClassFile (ClassFile (..), ClassFileAttribute (..), InnerClassInfo (..)) where
 
 import Data.Data
 import Data.Text (Text)
+import Prettyprinter (encloseSep, line, parens)
+
 import Data.TypeMergingList (DataMergeable (merge), TypeMergingList, errorDifferentConstructors, toList)
 import JVM.Data.Abstract.ClassFile.AccessFlags (ClassAccessFlag)
 import JVM.Data.Abstract.ClassFile.Field (ClassFileField)
@@ -13,7 +15,6 @@ import JVM.Data.Abstract.ConstantPool (BootstrapMethod)
 import JVM.Data.Abstract.Name
 import JVM.Data.JVMVersion (JVMVersion)
 import JVM.Data.Pretty
-import Prettyprinter (encloseSep, line, parens)
 
 data ClassFile = ClassFile
     { name :: QualifiedClassName
@@ -38,7 +39,7 @@ data ClassFileAttribute
     | RuntimeVisibleAnnotations
     | RuntimeInvisibleAnnotations
     | BootstrapMethods [BootstrapMethod]
-    deriving (Show, Eq, Data)
+    deriving (Data, Eq, Show)
 
 instance DataMergeable ClassFileAttribute where
     merge (InnerClasses a) (InnerClasses b) = InnerClasses (a <> b)
@@ -59,7 +60,7 @@ data InnerClassInfo = InnerClassInfo
     , innerName :: Text
     , accessFlags :: [ClassAccessFlag]
     }
-    deriving (Show, Eq, Data)
+    deriving (Data, Eq, Show)
 
 instance Pretty ClassFile where
     pretty ClassFile{name, version, accessFlags, superClass, interfaces, fields, methods, attributes} =

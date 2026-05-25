@@ -1,33 +1,32 @@
 # borrowed from https://github.com/tek/polysemy-conc/blob/main/.github/workflows/bump.yaml
 name: bump
 on:
-    workflow_dispatch:
-    schedule:
-        - cron: "45 6 * * 6"
-
+  workflow_dispatch:
+  schedule:
+    - cron: "45 6 * * 6"
 permissions:
-    contents: write
-    pull-requests: write
-    id-token: write
-
+  contents: write
+  pull-requests: write
+  id-token: write
 jobs:
-    bump-pr:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v6
-              with:
-                  persist-credentials: false
-
-            - uses: ./.github/actions/setup-nix
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-
-            - id: bounds
-              name: Bump dependency bounds
-              run: nix run .#bump -- --output=ga-pr
-
-            - name: pr
-              if: steps.bounds.outputs.commit-message
-              uses: peter-evans/create-pull-request@v8
-              with: ${{ steps.bounds.outputs }}
+  bump-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-nix
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - id: bounds
+        name: Bump dependency bounds
+        run: nix run .#bump -- --output=ga-pr
+      - name: pr
+        if: steps.bounds.outputs.commit-message
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: ${{ steps.bounds.outputs.commit-message }}
+          title: ${{ steps.bounds.outputs.title }}
+          body: ${{ steps.bounds.outputs.body }}
+          branch: ${{ steps.bounds.outputs.branch }}

@@ -1,6 +1,7 @@
-module JVM.Data.Abstract.ClassFile.Field where
+module JVM.Data.Abstract.ClassFile.Field (ClassFileField (..), FieldAttribute (..), ConstantValue (..)) where
 
 import Data.Text (Text)
+
 import JVM.Data.Abstract.ClassFile.AccessFlags (FieldAccessFlag)
 import JVM.Data.Abstract.Type (FieldType)
 import JVM.Data.Pretty (Pretty (pretty), hsep, (<+>))
