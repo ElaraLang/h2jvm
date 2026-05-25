@@ -33,7 +33,7 @@ data ClassFileMethod = ClassFileMethod
     deriving (Show)
 
 newtype MethodAttribute
-    = Code !CodeAttributeData
+    = Code CodeAttributeData
     deriving (Data, Generic, Show)
 
 data CodeAttributeData = CodeAttributeData
