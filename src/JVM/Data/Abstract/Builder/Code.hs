@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
+-- | A monadic builder for JVM bytecode instructions.
 module JVM.Data.Abstract.Builder.Code (
     CodeBuilder,
     emit,

@@ -1,6 +1,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | Utilities for writing binary data.
 module Data.Binary.Write (WriteBinary (..), writeList) where
 
 import Data.Binary
