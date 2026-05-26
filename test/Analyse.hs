@@ -8,18 +8,19 @@ import Test.Syd.Hedgehog ()
 import Data.List.NonEmpty qualified as NE
 import Hedgehog.Gen qualified as Gen
 
-import JVM.Data.Abstract.Builder.Code (
+import H2JVM.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, diffFrames, splitIntoBasicBlocks, topFrame)
+import H2JVM.Builder.Code (
     emit,
     newLabel,
     runCodeBuilder,
  )
-import JVM.Data.Abstract.ClassFile.AccessFlags (MethodAccessFlag (..))
-import JVM.Data.Abstract.ClassFile.Method (StackMapFrame (..), VerificationTypeInfo (..))
-import JVM.Data.Abstract.Descriptor (
+import H2JVM.ClassFile.AccessFlags (MethodAccessFlag (..))
+import H2JVM.ClassFile.Method (StackMapFrame (..), VerificationTypeInfo (..))
+import H2JVM.Descriptor (
     MethodDescriptor (MethodDescriptor),
     ReturnDescriptor (TypeReturn, VoidReturn),
  )
-import JVM.Data.Abstract.Instruction (
+import H2JVM.Instruction (
     Instruction' (
         ALoad,
         AReturn,
@@ -34,13 +35,12 @@ import JVM.Data.Abstract.Instruction (
     ),
     LDCEntry (LDCInt),
  )
-import JVM.Data.Abstract.Type (
+import H2JVM.Internal.Convert (jloName)
+import H2JVM.Internal.Pretty ()
+import H2JVM.Type (
     FieldType (..),
     PrimitiveType (Int),
  )
-import JVM.Data.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, diffFrames, splitIntoBasicBlocks, topFrame)
-import JVM.Data.Convert (jloName)
-import JVM.Data.Pretty ()
 import Util (genPrimitiveType, genQualifiedClassName)
 
 genFieldType :: Gen FieldType

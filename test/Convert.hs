@@ -13,22 +13,22 @@ import Data.List.NonEmpty qualified as NE
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 
-import JVM.Data.Abstract.Builder.Code
-import JVM.Data.Abstract.ClassFile.AccessFlags
-import JVM.Data.Abstract.ConstantPool
-import JVM.Data.Abstract.Descriptor (MethodDescriptor (MethodDescriptor), ReturnDescriptor (TypeReturn, VoidReturn))
-import JVM.Data.Abstract.Instruction (Instruction' (..), LDCEntry (..))
-import JVM.Data.Abstract.Type (ClassInfoType (ClassInfoType), FieldType (..), PrimitiveType (Boolean, Char, Int))
-import JVM.Data.Analyse.StackMap
-import JVM.Data.Convert (jloName)
-import JVM.Data.Convert.ConstantPool (ConstantPoolState (ConstantPoolState))
-import JVM.Data.Raw.ConstantPool (ConstantPoolInfo (..))
+import H2JVM.Analyse.StackMap
+import H2JVM.Builder.Code
+import H2JVM.ClassFile.AccessFlags
+import H2JVM.ConstantPool
+import H2JVM.Descriptor (MethodDescriptor (MethodDescriptor), ReturnDescriptor (TypeReturn, VoidReturn))
+import H2JVM.Instruction (Instruction' (..), LDCEntry (..))
+import H2JVM.Internal.Convert (jloName)
+import H2JVM.Internal.Convert.ConstantPool (ConstantPoolState (ConstantPoolState))
+import H2JVM.Internal.Raw.ConstantPool (ConstantPoolInfo (..))
+import H2JVM.Type (ClassInfoType (ClassInfoType), FieldType (..), PrimitiveType (Boolean, Char, Int))
 import Util
 
-import Data.IndexedMap qualified as IM
-import JVM.Data.Raw.ClassFile qualified as Raw
-import JVM.Data.Raw.ConstantPool qualified as Raw
-import JVM.Data.Raw.Instruction qualified as Raw
+import H2JVM.Internal.IndexedMap qualified as IM
+import H2JVM.Internal.Raw.ClassFile qualified as Raw
+import H2JVM.Internal.Raw.ConstantPool qualified as Raw
+import H2JVM.Internal.Raw.Instruction qualified as Raw
 
 spec :: Spec
 spec = describe "test conversions" $ do

@@ -8,6 +8,9 @@ name:           h2jvm
 version:        0.7.0.1
 synopsis:       Haskell library for writing JVM bytecode in a high level format
 description:    See https://hackage.haskell.org/package/h2jvm/docs/H2jvm.html
+category:       Development, Compilers
+homepage:       https://github.com/ElaraLang/h2jvm
+bug-reports:    https://github.com/ElaraLang/h2jvm/issues
 author:         Alexander Wood
 maintainer:     alexljwood24@hotmail.co.uk
 copyright:      2025 Alexander Wood
@@ -17,41 +20,43 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Data.Binary.Write
-      JVM.Data.Abstract.Builder
-      JVM.Data.Abstract.Builder.Code
-      JVM.Data.Abstract.Builder.Label
-      JVM.Data.Abstract.ClassFile
-      JVM.Data.Abstract.ClassFile.AccessFlags
-      JVM.Data.Abstract.ClassFile.Field
-      JVM.Data.Abstract.ClassFile.Method
-      JVM.Data.Abstract.ConstantPool
-      JVM.Data.Abstract.Descriptor
-      JVM.Data.Abstract.Instruction
-      JVM.Data.Abstract.Name
-      JVM.Data.Abstract.Type
-      JVM.Data.Analyse.StackMap
-      JVM.Data.Convert
-      JVM.Data.Convert.AccessFlag
-      JVM.Data.Convert.ConstantPool
-      JVM.Data.Convert.Descriptor
-      JVM.Data.Convert.Field
-      JVM.Data.Convert.Instruction
-      JVM.Data.Convert.Method
-      JVM.Data.Convert.Monad
-      JVM.Data.Convert.Numbers
-      JVM.Data.Convert.Type
-      JVM.Data.JVMVersion
-      JVM.Data.Pretty
-      JVM.Data.Raw.AccessFlags
-      JVM.Data.Raw.ClassFile
-      JVM.Data.Raw.ConstantPool
-      JVM.Data.Raw.Instruction
-      JVM.Data.Raw.MagicNumbers
-      JVM.Data.Raw.Types
+      H2JVM
+      H2JVM.Analyse.StackMap
+      H2JVM.Builder
+      H2JVM.Builder.Code
+      H2JVM.Builder.Label
+      H2JVM.ClassFile
+      H2JVM.ClassFile.AccessFlags
+      H2JVM.ClassFile.Field
+      H2JVM.ClassFile.Method
+      H2JVM.ConstantPool
+      H2JVM.Data.TypeMergingList
+      H2JVM.Descriptor
+      H2JVM.Instruction
+      H2JVM.Internal.Binary.Write
+      H2JVM.Internal.Convert
+      H2JVM.Internal.Convert.AccessFlag
+      H2JVM.Internal.Convert.ConstantPool
+      H2JVM.Internal.Convert.Descriptor
+      H2JVM.Internal.Convert.Field
+      H2JVM.Internal.Convert.Instruction
+      H2JVM.Internal.Convert.Method
+      H2JVM.Internal.Convert.Monad
+      H2JVM.Internal.Convert.Numbers
+      H2JVM.Internal.Convert.Type
+      H2JVM.Internal.IndexedMap
+      H2JVM.Internal.Pretty
+      H2JVM.Internal.Raw.AccessFlags
+      H2JVM.Internal.Raw.ClassFile
+      H2JVM.Internal.Raw.ConstantPool
+      H2JVM.Internal.Raw.Instruction
+      H2JVM.Internal.Raw.MagicNumbers
+      H2JVM.Internal.Raw.Types
+      H2JVM.JVMVersion
+      H2JVM.Name
+      H2JVM.Type
   other-modules:
-      Data.IndexedMap
-      Data.TypeMergingList
+      Paths_h2jvm
   hs-source-dirs:
       src
   default-extensions:
@@ -98,10 +103,7 @@ test-suite h2jvm-test
   ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.19.2.0 && <4.22
-    , binary >=0.8.9.1 && <0.9
-    , bytestring >=0.12.1.0 && <0.13
     , effectful >=2.2.2.0 && <2.7
-    , effectful-plugin >=1.1.0.2 && <2.2
     , h2jvm
     , hedgehog >=1.4 && <1.8
     , sydtest <0.24

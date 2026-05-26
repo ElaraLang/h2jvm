@@ -7,11 +7,11 @@ import Hedgehog
 import Test.Syd
 import Test.Syd.Hedgehog ()
 
-import JVM.Data.Abstract.Builder.Code
-import JVM.Data.Abstract.Instruction
+import H2JVM.Builder.Code
+import H2JVM.Instruction
 import Util (runConv)
 
-import JVM.Data.Raw.Instruction qualified as Raw
+import H2JVM.Internal.Raw.Instruction qualified as Raw
 
 spec :: Spec
 spec = describe "test code building" $ do

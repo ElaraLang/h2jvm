@@ -85,6 +85,9 @@
                       meta = {
                         maintainer = "alexljwood24@hotmail.co.uk";
                         synopsis = "Haskell library for writing JVM bytecode in a high level format";
+                        homepage = "https://github.com/ElaraLang/h2jvm";
+                        bug-reports = "https://github.com/ElaraLang/h2jvm/issues";
+                        category = "Development, Compilers";
                       };
                     };
                     library = {
@@ -121,22 +124,15 @@
                         "-fplugin=Effectful.Plugin"
                       ];
                       component = {
-                        other-modules = [
-                          "Data.IndexedMap"
-                          "Data.TypeMergingList"
-                        ];
                       };
                     };
                     tests.h2jvm-test = {
                       dependencies = [
-                        "binary"
-                        "bytestring"
                         "h2jvm"
                         "hedgehog >=1.4"
                         "sydtest"
                         "sydtest-hedgehog"
                         "effectful"
-                        "effectful-plugin"
                       ];
                       default-extensions = [
                         "DataKinds"

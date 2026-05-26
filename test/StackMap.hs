@@ -5,15 +5,15 @@ import Hedgehog (property, (===))
 import Test.Syd
 import Test.Syd.Hedgehog ()
 
-import JVM.Data.Abstract.Builder.Code
-import JVM.Data.Abstract.ClassFile.AccessFlags (MethodAccessFlag (..))
-import JVM.Data.Abstract.Descriptor
-import JVM.Data.Abstract.Instruction
-import JVM.Data.Abstract.Type
-import JVM.Data.Analyse.StackMap
-import JVM.Data.Convert
+import H2JVM.Analyse.StackMap
+import H2JVM.Builder.Code
+import H2JVM.ClassFile.AccessFlags (MethodAccessFlag (..))
+import H2JVM.Descriptor
+import H2JVM.Instruction
+import H2JVM.Internal.Convert
+import H2JVM.Type
 
-import JVM.Data.Abstract.Type qualified as JVM
+import H2JVM.Type qualified as JVM
 
 spec :: Spec
 spec = describe "StackMap Analysis Tests" $ do

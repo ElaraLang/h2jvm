@@ -10,16 +10,16 @@ import Data.List.NonEmpty qualified as NE
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 
-import JVM.Data.Abstract.Builder.Code
-import JVM.Data.Abstract.Name
-import JVM.Data.Abstract.Type
-import JVM.Data.Analyse.StackMap
-import JVM.Data.Convert.ConstantPool (ConstantPoolState)
-import JVM.Data.Convert.Instruction (convertInstructions, fullyRunCodeConverter)
-import JVM.Data.Convert.Monad (runConvertM)
+import H2JVM.Analyse.StackMap
+import H2JVM.Builder.Code
+import H2JVM.Internal.Convert.ConstantPool (ConstantPoolState)
+import H2JVM.Internal.Convert.Instruction (convertInstructions, fullyRunCodeConverter)
+import H2JVM.Internal.Convert.Monad (runConvertM)
+import H2JVM.Name
+import H2JVM.Type
 
-import JVM.Data.Abstract.Instruction qualified as Abs
-import JVM.Data.Raw.Instruction qualified as Raw
+import H2JVM.Instruction qualified as Abs
+import H2JVM.Internal.Raw.Instruction qualified as Raw
 
 genPrimitiveType :: Gen PrimitiveType
 genPrimitiveType =
