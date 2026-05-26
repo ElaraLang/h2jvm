@@ -120,6 +120,12 @@
                         "-Werror=incomplete-patterns"
                         "-fplugin=Effectful.Plugin"
                       ];
+                      component = {
+                        other-modules = [
+                          "Data.IndexedMap"
+                          "Data.TypeMergingList"
+                        ];
+                      };
                     };
                     tests.h2jvm-test = {
                       dependencies = [

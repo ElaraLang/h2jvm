@@ -18,8 +18,6 @@ build-type:     Simple
 library
   exposed-modules:
       Data.Binary.Write
-      Data.IndexedMap
-      Data.TypeMergingList
       JVM.Data.Abstract.Builder
       JVM.Data.Abstract.Builder.Code
       JVM.Data.Abstract.Builder.Label
@@ -52,7 +50,8 @@ library
       JVM.Data.Raw.MagicNumbers
       JVM.Data.Raw.Types
   other-modules:
-      Paths_h2jvm
+      Data.IndexedMap
+      Data.TypeMergingList
   hs-source-dirs:
       src
   default-extensions:
