@@ -107,7 +107,7 @@
     };
   };
   initial = {
-    latest = {};
+    latest = { };
     lower = {
       binary = "0.8.9.1";
       bytestring = "0.12.1.0";
@@ -675,9 +675,9 @@
     };
   };
   solver = {
-    latest = {};
-    lower = {};
+    latest = { };
+    lower = { };
   };
-  packages = {};
+  packages = { };
   resolving = false;
 }

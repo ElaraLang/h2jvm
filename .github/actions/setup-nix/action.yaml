@@ -21,4 +21,3 @@ runs:
       with:
         name: elara
         authToken: ${{ inputs.cachix-auth-token }}
-    

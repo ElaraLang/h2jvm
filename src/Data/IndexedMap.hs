@@ -34,6 +34,7 @@ where
 import Control.Lens (Lens', set, view)
 import Control.Monad (forM_)
 import Data.Vector (Vector)
+import Data.Word (Word32)
 import Effectful
 import Effectful.State.Static.Local
 import GHC.Exts (IsList (..))
@@ -42,10 +43,9 @@ import Prelude hiding (lookup)
 import Data.IntMap qualified as IM
 import Data.Map qualified as M
 import Data.Vector qualified as V
-import Data.Word (Word32)
 
 -- | An index into the map
-newtype Index = Index Word32 deriving (Eq, Ord, Show, Num)
+newtype Index = Index Word32 deriving (Eq, Num, Ord, Show)
 
 -- | Get the raw value of an index
 indexValue :: Index -> Word32

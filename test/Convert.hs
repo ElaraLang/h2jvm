@@ -3,6 +3,7 @@
 
 module Convert (spec) where
 
+import Data.Word (Word32)
 import Effectful
 import Hedgehog (MonadTest, forAll, property, (===))
 import Test.Syd hiding (shouldContain)
@@ -28,7 +29,6 @@ import Data.IndexedMap qualified as IM
 import JVM.Data.Raw.ClassFile qualified as Raw
 import JVM.Data.Raw.ConstantPool qualified as Raw
 import JVM.Data.Raw.Instruction qualified as Raw
-import Data.Word (Word32)
 
 spec :: Spec
 spec = describe "test conversions" $ do
