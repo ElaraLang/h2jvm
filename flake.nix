@@ -82,7 +82,7 @@
                       build-type = "Simple";
                       license = "MIT";
                       license-file = "LICENSE";
-                      version = "0.7.0.1";
+                      version = "0.1.0.0";
                       meta = {
                         maintainer = "alexljwood24@hotmail.co.uk";
                         synopsis = "Haskell library for writing JVM bytecode in a high level format";
