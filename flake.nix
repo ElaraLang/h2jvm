@@ -50,7 +50,6 @@
               { config, ... }:
               {
                 ghcVersions = [
-                  "ghc98"
                   "ghc910"
                   "ghc912"
                 ];
