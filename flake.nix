@@ -76,6 +76,7 @@
                 packages = {
                   h2jvm = {
                     src = ./.;
+                    description = "A high-level Haskell library for compiling and writing JVM bytecode. Provides a high level monadic interface for generating classes and methods, handling the complex parts of bytecode generation (jump offsets, constant pool handling, stack map frames, etc) under the hood.";
                     cabal = {
                       author = "Alexander Wood";
                       build-type = "Simple";
@@ -88,6 +89,13 @@
                         homepage = "https://github.com/ElaraLang/h2jvm";
                         bug-reports = "https://github.com/ElaraLang/h2jvm/issues";
                         category = "Development, Compilers";
+                        github = "ElaraLang/h2jvm";
+
+                        extra-source-files = [
+                          "README.MD"
+                          "CHANGELOG.md"
+                          "LICENSE"
+                        ];
                       };
                     };
                     library = {

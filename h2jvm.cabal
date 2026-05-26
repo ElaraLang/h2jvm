@@ -7,7 +7,7 @@ cabal-version: 1.12
 name:           h2jvm
 version:        0.7.0.1
 synopsis:       Haskell library for writing JVM bytecode in a high level format
-description:    See https://hackage.haskell.org/package/h2jvm/docs/H2jvm.html
+description:    A high-level Haskell library for compiling and writing JVM bytecode. Provides a high level monadic interface for generating classes and methods, handling the complex parts of bytecode generation (jump offsets, constant pool handling, stack map frames, etc) under the hood.
 category:       Development, Compilers
 homepage:       https://github.com/ElaraLang/h2jvm
 bug-reports:    https://github.com/ElaraLang/h2jvm/issues
@@ -17,6 +17,14 @@ copyright:      2025 Alexander Wood
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
+extra-source-files:
+    README.MD
+    CHANGELOG.md
+    LICENSE
+
+source-repository head
+  type: git
+  location: https://github.com/ElaraLang/h2jvm
 
 library
   exposed-modules:
