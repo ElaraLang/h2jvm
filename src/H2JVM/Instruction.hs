@@ -145,10 +145,14 @@ condJumpTarget = \case
 
 -- | A value that can be loaded by the 'LDC' instruction.
 data LDCEntry
-    = LDCInt JVMInt
-    | LDCFloat Float
-    | LDCString Text
-    | LDCClass ClassInfoType
+    = -- | Load an integer constant.
+      LDCInt JVMInt
+    | -- | Load a float constant.
+      LDCFloat Float
+    | -- | Load a string constant.
+      LDCString Text
+    | -- | Load a Class object.
+      LDCClass ClassInfoType
     deriving (Data, Eq, Generic, Ord, Show)
 
 instance Pretty LDCEntry where

@@ -38,8 +38,10 @@ data ClassFileMethod = ClassFileMethod
     }
     deriving (Show)
 
+-- | An attribute of a method.
 newtype MethodAttribute
-    = Code CodeAttributeData
+    = -- | The bytecode instructions and execution context of the method body.
+      Code CodeAttributeData
     deriving (Data, Generic, Show)
 
 -- | The data contained in a @Code@ attribute.
@@ -53,28 +55,28 @@ data CodeAttributeData = CodeAttributeData
     , exceptionTable :: [ExceptionTableEntry]
     -- ^ The exception table of the method.
     , codeAttributes :: [CodeAttribute]
-    -- ^ The attributes of the code, such as line number tables and stack map tables.
+    -- ^ Code attributes (like stack map tables and line number tables).
     }
     deriving (Data, Generic, Show)
 
--- | An entry in the exception table of a method's code attribute.
+-- | An entry in the method's exception handler table.
 data ExceptionTableEntry = ExceptionTableEntry
-    { startPc :: U2
-    -- ^ The bytecode offset of the start of the protected region.
-    , endPc :: U2
-    -- ^ The (exclusive) bytecode offset of the end of the protected region.
-    , handlerPc :: U2
-    -- ^ The bytecode offset of the exception handler.
+    { startPc :: Int
+    -- ^ The start of the instruction range protected by this handler.
+    , endPc :: Int
+    -- ^ The end of the instruction range protected by this handler.
+    , handlerPc :: Int
+    -- ^ The instruction address to branch to when an exception is caught.
     , catchType :: Maybe ClassInfoType
-    -- ^ The type of exception to catch, or 'Nothing' to catch all exceptions.
+    -- ^ The class type of the exception caught (or 'Nothing' for all/@finally@).
     }
     deriving (Data, Generic, Show)
 
--- | A code attribute.
+-- | Additional properties of the compiled method bytecode.
 data CodeAttribute
-    = -- | The @LineNumberTable@ (§4.7.12) attribute.
+    = -- | Line number information for debugging stack traces.
       LineNumberTable [LineNumberTableEntry]
-    | -- | The @StackMapTable@ (§4.7.4) attribute.
+    | -- | Stack map frame table for JVM verification.
       StackMapTable [StackMapFrame]
     deriving (Data, Eq, Generic, Show)
 
@@ -90,59 +92,52 @@ instance DataMergeable CodeAttributeData where
     merge (CodeAttributeData a b c d e) (CodeAttributeData a' b' c' d' e') =
         CodeAttributeData (max a a') (max b b') (c <> c') (d <> d') (e <> e')
 
--- | A stack map frame, used in the @StackMapTable@ attribute to verify safety of bytecode instructions.
+-- | Represents a JVM stack map frame table entry.
 data StackMapFrame
-    = -- | The frame has the same locals, and the stack is empty.
-      SameFrame
-        -- | The label of the next instruction
-        Label
-    | -- | the frame has the same locals, and the stack has one item. This type encodes both @same_locals_1_stack_item_frame@ and @same_locals_1_stack_item_frame_extended@.
-      SameLocals1StackItemFrame
-        -- | The verification type of the one stack item
-        !VerificationTypeInfo
-        -- | The label of the next instruction
-        Label
-    | -- |  The stack is empty, and the frame has the same locals as the previous frame, except that the last @n@ locals are absent.
+    = -- | The frame has the same local variables and an empty operand stack.
+      SameFrame Label
+    | -- | The operand stack is empty, and the last @k@ local variables are absent.
       ChopFrame
-        -- | How many locals to chop
+        -- | How many locals to chop (@k@)
         !U1
         -- | The label of the next instruction
         !Label
-    | -- | the stack is empty, and the frame has the same locals as the previous frame, except that it has @n@ additional locals.
-      AppendFrame
-        -- | The verification types of the additional locals
-        ![VerificationTypeInfo]
-        -- | The label of the next instruction
-        !Label
-    | -- | A full frame, which explicitly specifies the verification types of all locals and stack items.
-      FullFrame
-        -- | The verification types of all local variables
-        ![VerificationTypeInfo]
-        -- | The verification types of all stack items
-        ![VerificationTypeInfo]
-        -- | The label of the next instruction
-        !Label
+    | -- | The frame has the same local variables and exactly one operand stack item.
+      SameLocals1StackItemFrame !VerificationTypeInfo Label
+    | -- | The operand stack is empty, and new local variables are appended.
+      AppendFrame ![VerificationTypeInfo] !Label
+    | -- | Complete frame specification describing both locals and operand stack.
+      FullFrame ![VerificationTypeInfo] ![VerificationTypeInfo] !Label
     deriving (Data, Eq, Show)
 
--- | The @verification_type_info@ type, used in stack map frames to verify the types of local variables and stack items.
+-- | Verification type metadata for a stack or local variable slot.
 data VerificationTypeInfo
-    = TopVariableInfo
-    | IntegerVariableInfo
-    | FloatVariableInfo
-    | LongVariableInfo
-    | DoubleVariableInfo
-    | NullVariableInfo
-    | UninitializedThisVariableInfo
-    | ObjectVariableInfo !ClassInfoType
-    | UninitializedVariableInfo !Label
+    = -- | Unusable or uninitialised slot.
+      TopVariableInfo
+    | -- | An 32-bit integer or smaller type (boolean, byte, char, short).
+      IntegerVariableInfo
+    | -- | A 32-bit single-precision floating point.
+      FloatVariableInfo
+    | -- | A 64-bit long integer.
+      LongVariableInfo
+    | -- | A 64-bit double-precision floating point.
+      DoubleVariableInfo
+    | -- | The null reference.
+      NullVariableInfo
+    | -- | An uninitialised reference of the current class constructor context.
+      UninitializedThisVariableInfo
+    | -- | A reference to an object of the specified class.
+      ObjectVariableInfo !ClassInfoType
+    | -- | An uninitialised reference to an object allocated by a `new` instruction at the given label.
+      UninitializedVariableInfo !Label
     deriving (Data, Eq, Show)
 
--- | An entry in the line number table of a method's code attribute.
+-- | Map a JVM bytecode offset to a source code line number.
 data LineNumberTableEntry = LineNumberTableEntry
     { lineNumberTableEntryStartPc :: U2
-    -- ^ the index into the code array at which the code for a new line begins
+    -- ^ The starting instruction address/offset.
     , lineNumberTableEntryLineNumber :: U2
-    -- ^ the line number in the source file corresponding to the code at the given index
+    -- ^ The source code line number.
     }
     deriving (Data, Eq, Show)
 

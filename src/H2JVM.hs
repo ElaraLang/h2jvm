@@ -1,6 +1,13 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
--- | Unified entry point for the H2JVM library.
+{- | Unified entry point for the H2JVM library.
+
+This module exposes the high-level, type-safe API for assembling JVM bytecode
+classes.
+
+For general usage, see the "H2JVM.Builder" and "H2JVM.Builder.Code" modules
+for constructing class and method bodies, and 'classFileBytes' to serialise.
+-}
 module H2JVM (
     -- * Core Types
     ClassFile (..),
@@ -43,6 +50,10 @@ module H2JVM (
     MethodAccessFlag (..),
     ClassFileField (..),
     ClassFileMethod (..),
+    MethodAttribute (..),
+    CodeAttributeData (..),
+    ExceptionTableEntry (..),
+    CodeAttribute (..),
 
     -- * Names, Types and Descriptors
     QualifiedClassName,
@@ -88,7 +99,7 @@ import H2JVM.Builder.Label (Label)
 import H2JVM.ClassFile (ClassFile (..), ClassFileAttribute (..), InnerClassInfo (..))
 import H2JVM.ClassFile.AccessFlags (ClassAccessFlag (..), MethodAccessFlag (..))
 import H2JVM.ClassFile.Field (ClassFileField (..))
-import H2JVM.ClassFile.Method (ClassFileMethod (..))
+import H2JVM.ClassFile.Method (ClassFileMethod (..), CodeAttribute (..), CodeAttributeData (..), ExceptionTableEntry (..), MethodAttribute (..))
 import H2JVM.ConstantPool (BootstrapArgument (..), BootstrapMethod (..), ConstantPoolEntry (..), FieldRef (..), MethodHandleEntry (..), MethodRef (..))
 import H2JVM.Descriptor (MethodDescriptor (..), ReturnDescriptor (..))
 import H2JVM.Instruction (Instruction, Instruction' (..), LDCEntry (..))
