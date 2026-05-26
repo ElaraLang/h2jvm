@@ -6,6 +6,7 @@
 module H2JVM.Builder.Code (
     CodeBuilder,
     emit,
+    addCodeAttribute,
     runCodeBuilder,
     newLabel,
 )
@@ -26,48 +27,65 @@ import H2JVM.Instruction
 
 import H2JVM.Data.TypeMergingList qualified as TML
 
+-- | The 'CodeBuilder' effect, which allows emitting instructions and adding code attributes in a monadic style.
 data CodeBuilder m a where
-    AddCodeAttribute :: CodeAttribute -> CodeBuilder m ()
-    NewLabel :: CodeBuilder m Label
+    -- | Add a code attribute to the current code block. If an attribute of the same type already exists, it will be merged with the existing one using the 'H2JVM.Data.TypeMergingList.merge' function from the 'H2JVM.Data.TypeMergingList.DataMergeable' instance for that attribute type.
+    AddCodeAttribute ::
+        -- | the code attribute to add
+        CodeAttribute ->
+        CodeBuilder m ()
+    -- | Create a new, unique 'Label'.
+    NewLabel ::
+        CodeBuilder m Label
     Emit' :: [Instruction] -> CodeBuilder m ()
-    GetCode :: CodeBuilder m [Instruction]
 
 makeEffect ''CodeBuilder
 
 data CodeState = CodeState
-    { labelSource :: [Label]
+    { currentLabel :: {-# UNPACK #-} !Word
+    -- ^ the current label index.
     , attributes :: TypeMergingList CodeAttribute
+    -- ^ the code attributes that have been added to this code block.
     , code :: [Instruction]
+    -- ^ the code that has been emitted so far. Note that this is stored in reverse order for efficient appending, so it should be reversed before being returned.
     }
 
+-- | An empty code state, with an infinite supply of labels.
 initialCodeState :: CodeState
-initialCodeState = CodeState{labelSource = unsafeMkLabel <$> [0 ..], attributes = mempty, code = []}
+initialCodeState = CodeState{currentLabel = 0, attributes = mempty, code = []}
 
+-- | Emit a single instruction.
 emit :: CodeBuilder :> r => Instruction -> Eff r ()
-emit = emit' . pure
+emit = emit' . pure @[]
 
-codeBuilderToState :: State CodeState :> r => Eff (CodeBuilder ': r) a -> Eff r a
-codeBuilderToState = interpret $ \_ -> \case
-    AddCodeAttribute ca -> modify (\s -> s{attributes = s.attributes `TML.snoc` ca})
-    NewLabel -> do
-        s@CodeState{labelSource = ls} <- get
-        case ls of
-            [] -> error "No more labels"
-            l : ls' -> do
-                put (s{labelSource = ls'})
-                pure l
-    Emit' is -> modify (\s -> s{code = reverse is <> s.code})
-    GetCode -> gets (.code)
+-- | Re-interpret a 'CodeBuilder' effect as a 'State' effect, accumulating the emitted code and attributes in the state.
+codeBuilderToState :: Eff (CodeBuilder : es) a -> Eff es (a, CodeState)
+codeBuilderToState =
+    reinterpret
+        (runState initialCodeState)
+        ( \_ -> \case
+            AddCodeAttribute ca -> modify $ \s -> s{attributes = s.attributes `TML.snoc` ca}
+            NewLabel -> do
+                c <- gets (.currentLabel)
+                modify $ \s -> s{currentLabel = c + 1}
+                pure (unsafeMkLabel c)
+            Emit' is -> modify $ \s -> s{code = reverse is <> s.code}
+        )
 
-runCodeBuilder :: forall r a. HasCallStack => Eff (CodeBuilder ': r) a -> Eff r (a, [CodeAttribute], NonEmpty Instruction)
+{- | Run a 'CodeBuilder' effect, returning the emitted code and attributes.
+Throws an impure exception if no code was emitted, since a code block with no instructions is invalid.
+-}
+runCodeBuilder ::
+    forall r a.
+    HasCallStack =>
+    Eff (CodeBuilder ': r) a ->
+    -- | the result of the computation, the list of emitted code attributes, and the list of emitted instructions, in the order they were emitted.
+    Eff r (a, [CodeAttribute], NonEmpty Instruction)
 runCodeBuilder =
-    fmap rr
-        . runState initialCodeState
-        . codeBuilderToState
-        . inject
+    fmap formatResult . codeBuilderToState
   where
-    rr (a, s) =
-        ( a
+    formatResult (res, s) =
+        ( res
         , TML.toList s.attributes
         , case reverse s.code of
             [] -> error "runCodeBuilder: No code emitted"

@@ -1,6 +1,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE RecordWildCards #-}
 
+-- | The internal, mostly JVM-spec matching representation of a class file.
 module H2JVM.Internal.Raw.ClassFile (
     BootstrapMethod (..),
     FieldInfo (..),
@@ -102,6 +103,7 @@ data Attribute
     | ConstantValueAttribute Word16
     | SourceFileAttribute Word16
     | BootstrapMethodsAttribute (Vector BootstrapMethod)
+    | SyntheticAttribute
     deriving (Show)
 
 data InnerClassInfo = InnerClassInfo
@@ -288,6 +290,7 @@ putAttribute (StackMapTableAttribute frames) = do
     putVerificationTypeInfo (UninitializedVariableInfo offset) = do
         putWord8 MagicNumbers.verificationType_info_UninitializedVariableInfo
         putWord16be offset
+putAttribute SyntheticAttribute = pure () -- synthetic attribute has no data
 
 putBootstrapMethod :: BootstrapMethod -> Put
 putBootstrapMethod BootstrapMethod{..} = do

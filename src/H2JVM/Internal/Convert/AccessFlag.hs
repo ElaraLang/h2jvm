@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 
-module H2JVM.Internal.Convert.AccessFlag (ConvertAccessFlag (..), accessFlagsToWord16) where
+-- | Conversion of access flags from the high level ADT to low level bitfield representations.
+module H2JVM.Internal.Convert.AccessFlag (accessFlagsToWord16) where
 
 import Data.Bits ((.|.))
 import Data.Word (Word16)
@@ -10,22 +11,27 @@ import H2JVM.Internal.Raw.AccessFlags (accessFlagValue)
 
 import H2JVM.Internal.Raw.AccessFlags qualified as Raw
 
+-- | A convertible access flag
 class ConvertAccessFlag a where
     convertAccessFlag :: a -> Raw.AccessFlag
 
+{- | Convert some list of access flags to a bitmask of their low level representations.
+>>> accessFlagsToWord16 @ClassAccessFlag []
+0
+-}
 accessFlagsToWord16 :: ConvertAccessFlag a => [a] -> Word16
 accessFlagsToWord16 = foldr (\flag acc -> acc .|. accessFlagValue (convertAccessFlag flag)) 0
 
 instance ConvertAccessFlag ClassAccessFlag where
     convertAccessFlag = \case
-        Public -> Raw.ACC_PUBLIC
-        Final -> Raw.ACC_FINAL
-        Super -> Raw.ACC_SUPER
-        Interface -> Raw.ACC_INTERFACE
-        Abstract -> Raw.ACC_ABSTRACT
-        Synthetic -> Raw.ACC_SYNTHETIC
-        Annotation -> Raw.ACC_ANNOTATION
-        Enum -> Raw.ACC_ENUM
+        CPublic -> Raw.ACC_PUBLIC
+        CFinal -> Raw.ACC_FINAL
+        CSuper -> Raw.ACC_SUPER
+        CInterface -> Raw.ACC_INTERFACE
+        CAbstract -> Raw.ACC_ABSTRACT
+        CSynthetic -> Raw.ACC_SYNTHETIC
+        CAnnotation -> Raw.ACC_ANNOTATION
+        CEnum -> Raw.ACC_ENUM
 
 instance ConvertAccessFlag FieldAccessFlag where
     convertAccessFlag = \case

@@ -1,7 +1,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 
 {- | Provides a monadic interface to the constant pool.
- This aims to eliminate the need to manually specify the index of the constant
+This aims to eliminate the need to manually specify the index of the constant
 -}
 module H2JVM.ConstantPool (ConstantPoolEntry (..), MethodHandleEntry (..), FieldRef (..), MethodRef (..), BootstrapMethod (..), BootstrapArgument (..), bmArgToCPEntry) where
 
@@ -14,8 +14,8 @@ import H2JVM.Internal.Pretty
 import H2JVM.Type (ClassInfoType, FieldType)
 
 {- | High-level, type-safe representation of a constant pool entry
- This tries to hide indexes as much as possible, instead just allowing the values to be provided directly.
- These are transformed into the correct indexes when the constant pool is built, which uses a state monad to avoid repeating entries.
+This tries to hide indexes as much as possible, instead just allowing the values to be provided directly.
+These are transformed into the correct indexes when the constant pool is built, which uses a state monad to avoid repeating entries.
 -}
 data ConstantPoolEntry
     = -- | A class reference
@@ -63,6 +63,7 @@ data MethodRef
 instance Pretty MethodRef where
     pretty (MethodRef c n d) = pretty c <> "." <> pretty n <> pretty d
 
+-- | A JVM Bootstrap Method.
 data BootstrapMethod
     = BootstrapMethod MethodHandleEntry [BootstrapArgument]
     deriving (Data, Eq, Ord, Show)

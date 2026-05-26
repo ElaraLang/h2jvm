@@ -25,7 +25,7 @@ spec = describe "test code building" $ do
         let (_, _, code) = runPureEff $ runCodeBuilder $ do
                 label <- newLabel
                 emit $ ALoad 0
-                emit (IfEq label)
+                emit (If $ IfEq label)
                 emit (Label label)
                 emit Return
         property $ do

@@ -6,7 +6,6 @@ import GHC.Stack (HasCallStack, withFrozenCallStack)
 import Hedgehog
 import Hedgehog.Internal.Property
 
-import Data.List.NonEmpty qualified as NE
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 

@@ -8,6 +8,7 @@ import Test.Syd.Hedgehog ()
 import Data.List.NonEmpty qualified as NE
 import Hedgehog.Gen qualified as Gen
 
+import H2JVM (Instruction' (..))
 import H2JVM.Analyse.StackMap (BasicBlock (BasicBlock), Frame (..), LocalVariable (..), analyseBlockDiff, diffFrames, splitIntoBasicBlocks, topFrame)
 import H2JVM.Builder.Code (
     emit,
@@ -21,18 +22,7 @@ import H2JVM.Descriptor (
     ReturnDescriptor (TypeReturn, VoidReturn),
  )
 import H2JVM.Instruction (
-    Instruction' (
-        ALoad,
-        AReturn,
-        AStore,
-        ILoad,
-        IStore,
-        IfEq,
-        IfLe,
-        LDC,
-        Label,
-        Return
-    ),
+    IfCond (..),
     LDCEntry (LDCInt),
  )
 import H2JVM.Internal.Convert (jloName)
@@ -83,7 +73,7 @@ spec = describe "Analysis checks" $ do
             let (l, _, code) = runPureEff $ runCodeBuilder $ do
                     label <- newLabel
                     emit $ LDC (LDCInt 0) -- [0]
-                    emit $ IfEq label
+                    emit $ If $ IfEq label
                     emit $ LDC (LDCInt 0)
                     emit AReturn
                     emit $ Label label
@@ -95,7 +85,7 @@ spec = describe "Analysis checks" $ do
                 let blocks = splitIntoBasicBlocks code
 
                 NE.toList blocks
-                    === [ BasicBlock 0 [LDC (LDCInt 0), IfEq l] Nothing Nothing
+                    === [ BasicBlock 0 [LDC (LDCInt 0), If $ IfEq l] Nothing Nothing
                         , BasicBlock 1 [LDC (LDCInt 0), AReturn] Nothing (Just l)
                         , BasicBlock 2 [LDC (LDCInt 1), AReturn] (Just l) Nothing
                         ]
@@ -128,7 +118,7 @@ spec = describe "Analysis checks" $ do
                     emit $ LDC (LDCInt 0) -- [0]
                     emit $ IStore 1 -- []
                     emit $ ILoad 0 -- [0]
-                    emit $ IfLe label -- []
+                    emit $ If $ IfLe label -- []
                     emit $ LDC (LDCInt 0) -- [0]
                     emit $ IStore 2 -- []
                     emit $ Label label -- []
@@ -140,7 +130,7 @@ spec = describe "Analysis checks" $ do
                 let blocks = splitIntoBasicBlocks code
 
                 NE.toList blocks
-                    === [ BasicBlock 0 [LDC (LDCInt 0), IStore 0, LDC (LDCInt 0), IStore 1, ILoad 0, IfLe l] Nothing Nothing
+                    === [ BasicBlock 0 [LDC (LDCInt 0), IStore 0, LDC (LDCInt 0), IStore 1, ILoad 0, If $ IfLe l] Nothing Nothing
                         , BasicBlock 1 [LDC (LDCInt 0), IStore 2] Nothing (Just l)
                         , BasicBlock 2 [LDC (LDCInt 0), IStore 2, Return] (Just l) Nothing
                         ]

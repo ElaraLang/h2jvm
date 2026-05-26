@@ -59,7 +59,7 @@ fieldTypeToClassInfoType (ArrayFieldType f) = ArrayClassInfoType (fieldTypeToCla
 
 {- | JVM class info type. Corresponds roughly to §4.2.1 of the JVM specification.
 Used in places such as the constant pool and exception tables.
-Isomorphic to 'FieldType', but used in different contexts and kept separate for clarity.
+Isomorphic to 'FieldType', however converted to different low level representations (see 'H2JVM.Internal.Convert.Type.classInfoTypeDescriptor').
 -}
 data ClassInfoType
     = ClassInfoType QualifiedClassName

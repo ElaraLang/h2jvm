@@ -1,4 +1,4 @@
--- | Information about JVM Versions
+-- | Information about JVM Versions.
 module H2JVM.JVMVersion (
     JVMVersion,
     MajorVersion,
@@ -32,11 +32,13 @@ import Data.Binary (Word16)
 
 import H2JVM.Internal.Pretty
 
--- | A JVM Version Number
+-- | A JVM Version Number.
 newtype JVMVersion = JVMVersion Word16 deriving (Eq, Ord, Show)
 
+-- | A Major JVM version.
 newtype MajorVersion = MajorVersion Word16 deriving (Eq, Num, Ord, Show)
 
+-- | A Minor JVM version.
 newtype MinorVersion = MinorVersion Word16 deriving (Eq, Num, Ord, Show)
 
 unwrapMajor :: MajorVersion -> Word16
@@ -106,8 +108,8 @@ isLTS jvm | jvm == java17 = True
 isLTS jvm | jvm == java21 = True
 isLTS _ = False
 
-{- | Returns true if the JVM version is EOL at the time of writing (April 2023)
-This is for OpenJDK, other vendors may have different EOL dates
+{- | Returns true if the JVM version is EOL at the time of writing (April 2023).
+This is for OpenJDK, other vendors may have different EOL dates.
 -}
 isEOL :: JVMVersion -> Bool
 isEOL jvm | jvm <= java7 = True

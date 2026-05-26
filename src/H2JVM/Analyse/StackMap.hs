@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 {- | Generate a stack map table for a method.
-This process MUST run last in the high level stage -
+This process MUST run last in the high level stage,
 modifications to the code after this point will invalidate the stack map table and cause invalid class files to be generated.
 -}
 module H2JVM.Analyse.StackMap (calculateStackMapFrames, BasicBlock (..), Frame (..), LocalVariable (..), analyseBlockDiff, diffFrames, splitIntoBasicBlocks, topFrame) where
@@ -136,12 +136,7 @@ splitOnLabels xs = go xs [] Nothing
                     else go xs acc' label
 
     isBranchInstruction :: Instruction -> Bool
-    isBranchInstruction (IfEq _) = True
-    isBranchInstruction (IfNe _) = True
-    isBranchInstruction (IfLt _) = True
-    isBranchInstruction (IfGe _) = True
-    isBranchInstruction (IfGt _) = True
-    isBranchInstruction (IfLe _) = True
+    isBranchInstruction (If _) = True
     isBranchInstruction (IfICmp _) = True
     isBranchInstruction (Goto _) = True
     isBranchInstruction AReturn = True
@@ -230,12 +225,7 @@ analyse = \case
     IOr -> do
         pops 2
         pushes (PrimitiveFieldType JInt)
-    IfEq _ -> pops 1
-    IfNe _ -> pops 1
-    IfLt _ -> pops 1
-    IfGe _ -> pops 1
-    IfGt _ -> pops 1
-    IfLe _ -> pops 1
+    If _ -> pops 1
     CheckCast ft -> replaceTop (classInfoTypeToFieldType ft)
     Instanceof _ -> replaceTop (PrimitiveFieldType JInt)
     InvokeStatic _ _ md -> do

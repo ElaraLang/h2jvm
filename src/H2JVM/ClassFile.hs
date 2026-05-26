@@ -1,6 +1,6 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
--- | High level representation of a class file
+-- | High level representation of a class file.
 module H2JVM.ClassFile (ClassFile (..), ClassFileAttribute (..), InnerClassInfo (..)) where
 
 import Data.Data

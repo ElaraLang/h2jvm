@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 {- | High level representation of a JVM instruction, with type-safe arguments and no stack manipulation needed.
@@ -9,7 +10,7 @@ module H2JVM.Instruction (
     Instruction,
     Instruction' (..),
     LDCEntry (..),
-    ICmp (..),
+    IfCond (..),
     jumpTarget,
     ldcEntryToFieldType,
 )
@@ -27,21 +28,23 @@ import H2JVM.Internal.Raw.Instruction ()
 import H2JVM.Internal.Raw.Types
 import H2JVM.Type
 
+{- | An instruction whose labels are the 'Label' type.
+This is probably the type you want.
+-}
 type Instruction = Instruction' Label
 
+-- | An instruction with a polymorphic label type.
 data Instruction' label
-    = ALoad U2
-    | AStore U2
+    = -- | @aload_<n>@
+      ALoad U2
+    | -- | @astore_<n>@
+      AStore U2
     | AReturn
     | AConstNull
     | Dup
     | IAnd
-    | IfEq label
-    | IfNe label
-    | IfLt label
-    | IfGe label
-    | IfGt label
-    | IfLe label
+    | -- | Encodes @if_<cond>@
+      If (IfCond label)
     | Instanceof ClassInfoType
     | InvokeStatic ClassInfoType Text MethodDescriptor
     | InvokeInterface ClassInfoType Text MethodDescriptor
@@ -66,23 +69,25 @@ data Instruction' label
     | New ClassInfoType
     | ArrayLength
     | AALoad
-    | IfICmp (ICmp label)
+    | -- | Encodes @if_icmp<cond>@
+      IfICmp (IfCond label)
     | IAdd
     | ISub
     | IMul
     | IDiv
     deriving (Data, Eq, Functor, Generic, Ord, Show)
 
-data ICmp label = IFEq label | IFNe label | IFLt label | IFGe label | IFGt label | IFLe label
-    deriving (Data, Eq, Functor, Generic, Ord, Show)
+-- | A condition of an if instruction.
+data IfCond label = IfEq label | IfNe label | IfLt label | IfGe label | IfGt label | IfLe label
+    deriving (Data, Eq, Foldable, Functor, Generic, Ord, Show, Traversable)
 
-instance Pretty label => Pretty (ICmp label) where
-    pretty (IFEq l) = "ifeq" <+> pretty l
-    pretty (IFNe l) = "ifne" <+> pretty l
-    pretty (IFLt l) = "iflt" <+> pretty l
-    pretty (IFGe l) = "ifge" <+> pretty l
-    pretty (IFGt l) = "ifgt" <+> pretty l
-    pretty (IFLe l) = "ifle" <+> pretty l
+instance Pretty label => Pretty (IfCond label) where
+    pretty (IfEq l) = "ifeq" <+> pretty l
+    pretty (IfNe l) = "ifne" <+> pretty l
+    pretty (IfLt l) = "iflt" <+> pretty l
+    pretty (IfGe l) = "ifge" <+> pretty l
+    pretty (IfGt l) = "ifgt" <+> pretty l
+    pretty (IfLe l) = "ifle" <+> pretty l
 
 instance Pretty label => Pretty (Instruction' label) where
     pretty AALoad = "aaload"
@@ -93,12 +98,7 @@ instance Pretty label => Pretty (Instruction' label) where
     pretty AConstNull = "aconst_null"
     pretty Dup = "dup"
     pretty IAnd = "iand"
-    pretty (IfEq l) = "ifeq" <+> pretty l
-    pretty (IfNe l) = "ifne" <+> pretty l
-    pretty (IfLt l) = "iflt" <+> pretty l
-    pretty (IfGe l) = "ifge" <+> pretty l
-    pretty (IfGt l) = "ifgt" <+> pretty l
-    pretty (IfLe l) = "ifle" <+> pretty l
+    pretty (If cond) = "if" <> pretty cond
     pretty (Instanceof c) = "instanceof" <+> pretty c
     pretty (InvokeStatic c n d) = "invokestatic" <+> pretty c <> "." <> pretty n <> pretty d
     pretty (InvokeInterface c n d) = "invokeinterface" <+> pretty c <> "." <> pretty n <> pretty d
@@ -127,23 +127,23 @@ instance Pretty label => Pretty (Instruction' label) where
     pretty IMul = "imul"
     pretty IDiv = "idiv"
 
+-- | The jump target of an instruction, if it is a jump instruction.
 jumpTarget :: Instruction' label -> Maybe label
-jumpTarget (IfEq l) = Just l
-jumpTarget (IfNe l) = Just l
-jumpTarget (IfLt l) = Just l
-jumpTarget (IfGe l) = Just l
-jumpTarget (IfGt l) = Just l
-jumpTarget (IfLe l) = Just l
+jumpTarget (If cond) = Just $ condJumpTarget cond
 jumpTarget (Goto l) = Just l
-jumpTarget (IfICmp cmp) = case cmp of
-    IFEq l -> Just l
-    IFNe l -> Just l
-    IFLt l -> Just l
-    IFGe l -> Just l
-    IFGt l -> Just l
-    IFLe l -> Just l
+jumpTarget (IfICmp cond) = Just $ condJumpTarget cond
 jumpTarget _ = Nothing
 
+condJumpTarget :: IfCond label -> label
+condJumpTarget = \case
+    IfEq l -> l
+    IfNe l -> l
+    IfLt l -> l
+    IfGe l -> l
+    IfGt l -> l
+    IfLe l -> l
+
+-- | A value that can be loaded by the 'LDC' instruction.
 data LDCEntry
     = LDCInt JVMInt
     | LDCFloat Float
@@ -157,6 +157,7 @@ instance Pretty LDCEntry where
     pretty (LDCString x) = pretty x
     pretty (LDCClass x) = pretty x
 
+-- | Convert an 'LDCEntry to a 'FieldType.
 ldcEntryToFieldType :: LDCEntry -> FieldType
 ldcEntryToFieldType (LDCInt _) = PrimitiveFieldType JInt
 ldcEntryToFieldType (LDCFloat _) = PrimitiveFieldType JFloat

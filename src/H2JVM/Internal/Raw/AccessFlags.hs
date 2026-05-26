@@ -1,3 +1,4 @@
+-- | Low level definition of JVM access flags.
 module H2JVM.Internal.Raw.AccessFlags (AccessFlag (..), accessFlagValue) where
 
 import Data.Binary (Word16)
@@ -8,7 +9,7 @@ import H2JVM.Internal.Binary.Write (WriteBinary (writeBinary))
 import H2JVM.Internal.Raw.MagicNumbers qualified as MagicNumbers
 
 {- | Very thin wrapper around the access flags defined in the JVM spec.
- These flags may be for a class, field, or method - for a safer interface, see 'H2JVM.ClassFile.AccessFlags'.
+These flags may be for a class, field, or method - for a safer interface, see 'H2JVM.ClassFile.AccessFlags'.
 -}
 data AccessFlag
     = ACC_PUBLIC
@@ -31,6 +32,7 @@ data AccessFlag
     | ACC_STRICT
     deriving (Show)
 
+-- | The internal numeric representation of an 'AccessFlag'
 accessFlagValue :: AccessFlag -> Word16
 accessFlagValue ACC_PUBLIC = MagicNumbers.accessFlag_PUBLIC
 accessFlagValue ACC_PRIVATE = MagicNumbers.accessFlag_PRIVATE

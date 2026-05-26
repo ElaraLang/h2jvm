@@ -1,6 +1,9 @@
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+{- | Conversion of the high level constant pool types to the low level representation.
+This uses the 'H2JVM.Internal.IndexedMap.IndexedMap' type to keep the constant pool free from duplication.
+-}
 module H2JVM.Internal.Convert.ConstantPool (ConstantPool, ConstantPoolState (..), runConstantPool, runConstantPoolWith, findIndexOf) where
 
 import Data.Text.Encoding
@@ -13,7 +16,6 @@ import Witch
 import Data.Vector qualified as V
 
 import H2JVM.ConstantPool
-import H2JVM.Internal.Convert.Descriptor
 import H2JVM.Internal.Convert.Numbers
 import H2JVM.Internal.Convert.Type
 import H2JVM.Internal.IndexedMap (IndexedMap)
@@ -24,17 +26,38 @@ import H2JVM.Internal.Raw.Types
 import H2JVM.Internal.IndexedMap qualified as IM
 import H2JVM.Internal.Raw.ClassFile qualified as Raw
 
+-- | Accumulated state of the constant pool.
 data ConstantPoolState = ConstantPoolState
     { constantPool :: IndexedMap ConstantPoolInfo
+    -- ^ A bidirectional mapping from index to a 'ConstantPoolInfo'.
     , bootstrapMethods :: IndexedMap Raw.BootstrapMethod
+    -- ^ A bidirectional mapping from an index to a 'Raw.BootstrapMethod'.
     }
     deriving (Eq, Ord, Show)
 
+-- | A simple state monad for accumulating a 'ConstantPoolState'
+type ConstantPool = State ConstantPoolState
+
+runConstantPoolWith :: ConstantPoolState -> Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
+runConstantPoolWith s =
+    runState s
+        . inject
+
+-- | Run a 'ConstantPool' effect with an empty initial state.
+runConstantPool :: Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
+runConstantPool = runConstantPoolWith mempty
+
+{- | Insert or lookup a value within one of the fields of 'ConstantPoolState'.
+Essentially a wrapper of 'IM.lookupOrInsert' over some getter and setter function.
+-}
 lookupOrInsertMOver ::
     (ConstantPool :> r, Ord a) =>
     a ->
+    -- | Getter function.
     (ConstantPoolState -> IndexedMap a) ->
+    -- | Setter function.
     (ConstantPoolState -> IndexedMap a -> ConstantPoolState) ->
+    -- | Index into the constant pool.
     Eff r Word32
 lookupOrInsertMOver cpInfo getter setter = do
     cp <- get
@@ -42,12 +65,18 @@ lookupOrInsertMOver cpInfo getter setter = do
     put (setter cp newCP)
     pure $ IM.indexValue i
 
+-- | Insert or lookup a value within the 'constantPool' field of 'ConstantPoolState'.
 lookupOrInsertMCP :: ConstantPool :> r => ConstantPoolInfo -> Eff r Word32
 lookupOrInsertMCP cpInfo = lookupOrInsertMOver cpInfo (.constantPool) (\s x -> s{constantPool = x})
 
+-- | Insert or lookup a value within the 'bootstrapMethods' field of 'ConstantPoolState'.
 lookupOrInsertMBM :: ConstantPool :> r => Raw.BootstrapMethod -> Eff r Word32
 lookupOrInsertMBM bmInfo = lookupOrInsertMOver bmInfo (.bootstrapMethods) (\s x -> s{bootstrapMethods = x})
 
+{- | Transform a single, high-level 'ConstantPoolEntry' into a raw constant pool entry by upserting it into the 'ConstantPoolState'.
+Returns the index of the upserted entry.
+A little bit partial in the case of invalid/overflowing indices, which should be impossible in most normal cases.
+-}
 transformEntry :: (HasCallStack, ConstantPool :> r) => ConstantPoolEntry -> Eff r Word32
 transformEntry (CPUTF8Entry text) = lookupOrInsertMCP (UTF8Info $ encodeUtf8 text)
 transformEntry (CPIntegerEntry i) = lookupOrInsertMCP (IntegerInfo $ fromIntegral i)
@@ -129,12 +158,13 @@ transformEntry (CPMethodTypeEntry methodDescriptor) = do
     descriptorIndex <- transformEntry (CPUTF8Entry (convertMethodDescriptor methodDescriptor))
     lookupOrInsertMCP (MethodTypeInfo (unsafeInto descriptorIndex))
 
+-- | Convert a 'BootstrapMethod' to its low level representation by upserting it into the 'ConstantPoolState'.
 convertBootstrapMethod :: ConstantPool :> r => BootstrapMethod -> Eff r Word32
 convertBootstrapMethod (BootstrapMethod mhEntry args) = do
-    mhIndex <- findIndexOf (CPMethodHandleEntry mhEntry)
-    bsArgs <- traverse (findIndexOf . bmArgToCPEntry) args
-    let bootstrapMethod = Raw.BootstrapMethod (into mhIndex) (V.fromList bsArgs)
-    lookupOrInsertMBM bootstrapMethod
+    mhIndex <- findIndexOf (CPMethodHandleEntry mhEntry) -- upsert a method handle entry to the CP
+    bsArgs <- traverse (findIndexOf . bmArgToCPEntry) args -- upsert each argument into the CP
+    let bootstrapMethod = Raw.BootstrapMethod (into mhIndex) (V.fromList bsArgs) -- construct raw BM
+    lookupOrInsertMBM bootstrapMethod -- upsert BM
 
 instance Semigroup ConstantPoolState where
     (ConstantPoolState cp1 bm1) <> (ConstantPoolState cp2 bm2) = ConstantPoolState (cp1 <> cp2) (bm1 <> bm2)
@@ -151,13 +181,3 @@ findIndexOf = fmap toU2OrError . transformEntry
         if i > into (maxBound @U2)
             then error "Constant pool index out of bounds, too many entries?"
             else unsafeInto i
-
-type ConstantPool = State ConstantPoolState
-
-runConstantPoolWith :: ConstantPoolState -> Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
-runConstantPoolWith s =
-    runState s
-        . inject
-
-runConstantPool :: Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
-runConstantPool = runConstantPoolWith mempty

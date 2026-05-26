@@ -1,21 +1,25 @@
+{- | Access flags for classes, fields, and methods in Java class files.
+This uses the JVM meaning of "access flag", which includes any kind of modifier, including things like @interface@ and @enum@ that aren't really "access" modifiers in the Java language.
+-}
 module H2JVM.ClassFile.AccessFlags (ClassAccessFlag (..), FieldAccessFlag (..), MethodAccessFlag (..)) where
 
 import Data.Data
 
 import H2JVM.Internal.Pretty (Pretty (pretty))
 
--- | Access flags for a class
+-- | Access flags for a class.
 data ClassAccessFlag
-    = Public
-    | Final
-    | Super
-    | Interface
-    | Abstract
-    | Synthetic
-    | Annotation
-    | Enum
+    = CPublic
+    | CFinal
+    | CSuper
+    | CInterface
+    | CAbstract
+    | CSynthetic
+    | CAnnotation
+    | CEnum
     deriving (Data, Eq, Show)
 
+-- | Access flags for a field.
 data FieldAccessFlag
     = FPublic
     | FPrivate
@@ -28,6 +32,7 @@ data FieldAccessFlag
     | FEnum
     deriving (Data, Show)
 
+-- | Access flags for a method.
 data MethodAccessFlag
     = MPublic
     | MPrivate
@@ -44,14 +49,14 @@ data MethodAccessFlag
     deriving (Data, Eq, Show)
 
 instance Pretty ClassAccessFlag where
-    pretty Public = "public"
-    pretty Final = "final"
-    pretty Super = "super"
-    pretty Interface = "interface"
-    pretty Abstract = "abstract"
-    pretty Synthetic = "synthetic"
-    pretty Annotation = "@interface"
-    pretty Enum = "enum"
+    pretty CPublic = "public"
+    pretty CFinal = "final"
+    pretty CSuper = "super"
+    pretty CInterface = "interface"
+    pretty CAbstract = "abstract"
+    pretty CSynthetic = "synthetic"
+    pretty CAnnotation = "@interface"
+    pretty CEnum = "enum"
 
 instance Pretty FieldAccessFlag where
     pretty FPublic = "public"

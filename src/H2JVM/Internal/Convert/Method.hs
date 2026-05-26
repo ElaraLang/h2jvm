@@ -1,7 +1,8 @@
 {-# LANGUAGE LexicalNegation #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module H2JVM.Internal.Convert.Method (convertMethod) where
+-- | Convert a high level method to its low level format.
+module H2JVM.Internal.Convert.Method (convertMethod, convertMethodDescriptor) where
 
 import Control.Monad (foldM)
 import Data.List (nubBy, sortOn)
@@ -17,15 +18,16 @@ import H2JVM.ClassFile.Method
 import H2JVM.ConstantPool (ConstantPoolEntry (..))
 import H2JVM.Internal.Convert.AccessFlag (accessFlagsToWord16)
 import H2JVM.Internal.Convert.ConstantPool
-import H2JVM.Internal.Convert.Descriptor (convertMethodDescriptor)
 import H2JVM.Internal.Convert.Instruction (CodeConverterEff, convertInstructions, fullyResolveAbs, fullyRunCodeConverter)
 import H2JVM.Internal.Convert.Monad
+import H2JVM.Internal.Convert.Type
 import H2JVM.Internal.Raw.Types
 
 import H2JVM.ClassFile.Method qualified as Abs
 import H2JVM.Data.TypeMergingList qualified as TML
 import H2JVM.Internal.Raw.ClassFile qualified as Raw
 
+-- | Convert a 'Abs.MethodAttribute' to the raw format by upserting its components into the constant pool.
 convertMethodAttribute :: ConvertEff r => HasCallStack => Abs.MethodAttribute -> Eff r Raw.AttributeInfo
 convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
     (code', attributes') <- fullyRunCodeConverter $ do
@@ -133,6 +135,7 @@ convertVerificationTypeInfo (Abs.UninitializedVariableInfo x) = do
     label <- fullyResolveAbs x
     pure $ Raw.UninitializedVariableInfo (into label)
 
+-- | Convert a 'Abs.ClassFileMethod' to a 'Raw.MethodInfo' by upserting its attributes into the constant pool.
 convertMethod :: ConvertEff r => Abs.ClassFileMethod -> Eff r Raw.MethodInfo
 convertMethod Abs.ClassFileMethod{..} = do
     let flags = accessFlagsToWord16 methodAccessFlags
