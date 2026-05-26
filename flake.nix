@@ -175,4 +175,10 @@
           hixFlake;
       }
     );
+  nixConfig = {
+    extra-substituters = [ "https://elara.cachix.org" ];
+    extra-trusted-public-keys = [
+      "elara.cachix.org-1:d129AMaRCJ6Q86oVUvIccZ1NsRZ6kyL5IkceevfQDWI="
+    ];
+  };
 }

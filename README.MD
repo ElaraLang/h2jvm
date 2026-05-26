@@ -9,13 +9,12 @@ It handles the complex, low-level details of JVM class file generation automatic
 
 ---
 
-## Build & Test
+## Development
 
-You can build and test the project using standard Cabal commands:
-
+This project uses Nix flakes for development environments. To start developing:
 ```bash
+nix develop # or allow direnv via `direnv allow`
 cabal build
-cabal test
 ```
 
 ---

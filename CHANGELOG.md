@@ -1,5 +1,5 @@
 # Revision history for h2jvm
 
-## 0.1.0.0 -- YYYY-mm-dd
+## 0.1.0.0 -- 2026-05-26
 
-* First version. Released on an unsuspecting world.
+* Initial beta release.
