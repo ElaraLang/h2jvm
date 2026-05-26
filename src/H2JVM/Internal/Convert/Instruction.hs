@@ -47,8 +47,8 @@ countArguments :: MethodDescriptor -> Int
 countArguments (MethodDescriptor args _) = 1 + sum (map countArgument args)
   where
     countArgument :: FieldType -> Int
-    countArgument (PrimitiveFieldType Double) = 2
-    countArgument (PrimitiveFieldType Long) = 2
+    countArgument (PrimitiveFieldType JDouble) = 2
+    countArgument (PrimitiveFieldType JLong) = 2
     countArgument _ = 1
 
 -- | The size of an instruction in bytes, used for calculating jump offsets

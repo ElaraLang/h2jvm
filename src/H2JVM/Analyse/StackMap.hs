@@ -162,19 +162,19 @@ topFrame thisType flags (MethodDescriptor args _) =
             else ObjectFieldType thisType : params -- instance methods have @this@ as a local
     expandLocals :: [FieldType] -> [LocalVariable]
     expandLocals [] = []
-    expandLocals (PrimitiveFieldType Double : ts) =
-        LocalVariable (PrimitiveFieldType Double) : Uninitialised : expandLocals ts
-    expandLocals (PrimitiveFieldType Long : ts) =
-        LocalVariable (PrimitiveFieldType Long) : Uninitialised : expandLocals ts
+    expandLocals (PrimitiveFieldType JDouble : ts) =
+        LocalVariable (PrimitiveFieldType JDouble) : Uninitialised : expandLocals ts
+    expandLocals (PrimitiveFieldType JLong : ts) =
+        LocalVariable (PrimitiveFieldType JLong) : Uninitialised : expandLocals ts
     expandLocals (t : ts) = LocalVariable t : expandLocals ts
 
 -- | Remove any implicit 'top' entries that are used for padding wide types in the locals list
 filterImplicitTops :: [LocalVariable] -> [LocalVariable]
 filterImplicitTops [] = []
-filterImplicitTops (LocalVariable (PrimitiveFieldType Double) : Uninitialised : rest) =
-    LocalVariable (PrimitiveFieldType Double) : filterImplicitTops rest
-filterImplicitTops (LocalVariable (PrimitiveFieldType Long) : Uninitialised : rest) =
-    LocalVariable (PrimitiveFieldType Long) : filterImplicitTops rest
+filterImplicitTops (LocalVariable (PrimitiveFieldType JDouble) : Uninitialised : rest) =
+    LocalVariable (PrimitiveFieldType JDouble) : filterImplicitTops rest
+filterImplicitTops (LocalVariable (PrimitiveFieldType JLong) : Uninitialised : rest) =
+    LocalVariable (PrimitiveFieldType JLong) : filterImplicitTops rest
 filterImplicitTops (x : xs) = x : filterImplicitTops xs
 
 -- | Compute the frame state after executing all instructions in a basic block.
@@ -207,7 +207,7 @@ analyse = \case
             _ -> error $ "Stack underflow or invalid types for AAload. Stack: " <> show s
     ArrayLength -> do
         pops 1 -- arrayref
-        pushes (PrimitiveFieldType Int)
+        pushes (PrimitiveFieldType JInt)
     (ALoad i) -> loads "ALoad" i
     (ILoad i) -> loads "ILoad" i
     (AStore i) -> stores (into i)
@@ -217,8 +217,8 @@ analyse = \case
     AConstNull -> pushesEntry StackEntryNull
     Return -> pure ()
     LDC t -> pushes (ldcEntryToFieldType t)
-    IConst0 -> pushes (PrimitiveFieldType Int)
-    IConst1 -> pushes (PrimitiveFieldType Int)
+    IConst0 -> pushes (PrimitiveFieldType JInt)
+    IConst1 -> pushes (PrimitiveFieldType JInt)
     Dup -> do
         s <- gets (.stack)
         case s of
@@ -226,10 +226,10 @@ analyse = \case
             head : _ -> pushesEntry head
     IAnd -> do
         pops 2
-        pushes (PrimitiveFieldType Int)
+        pushes (PrimitiveFieldType JInt)
     IOr -> do
         pops 2
-        pushes (PrimitiveFieldType Int)
+        pushes (PrimitiveFieldType JInt)
     IfEq _ -> pops 1
     IfNe _ -> pops 1
     IfLt _ -> pops 1
@@ -237,7 +237,7 @@ analyse = \case
     IfGt _ -> pops 1
     IfLe _ -> pops 1
     CheckCast ft -> replaceTop (classInfoTypeToFieldType ft)
-    Instanceof _ -> replaceTop (PrimitiveFieldType Int)
+    Instanceof _ -> replaceTop (PrimitiveFieldType JInt)
     InvokeStatic _ _ md -> do
         pops (length md.params)
         pushesMaybe (returnDescriptorType md.returnDesc)
@@ -264,16 +264,16 @@ analyse = \case
     IfICmp _cmp -> pops 2
     IAdd -> do
         pops 2
-        pushes (PrimitiveFieldType Int)
+        pushes (PrimitiveFieldType JInt)
     ISub -> do
         pops 2
-        pushes (PrimitiveFieldType Int)
+        pushes (PrimitiveFieldType JInt)
     IMul -> do
         pops 2
-        pushes (PrimitiveFieldType Int)
+        pushes (PrimitiveFieldType JInt)
     IDiv -> do
         pops 2
-        pushes (PrimitiveFieldType Int)
+        pushes (PrimitiveFieldType JInt)
 
 -- | Compute the delta between two frames to produce a StackMapFrame
 diffFrames :: Frame -> Frame -> Label -> StackMapFrame
@@ -302,14 +302,14 @@ diffFrames (Frame locals1 _stack1) (Frame locals2 stack2) label
 lvToVerificationTypeInfo :: LocalVariable -> VerificationTypeInfo
 lvToVerificationTypeInfo Uninitialised = TopVariableInfo
 lvToVerificationTypeInfo (LocalVariable ft) = case ft of
-    PrimitiveFieldType Int -> IntegerVariableInfo
-    PrimitiveFieldType Byte -> IntegerVariableInfo
-    PrimitiveFieldType Char -> IntegerVariableInfo
-    PrimitiveFieldType Short -> IntegerVariableInfo
-    PrimitiveFieldType Boolean -> IntegerVariableInfo
-    PrimitiveFieldType Float -> FloatVariableInfo
-    PrimitiveFieldType Long -> LongVariableInfo
-    PrimitiveFieldType Double -> DoubleVariableInfo
+    PrimitiveFieldType JInt -> IntegerVariableInfo
+    PrimitiveFieldType JByte -> IntegerVariableInfo
+    PrimitiveFieldType JChar -> IntegerVariableInfo
+    PrimitiveFieldType JShort -> IntegerVariableInfo
+    PrimitiveFieldType JBoolean -> IntegerVariableInfo
+    PrimitiveFieldType JFloat -> FloatVariableInfo
+    PrimitiveFieldType JLong -> LongVariableInfo
+    PrimitiveFieldType JDouble -> DoubleVariableInfo
     ObjectFieldType{} -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
     ArrayFieldType{} -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
 
@@ -318,14 +318,14 @@ seToVerificationTypeInfo :: StackEntry -> VerificationTypeInfo
 seToVerificationTypeInfo StackEntryTop = TopVariableInfo
 seToVerificationTypeInfo StackEntryNull = NullVariableInfo
 seToVerificationTypeInfo (StackEntry ft) = case ft of
-    PrimitiveFieldType Int -> IntegerVariableInfo
-    PrimitiveFieldType Byte -> IntegerVariableInfo
-    PrimitiveFieldType Char -> IntegerVariableInfo
-    PrimitiveFieldType Short -> IntegerVariableInfo
-    PrimitiveFieldType Boolean -> IntegerVariableInfo
-    PrimitiveFieldType Float -> FloatVariableInfo
-    PrimitiveFieldType Long -> LongVariableInfo
-    PrimitiveFieldType Double -> DoubleVariableInfo
+    PrimitiveFieldType JInt -> IntegerVariableInfo
+    PrimitiveFieldType JByte -> IntegerVariableInfo
+    PrimitiveFieldType JChar -> IntegerVariableInfo
+    PrimitiveFieldType JShort -> IntegerVariableInfo
+    PrimitiveFieldType JBoolean -> IntegerVariableInfo
+    PrimitiveFieldType JFloat -> FloatVariableInfo
+    PrimitiveFieldType JLong -> LongVariableInfo
+    PrimitiveFieldType JDouble -> DoubleVariableInfo
     _ -> ObjectVariableInfo (fieldTypeToClassInfoType ft)
 
 {- | Merge two frames that could both reach the same program point.
@@ -520,8 +520,8 @@ stores i = do
             let lv = stackEntryToLV top
             let locals' = replaceAtOrGrow i lv f.locals
             let finalLocals = case lv of
-                    LocalVariable (PrimitiveFieldType Double) -> replaceAtOrGrow (i + 1) Uninitialised locals'
-                    LocalVariable (PrimitiveFieldType Long) -> replaceAtOrGrow (i + 1) Uninitialised locals'
+                    LocalVariable (PrimitiveFieldType JDouble) -> replaceAtOrGrow (i + 1) Uninitialised locals'
+                    LocalVariable (PrimitiveFieldType JLong) -> replaceAtOrGrow (i + 1) Uninitialised locals'
                     _ -> locals'
             put
                 f
@@ -543,8 +543,8 @@ indexOOBError instName i ba block =
 
 -- | How many stack slots does a given 'FieldType' take up?
 fieldTypeSlotSize :: FieldType -> Int
-fieldTypeSlotSize (PrimitiveFieldType Double) = 2
-fieldTypeSlotSize (PrimitiveFieldType Long) = 2
+fieldTypeSlotSize (PrimitiveFieldType JDouble) = 2
+fieldTypeSlotSize (PrimitiveFieldType JLong) = 2
 fieldTypeSlotSize _ = 1
 
 -- | How many stack slots does a given 'StackEntry' take up?

@@ -1,3 +1,4 @@
+-- | Types and utilities for representing JVM class and package names.
 module H2JVM.Name (
     PackageName (..),
     ClassName (..),
@@ -18,8 +19,8 @@ import Data.Text qualified as T
 
 import H2JVM.Internal.Pretty
 
-{- | A JVM package name
-This is defined as a potentially empty list of identifiers, which would be separated by dots in the source code
+{- | A JVM package name.
+This is defined as a potentially empty list of identifiers, which would be separated by dots in the source code, e.g. @"java.lang"@ would be represented as @PackageName ["java","lang"]@.
 -}
 newtype PackageName = PackageName [Text] deriving (Data, Eq, Ord, Show)
 
@@ -36,13 +37,18 @@ parsePackageName t = case T.splitOn "." t of
     [""] -> PackageName []
     xs -> PackageName xs
 
--- | A JVM class name
+-- | A JVM class name, in its public, simple form, e.g. @"Object"@ or @"ArrayList"@.
 newtype ClassName = ClassName Text deriving (Data, Eq, Ord, Show)
 
--- | Parse a 'ClassName' from a 'Text'
+{- | Parse a 'ClassName' from a 'Text'.
+This function is lenient, but this behaviour should not be relied on, and in future this may throw an error if the input is not a valid class name.
+-}
 parseClassName :: Text -> ClassName
 parseClassName = ClassName
 
+{- | A fully qualified JVM class name, consisting of a 'PackageName' and a 'ClassName'.
+For example, @"java.lang.Object"@ would be represented as @QualifiedClassName (PackageName ["java","lang"]) (ClassName "Object")@.
+-}
 data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Data, Eq, Ord, Show)
 
 instance Pretty QualifiedClassName where

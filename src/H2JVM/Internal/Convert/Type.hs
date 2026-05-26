@@ -10,14 +10,14 @@ import H2JVM.Type qualified as Abs
 
 baseTypeDescriptor :: Abs.PrimitiveType -> Text
 baseTypeDescriptor = \case
-    Abs.Byte -> "B"
-    Abs.Char -> "C"
-    Abs.Double -> "D"
-    Abs.Float -> "F"
-    Abs.Int -> "I"
-    Abs.Long -> "J"
-    Abs.Short -> "S"
-    Abs.Boolean -> "Z"
+    Abs.JByte -> "B"
+    Abs.JChar -> "C"
+    Abs.JDouble -> "D"
+    Abs.JFloat -> "F"
+    Abs.JInt -> "I"
+    Abs.JLong -> "J"
+    Abs.JShort -> "S"
+    Abs.JBoolean -> "Z"
 
 fieldTypeDescriptor :: Abs.FieldType -> Text
 fieldTypeDescriptor = \case

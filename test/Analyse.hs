@@ -39,7 +39,7 @@ import H2JVM.Internal.Convert (jloName)
 import H2JVM.Internal.Pretty ()
 import H2JVM.Type (
     FieldType (..),
-    PrimitiveType (Int),
+    PrimitiveType (JInt),
  )
 import Util (genPrimitiveType, genQualifiedClassName)
 
@@ -70,12 +70,12 @@ spec = describe "Analysis checks" $ do
                     === [ BasicBlock 0 [LDC (LDCInt 0), AStore 0, ALoad 0, AReturn] Nothing Nothing
                         ]
 
-                let top = topFrame jloName [MStatic] (MethodDescriptor [] (TypeReturn (PrimitiveFieldType Int)))
+                let top = topFrame jloName [MStatic] (MethodDescriptor [] (TypeReturn (PrimitiveFieldType JInt)))
                 let nextFrame = analyseBlockDiff top (NE.head blocks)
 
                 nextFrame
                     === Frame
-                        { locals = [LocalVariable (PrimitiveFieldType Int)]
+                        { locals = [LocalVariable (PrimitiveFieldType JInt)]
                         , stack = []
                         }
 
@@ -100,7 +100,7 @@ spec = describe "Analysis checks" $ do
                         , BasicBlock 2 [LDC (LDCInt 1), AReturn] (Just l) Nothing
                         ]
 
-                let top = topFrame jloName [MStatic] (MethodDescriptor [] (TypeReturn (PrimitiveFieldType Int)))
+                let top = topFrame jloName [MStatic] (MethodDescriptor [] (TypeReturn (PrimitiveFieldType JInt)))
                 let nextFrame = analyseBlockDiff top (NE.head blocks)
 
                 nextFrame
@@ -150,7 +150,7 @@ spec = describe "Analysis checks" $ do
 
                 nextFrame
                     === Frame
-                        { locals = [LocalVariable (PrimitiveFieldType Int), LocalVariable (PrimitiveFieldType Int)]
+                        { locals = [LocalVariable (PrimitiveFieldType JInt), LocalVariable (PrimitiveFieldType JInt)]
                         , stack = []
                         }
 
@@ -158,7 +158,7 @@ spec = describe "Analysis checks" $ do
 
                 nextFrame'
                     === Frame
-                        { locals = [LocalVariable (PrimitiveFieldType Int), LocalVariable (PrimitiveFieldType Int), LocalVariable (PrimitiveFieldType Int)]
+                        { locals = [LocalVariable (PrimitiveFieldType JInt), LocalVariable (PrimitiveFieldType JInt), LocalVariable (PrimitiveFieldType JInt)]
                         , stack = []
                         }
 

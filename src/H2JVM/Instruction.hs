@@ -158,8 +158,8 @@ instance Pretty LDCEntry where
     pretty (LDCClass x) = pretty x
 
 ldcEntryToFieldType :: LDCEntry -> FieldType
-ldcEntryToFieldType (LDCInt _) = PrimitiveFieldType Int
-ldcEntryToFieldType (LDCFloat _) = PrimitiveFieldType Float
+ldcEntryToFieldType (LDCInt _) = PrimitiveFieldType JInt
+ldcEntryToFieldType (LDCFloat _) = PrimitiveFieldType JFloat
 ldcEntryToFieldType (LDCString _) = ObjectFieldType "java/lang/String"
 ldcEntryToFieldType (LDCClass (ClassInfoType x)) = ObjectFieldType x
 ldcEntryToFieldType (LDCClass (ArrayClassInfoType x)) = ArrayFieldType $ ldcEntryToFieldType $ LDCClass x

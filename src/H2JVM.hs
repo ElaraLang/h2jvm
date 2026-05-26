@@ -75,7 +75,7 @@ module H2JVM (
     Instruction' (..),
     LDCEntry (..),
 
-    -- * High-level Serialization API
+    -- * High-level Serialisation API
     classFileBytes,
     CodeConverterError,
 ) where
@@ -99,7 +99,7 @@ import H2JVM.JVMVersion (JVMVersion, MajorVersion, MinorVersion, getMajor, getMi
 import H2JVM.Name (ClassName, PackageName, QualifiedClassName, parseClassName, parsePackageName, parseQualifiedClassName, suitableFilePath)
 import H2JVM.Type (FieldType (..), PrimitiveType (..))
 
--- | Convert and serialize a high-level 'ClassFile' directly to lazy 'ByteString' bytes.
+-- | Convert and serialise a high-level 'ClassFile' directly to lazy 'ByteString' bytes.
 classFileBytes :: ClassFile -> Either CodeConverterError ByteString
 classFileBytes = fmap (runPut . writeBinary) . convert
 

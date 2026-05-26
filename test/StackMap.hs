@@ -34,12 +34,12 @@ spec = describe "StackMap Analysis Tests" $ do
                 maxLocals === 2
         it "Accounts for Double & Long requiring 2 slots" $ do
             let (_, _, code) = runPureEff $ runCodeBuilder $ do
-                    emit $ GetStatic (ClassInfoType "Math") "PI" (PrimitiveFieldType JVM.Double)
+                    emit $ GetStatic (ClassInfoType "Math") "PI" (PrimitiveFieldType JVM.JDouble)
                     emit IConst1
                     emit Return
 
             property $ do
-                let md = MethodDescriptor [PrimitiveFieldType JVM.Double, PrimitiveFieldType JVM.Int] VoidReturn
+                let md = MethodDescriptor [PrimitiveFieldType JVM.JDouble, PrimitiveFieldType JVM.JInt] VoidReturn
                 let (_, maxStack, maxLocals) = calculateStackMapFrames jloName [MStatic] md code
 
                 maxStack === 3
@@ -70,7 +70,7 @@ spec = describe "StackMap Analysis Tests" $ do
                     emit Return
 
             property $ do
-                let md = MethodDescriptor [PrimitiveFieldType Int] VoidReturn
+                let md = MethodDescriptor [PrimitiveFieldType JInt] VoidReturn
                 let (_, maxStack, maxLocals) = calculateStackMapFrames jloName [] md code
 
                 maxStack === 0
@@ -79,35 +79,35 @@ spec = describe "StackMap Analysis Tests" $ do
         describe "Wide Type Memory Layout Checks" $ do
             it "topFrame explicitly pads Wide method arguments with Uninitialised slots" $ do
                 property $ do
-                    let md = MethodDescriptor [PrimitiveFieldType Double, PrimitiveFieldType Int] VoidReturn
+                    let md = MethodDescriptor [PrimitiveFieldType JDouble, PrimitiveFieldType JInt] VoidReturn
 
                     let startFrame = topFrame jloName [MStatic] md
 
                     startFrame.locals
-                        === [ LocalVariable (PrimitiveFieldType Double)
+                        === [ LocalVariable (PrimitiveFieldType JDouble)
                             , Uninitialised
-                            , LocalVariable (PrimitiveFieldType Int)
+                            , LocalVariable (PrimitiveFieldType JInt)
                             ]
 
             it "stores correctly invalidates the subsequent index when saving a wide type" $ do
                 let block =
                         BasicBlock
                             0
-                            [ GetStatic (ClassInfoType "Math") "PI" (PrimitiveFieldType Double)
+                            [ GetStatic (ClassInfoType "Math") "PI" (PrimitiveFieldType JDouble)
                             , IStore 1 -- store the double into index 1, which should invalidate index 2
                             ]
                             Nothing
                             Nothing
 
                 property $ do
-                    let initialLocals = replicate 4 (LocalVariable (PrimitiveFieldType Int))
+                    let initialLocals = replicate 4 (LocalVariable (PrimitiveFieldType JInt))
                     let top = Frame{locals = initialLocals, stack = []}
 
                     let resultingFrame = analyseBlockDiff top block
 
                     resultingFrame.locals
-                        === [ LocalVariable (PrimitiveFieldType Int) -- unchanged
-                            , LocalVariable (PrimitiveFieldType Double) -- the double we stored
+                        === [ LocalVariable (PrimitiveFieldType JInt) -- unchanged
+                            , LocalVariable (PrimitiveFieldType JDouble) -- the double we stored
                             , Uninitialised -- the slot after the double must be invalidated
-                            , LocalVariable (PrimitiveFieldType Int) -- unchanged
+                            , LocalVariable (PrimitiveFieldType JInt) -- unchanged
                             ]

@@ -22,7 +22,7 @@ import H2JVM.Instruction (Instruction' (..), LDCEntry (..))
 import H2JVM.Internal.Convert (jloName)
 import H2JVM.Internal.Convert.ConstantPool (ConstantPoolState (ConstantPoolState))
 import H2JVM.Internal.Raw.ConstantPool (ConstantPoolInfo (..))
-import H2JVM.Type (ClassInfoType (ClassInfoType), FieldType (..), PrimitiveType (Boolean, Char, Int))
+import H2JVM.Type (ClassInfoType (ClassInfoType), FieldType (..), PrimitiveType (JBoolean, JChar, JInt))
 import Util
 
 import H2JVM.Internal.IndexedMap qualified as IM
@@ -39,7 +39,7 @@ spec = describe "test conversions" $ do
                 [ InvokeStatic
                     (ClassInfoType "java.lang.String")
                     "charAt"
-                    (MethodDescriptor [PrimitiveFieldType Int] (TypeReturn (PrimitiveFieldType Char)))
+                    (MethodDescriptor [PrimitiveFieldType JInt] (TypeReturn (PrimitiveFieldType JChar)))
                 ]
         constants `shouldContain` Raw.UTF8Info "java/lang/String"
         constants `shouldContain` Raw.UTF8Info "charAt"
@@ -66,13 +66,13 @@ spec = describe "test conversions" $ do
                             ( MethodRef
                                 (ClassInfoType "java/lang/Object")
                                 "equals"
-                                (MethodDescriptor [ObjectFieldType "java/lang/Object"] (TypeReturn (PrimitiveFieldType Boolean)))
+                                (MethodDescriptor [ObjectFieldType "java/lang/Object"] (TypeReturn (PrimitiveFieldType JBoolean)))
                             )
                         )
                         [BMStringArg "Hello"]
                     )
                     "foo"
-                    (MethodDescriptor [PrimitiveFieldType Int] (TypeReturn (PrimitiveFieldType Char)))
+                    (MethodDescriptor [PrimitiveFieldType JInt] (TypeReturn (PrimitiveFieldType JChar)))
                 ]
         constants `shouldContain` Raw.UTF8Info "foo"
         constants `shouldContain` Raw.UTF8Info "(I)C"
