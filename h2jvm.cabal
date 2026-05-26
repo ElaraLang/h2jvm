@@ -75,7 +75,7 @@ library
     , prettyprinter >=1.7.0 && <1.8
     , text >=1.2.5.0 && <2.2
     , vector >=0.12.3.1 && <0.14
-    , witch
+    , witch <1.4
   default-language: GHC2021
 
 test-suite h2jvm-test
@@ -105,6 +105,6 @@ test-suite h2jvm-test
     , effectful-plugin >=1.1.0.2 && <2.2
     , h2jvm
     , hedgehog >=1.4 && <1.8
-    , sydtest
-    , sydtest-hedgehog
+    , sydtest <0.24
+    , sydtest-hedgehog <0.5
   default-language: GHC2021
