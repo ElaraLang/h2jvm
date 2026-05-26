@@ -14,7 +14,12 @@
   };
 
   outputs =
-    { hix, flake-parts, ... }@inputs:
+    {
+      self,
+      hix,
+      flake-parts,
+      ...
+    }@inputs:
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
       {
@@ -57,6 +62,16 @@
                 gen-overrides.enable = true;
                 managed.enable = true;
                 managed.lower.enable = true;
+
+                outputs.devShells = {
+                  # extending the default devshell to add the pre-commit hooks and some other nice things
+                  default = config.pkgs.mkShell {
+                    inputsFrom = [
+                      config.outputs.devShells.dev # the devshell that hix provides
+                      self.devShells.${config.system}.pre-commit # the pre-commit devshell
+                    ];
+                  };
+                };
 
                 packages = {
                   h2jvm = {
