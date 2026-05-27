@@ -61,6 +61,8 @@
                 compiler = "ghc912";
                 gen-overrides.enable = true;
                 managed.enable = true;
+                managed.debug = true;
+
                 managed.lower.enable = true;
 
                 outputs.devShells = {
@@ -111,7 +113,7 @@
                         "prettyprinter"
                         "text"
                         "vector"
-                        "witch"
+                        "witch >= 1.2.0.3"
                       ];
                       default-extensions = [
                         "DataKinds"
@@ -138,8 +140,8 @@
                       dependencies = [
                         "h2jvm"
                         "hedgehog >=1.4"
-                        "sydtest"
-                        "sydtest-hedgehog"
+                        "sydtest >= 0.23.0.2"
+                        "sydtest-hedgehog >= 0.4.0.0"
                         "effectful"
                       ];
                       default-extensions = [
