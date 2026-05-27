@@ -158,6 +158,7 @@
                         "-Wall"
                         "-Wunused-packages"
                         "-Wno-name-shadowing"
+                        "-threaded"
                       ];
                       component = {
                         other-modules = [
