@@ -25,7 +25,7 @@ import H2JVM.Instruction as Abs (IfCond (..), Instruction, Instruction' (..), LD
 import H2JVM.Internal.Convert.ConstantPool
 import H2JVM.Internal.Convert.Monad
 import H2JVM.Internal.Raw.Instruction as Raw (Instruction (..))
-import H2JVM.Internal.Raw.Types (U1, U2)
+import H2JVM.Internal.Raw.Types (U1)
 import H2JVM.Type
 
 import H2JVM.Internal.Raw.MagicNumbers qualified as MagicNumbers
