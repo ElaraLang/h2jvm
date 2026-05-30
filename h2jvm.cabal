@@ -59,6 +59,7 @@ library
       H2JVM.Internal.Raw.Instruction
       H2JVM.Internal.Raw.MagicNumbers
       H2JVM.Internal.Raw.Types
+      H2JVM.Internal.Util
       H2JVM.JVMVersion
       H2JVM.Name
       H2JVM.Type

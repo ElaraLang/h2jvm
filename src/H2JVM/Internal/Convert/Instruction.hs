@@ -26,6 +26,7 @@ import H2JVM.Internal.Convert.ConstantPool
 import H2JVM.Internal.Convert.Monad
 import H2JVM.Internal.Raw.Instruction as Raw (Instruction (..))
 import H2JVM.Internal.Raw.Types (U1)
+import H2JVM.Internal.Util (bug)
 import H2JVM.Type
 
 import H2JVM.Internal.Raw.MagicNumbers qualified as MagicNumbers
@@ -112,21 +113,30 @@ convertInstructions xs = do
 
 data MaybeResolvedLabel = ResolvedLabel Word16 | UnresolvedLabel Label
 
-data OffsetInstruction a = OffsetInstruction Word16 a
+-- | An instruction with a resolved offset.
+data OffsetInstruction a
+    = -- | an instruction with a real offset
+      OffsetInstruction
+        -- | the offset.
+        Word16
+        -- | the instruction.
+        a
+    | -- | a label pseudo-instruction
+      LabelInstruction a
     deriving (Eq, Functor, Ord, Show)
 
--- | Inserts the corresponding label offsets into the state
-insertAllLabels :: CodeConverterEff r => NonEmpty Abs.Instruction -> Eff r (NonEmpty (OffsetInstruction Abs.Instruction))
+-- | Inserts the corresponding label offsets into the state.
+insertAllLabels :: HasCallStack => CodeConverterEff r => NonEmpty Abs.Instruction -> Eff r (NonEmpty (OffsetInstruction Abs.Instruction))
 insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
   where
-    incOffset :: CodeConverterEff r => Abs.Instruction -> Eff r ()
+    incOffset :: HasCallStack => CodeConverterEff r => Abs.Instruction -> Eff r ()
     incOffset (Label _) = pure () -- Label instructions have no representation in the bytecode, so they don't affect the offset
     incOffset inst = do
         offset <- gets @ConvertState (.currentOffset)
         let size = instructionSize inst
         modify (\s -> s{currentOffset = offset + size})
 
-    insertLabel :: CodeConverterEff r => Abs.Instruction -> Eff r (OffsetInstruction Abs.Instruction)
+    insertLabel :: HasCallStack => CodeConverterEff r => Abs.Instruction -> Eff r (OffsetInstruction Abs.Instruction)
     insertLabel (Label l) = do
         currentOffset <- gets @ConvertState (.currentOffset)
 
@@ -135,7 +145,7 @@ insertAllLabels = traverse (\x -> incOffset x *> insertLabel x)
                 Just _ -> throwError (DuplicateLabel l currentOffset)
                 Nothing -> do
                     pure (s{labelOffsets = Map.insert l currentOffset s.labelOffsets})
-        pure (OffsetInstruction (error "Label offset should not be evaluated") (Label l))
+        pure (LabelInstruction (Label l))
     insertLabel x = do
         offset <- gets @ConvertState (.currentOffset)
         pure (OffsetInstruction (offset - instructionSize x) x)
@@ -151,6 +161,7 @@ resolveLabel (OffsetInstruction instOffset inst) =
         Abs.Goto l -> Abs.Goto <$> resolveLabelAbs l
         Abs.IfICmp cond -> Abs.IfICmp <$> traverse resolveLabelAbs cond
         _ -> pure inst
+resolveLabel inst@(LabelInstruction{}) = pure inst
 
 fullyResolveAbs :: CodeConverterEff r => Label -> Eff r Word16
 fullyResolveAbs l = do
@@ -174,8 +185,10 @@ mustBeResolvedAbs (UnresolvedLabel l) = throwError (UnmarkedLabel l)
 mustBeResolved :: CodeConverterEff r => Word16 -> MaybeResolvedLabel -> Eff r Word16
 mustBeResolved instOffset = fmap (- instOffset) . mustBeResolvedAbs
 
+-- | Convert an instruction with a real offset to a raw 'Raw.Instruction'.
 convertInstruction :: CodeConverterEff r => OffsetInstruction (Abs.Instruction' MaybeResolvedLabel) -> Eff r (Maybe Raw.Instruction)
 convertInstruction (OffsetInstruction _ (Abs.Label _)) = pure Nothing
+convertInstruction (LabelInstruction _) = pure Nothing -- kind of awkward having 2 cases for the same thing here but what can you do
 convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstruction o
   where
     convertInstruction (Abs.ALoad 0) = pure Raw.ALoad0
@@ -272,7 +285,7 @@ convertInstruction (OffsetInstruction instOffset o) = Just <$> convertInstructio
             Abs.IfGt l -> Raw.IfGt l
             Abs.IfLe l -> Raw.IfLe l
     convertInstruction (Abs.Goto offset) = Raw.Goto <$> mustBeResolved instOffset offset
-    convertInstruction (Abs.Label _) = error "unreachable"
+    convertInstruction (Abs.Label _) = bug "unreachable, should have already been handled"
     convertInstruction (Abs.New t) = do
         idx <- findIndexOf (CPClassEntry t)
         pure (Raw.New idx)

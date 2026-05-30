@@ -31,6 +31,7 @@ import H2JVM.Descriptor (MethodDescriptor (..), returnDescriptorType)
 import H2JVM.Instruction
 import H2JVM.Internal.Pretty (Pretty (pretty), showPretty)
 import H2JVM.Internal.Raw.Types
+import H2JVM.Internal.Util (bug)
 import H2JVM.Name (QualifiedClassName)
 import H2JVM.Type (FieldType (..), PrimitiveType (..), classInfoTypeToFieldType, fieldTypeToClassInfoType)
 
@@ -106,7 +107,7 @@ splitIntoBasicBlocks l =
         blocksList = zipWith4 BasicBlock [0 ..] instructions startLabels endLabels
      in case blocksList of
             (b : bs) -> b :| bs
-            [] -> error "splitIntoBasicBlocks: splitOnLabels produced 0 blocks from NonEmpty input"
+            [] -> bug "splitIntoBasicBlocks: splitOnLabels produced 0 blocks from NonEmpty input"
 
 -- | Build a map from labels to the index of the block that starts with that label.
 buildLabelToBlockMap :: NonEmpty BasicBlock -> Map Label Int
@@ -184,9 +185,9 @@ analyseBlockDiff current block = foldl' (flip analyseInstruction) current block.
                     analyse inst
 
 -- | analyse a single instruction's effect on the stack and locals
-analyse :: Instruction -> Analyser
+analyse :: HasCallStack => Instruction -> Analyser
 analyse = \case
-    (Label _) -> error "Label should not be encountered in analyseInstruction"
+    (Label _) -> bug "Label should not be encountered in analyseInstruction"
     AALoad -> do
         s <- gets (.stack)
         case s of
