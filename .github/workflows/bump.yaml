@@ -21,7 +21,7 @@ jobs:
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - id: bounds
         name: Bump dependency bounds
-        run: nix run .#bump -- --output=ga-pr
+        run: nix run --accept-flake-config .#bump -- --output=ga-pr
       - name: pr
         if: steps.bounds.outputs.commit-message
         uses: peter-evans/create-pull-request@v8
