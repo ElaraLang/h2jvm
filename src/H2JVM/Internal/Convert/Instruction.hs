@@ -31,7 +31,7 @@ import H2JVM.Type
 
 import H2JVM.Internal.Raw.MagicNumbers qualified as MagicNumbers
 
-type CodeConverterEff r = (ConstantPool r, State ConvertState :> r, Error CodeConverterError :> r)
+type CodeConverterEff r = (ConstantPoolEff r, State ConvertState :> r, Error CodeConverterError :> r)
 
 fullyRunCodeConverter :: ConvertEff r' => Eff (State ConvertState : r') a -> Eff r' a
 fullyRunCodeConverter r = do
