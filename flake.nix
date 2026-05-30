@@ -55,10 +55,9 @@
               { config, ... }:
               {
                 ghcVersions = [
-                  "ghc910"
-                  "ghc912"
+                  "ghc9103"
                 ];
-                compiler = "ghc912";
+                compiler = "ghc9103";
                 gen-overrides.enable = true;
                 managed.enable = true;
                 managed.debug = true;
