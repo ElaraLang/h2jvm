@@ -88,7 +88,7 @@
       sydtest-hedgehog = "0.4.0.0";
       text = "2.1.4";
       vector = "0.13.2.0";
-      witch = "1.3.1.0";
+      witch = "1.3.2.0";
     };
     lower = {
       base = "4.19.2.0";
@@ -107,7 +107,7 @@
     };
   };
   initial = {
-    latest = { };
+    latest = {};
     lower = {
       binary = "0.8.9.1";
       bytestring = "0.12.1.0";
@@ -461,8 +461,8 @@
         repo = "hackage.haskell.org";
       };
       witch = {
-        version = "1.3.1.0";
-        hash = "1n848h6dsyflpn7hn72pjnz3j06fg7i6gay1w6namjy597miyg1l";
+        version = "1.3.2.0";
+        hash = "0hbrzv0378ilqfz4y77yymzyvbsa9ymd84fnlf73640sm8fiz4f3";
         repo = "hackage.haskell.org";
       };
       witherable = {
@@ -675,9 +675,9 @@
     };
   };
   solver = {
-    latest = { };
-    lower = { };
+    latest = {};
+    lower = {};
   };
-  packages = { };
+  packages = {};
   resolving = false;
 }
