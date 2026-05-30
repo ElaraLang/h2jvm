@@ -73,7 +73,7 @@ codeBuilderToState =
         )
 
 {- | Run a 'CodeBuilder' effect, returning the emitted code and attributes.
-Throws an impure exception if no code was emitted, since a code block with no instructions is invalid.
+Throws an imprecise exception if no code was emitted, since a code block with no instructions is invalid.
 -}
 runCodeBuilder ::
     forall r a.
