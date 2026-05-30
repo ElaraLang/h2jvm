@@ -22,7 +22,7 @@ jobs:
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build Haddock
         run: |
-          nix build .#h2jvm.doc
+          nix build --accept-flake-config .#h2jvm.doc
 
           mkdir -p public
           cp -rvL result-doc/share/doc/*/html/* public/
