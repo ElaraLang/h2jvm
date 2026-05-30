@@ -4,7 +4,7 @@
 {- | Conversion of the high level constant pool types to the low level representation.
 This uses the 'H2JVM.Internal.IndexedMap.IndexedMap' type to keep the constant pool free from duplication.
 -}
-module H2JVM.Internal.Convert.ConstantPool (ConstantPool, ConstantPoolState (..), runConstantPool, runConstantPoolWith, runConstantPoolWithPure, findIndexOf) where
+module H2JVM.Internal.Convert.ConstantPool (ConstantPoolEff, ConstantPoolEffs, ConstantPoolState (..), runConstantPool, runConstantPoolWith, runConstantPoolWithPure, findIndexOf) where
 
 import Control.Monad ((>=>))
 import Data.Text.Encoding
