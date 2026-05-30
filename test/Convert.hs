@@ -5,7 +5,7 @@ module Convert (spec) where
 
 import Data.Word (Word32)
 import Effectful
-import Hedgehog (MonadTest, forAll, property, (===))
+import Hedgehog (MonadTest, evalEither, forAll, property, (===))
 import Test.Syd hiding (shouldContain)
 import Test.Syd.Hedgehog ()
 
@@ -100,7 +100,7 @@ frameAnalysis = describe "Stack Map Frame Analysis" $ do
                 emit Return
         let blocks = splitIntoBasicBlocks code
         let top = topFrame jloName [MStatic] (MethodDescriptor [] VoidReturn)
-        let endFrame = analyseBlockDiff top (NE.head blocks)
+        endFrame <- evalEither $ analyseBlockDiff top (NE.head blocks)
 
         -- The final stack height should be the sum of all operations
         length endFrame.stack === sum ops

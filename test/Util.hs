@@ -39,7 +39,7 @@ runAnalysis builder =
 runConv :: MonadTest m => NonEmpty Abs.Instruction -> m (NonEmpty Raw.Instruction, ConstantPoolState)
 runConv =
     withFrozenCallStack $
-        shouldBeRight
+        evalEither
             . runPureEff
             . runConvertM
             . fullyRunCodeConverter
@@ -48,10 +48,6 @@ runConv =
 shouldBeJust :: MonadTest m => HasCallStack => Maybe a -> m a
 shouldBeJust (Just a) = pure a
 shouldBeJust Nothing = withFrozenCallStack $ failWith Nothing "Expected Just, got Nothing" -- This is safe because we know that the expectationFailure function will never return
-
-shouldBeRight :: (MonadTest m, HasCallStack, Show a) => Either a b -> m b
-shouldBeRight (Right b) = pure b
-shouldBeRight (Left a) = withFrozenCallStack $ failWith Nothing ("Expected Right, got Left " ++ show a)
 
 shouldContain :: (HasCallStack, MonadTest m, Eq a, Show a, Foldable t, Show (t a)) => t a -> a -> m ()
 shouldContain t a = withFrozenCallStack $ diff a elem t

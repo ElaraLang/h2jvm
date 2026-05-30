@@ -1,7 +1,7 @@
 module Analyse where
 
 import Effectful (runPureEff)
-import Hedgehog (Gen, property, (===))
+import Hedgehog (Gen, evalEither, property, (===))
 import Test.Syd (Spec, describe, it)
 import Test.Syd.Hedgehog ()
 
@@ -61,7 +61,7 @@ spec = describe "Analysis checks" $ do
                         ]
 
                 let top = topFrame jloName [MStatic] (MethodDescriptor [] (TypeReturn (PrimitiveFieldType JInt)))
-                let nextFrame = analyseBlockDiff top (NE.head blocks)
+                nextFrame <- evalEither $ analyseBlockDiff top (NE.head blocks)
 
                 nextFrame
                     === Frame
@@ -91,7 +91,7 @@ spec = describe "Analysis checks" $ do
                         ]
 
                 let top = topFrame jloName [MStatic] (MethodDescriptor [] (TypeReturn (PrimitiveFieldType JInt)))
-                let nextFrame = analyseBlockDiff top (NE.head blocks)
+                nextFrame <- evalEither $ analyseBlockDiff top (NE.head blocks)
 
                 nextFrame
                     === Frame
@@ -99,7 +99,7 @@ spec = describe "Analysis checks" $ do
                         , stack = []
                         }
 
-                let nextFrame' = analyseBlockDiff nextFrame (blocks NE.!! 2)
+                nextFrame' <- evalEither $ analyseBlockDiff nextFrame (blocks NE.!! 2)
 
                 nextFrame'
                     === Frame
@@ -136,7 +136,7 @@ spec = describe "Analysis checks" $ do
                         ]
 
                 let top = topFrame jloName [MStatic] (MethodDescriptor [] VoidReturn)
-                let nextFrame = analyseBlockDiff top (NE.head blocks)
+                nextFrame <- evalEither $ analyseBlockDiff top (NE.head blocks)
 
                 nextFrame
                     === Frame
@@ -144,7 +144,7 @@ spec = describe "Analysis checks" $ do
                         , stack = []
                         }
 
-                let nextFrame' = analyseBlockDiff nextFrame (blocks NE.!! 2)
+                nextFrame' <- evalEither $ analyseBlockDiff nextFrame (blocks NE.!! 2)
 
                 nextFrame'
                     === Frame

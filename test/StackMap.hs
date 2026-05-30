@@ -1,7 +1,7 @@
 module StackMap where
 
 import Effectful
-import Hedgehog (property, (===))
+import Hedgehog (evalEither, property, (===))
 import Test.Syd
 import Test.Syd.Hedgehog ()
 
@@ -28,7 +28,7 @@ spec = describe "StackMap Analysis Tests" $ do
 
             property $ do
                 let md = MethodDescriptor [] VoidReturn
-                let (_, maxStack, maxLocals) = calculateStackMapFrames jloName [MStatic] md code
+                (_, maxStack, maxLocals) <- evalEither $ calculateStackMapFrames jloName [MStatic] md code
 
                 maxStack === 2
                 maxLocals === 2
@@ -40,7 +40,7 @@ spec = describe "StackMap Analysis Tests" $ do
 
             property $ do
                 let md = MethodDescriptor [PrimitiveFieldType JVM.JDouble, PrimitiveFieldType JVM.JInt] VoidReturn
-                let (_, maxStack, maxLocals) = calculateStackMapFrames jloName [MStatic] md code
+                (_, maxStack, maxLocals) <- evalEither $ calculateStackMapFrames jloName [MStatic] md code
 
                 maxStack === 3
                 maxLocals === 3 -- 2 slots for double param, 1 slot for int param
@@ -59,7 +59,7 @@ spec = describe "StackMap Analysis Tests" $ do
 
             property $ do
                 let md = MethodDescriptor [] VoidReturn
-                let (_, maxStack, maxLocals) = calculateStackMapFrames jloName [MStatic] md code
+                (_, maxStack, maxLocals) <- evalEither $ calculateStackMapFrames jloName [MStatic] md code
 
                 -- peak stack is 4, even though we end with only 1 on the stack
                 maxStack === 4
@@ -71,7 +71,7 @@ spec = describe "StackMap Analysis Tests" $ do
 
             property $ do
                 let md = MethodDescriptor [PrimitiveFieldType JInt] VoidReturn
-                let (_, maxStack, maxLocals) = calculateStackMapFrames jloName [] md code
+                (_, maxStack, maxLocals) <- evalEither $ calculateStackMapFrames jloName [] md code
 
                 maxStack === 0
                 maxLocals === 2
@@ -103,7 +103,7 @@ spec = describe "StackMap Analysis Tests" $ do
                     let initialLocals = replicate 4 (LocalVariable (PrimitiveFieldType JInt))
                     let top = Frame{locals = initialLocals, stack = []}
 
-                    let resultingFrame = analyseBlockDiff top block
+                    resultingFrame <- evalEither $ analyseBlockDiff top block
 
                     resultingFrame.locals
                         === [ LocalVariable (PrimitiveFieldType JInt) -- unchanged

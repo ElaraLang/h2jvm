@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE LambdaCase #-}
 
@@ -7,17 +8,19 @@ modifications to the code after this point will invalidate the stack map table a
 -}
 module H2JVM.Analyse.StackMap (calculateStackMapFrames, BasicBlock (..), Frame (..), LocalVariable (..), analyseBlockDiff, diffFrames, splitIntoBasicBlocks, topFrame) where
 
-import Control.Monad ((>=>))
+import Control.Monad (foldM, (>=>))
+import Data.Foldable (foldlM)
 import Data.List
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map.Strict (Map)
 import Data.Maybe (isNothing, mapMaybe, maybeToList)
 import Data.Set (Set)
+import Data.Text (Text)
+import Data.Traversable (for)
 import Effectful (Eff, runPureEff)
+import Effectful.Error.Static
 import Effectful.Reader.Static (Reader, ask, runReader)
 import Effectful.State.Static.Local (State, execState, get, gets, modify, put)
-import GHC.Stack (HasCallStack)
-import Prettyprinter (vsep)
 import Witch
 
 import Data.List.NonEmpty qualified as NE
@@ -29,7 +32,7 @@ import H2JVM.ClassFile.AccessFlags (MethodAccessFlag (..))
 import H2JVM.ClassFile.Method
 import H2JVM.Descriptor (MethodDescriptor (..), returnDescriptorType)
 import H2JVM.Instruction
-import H2JVM.Internal.Pretty (Pretty (pretty), showPretty)
+import H2JVM.Internal.Pretty (Pretty (pretty))
 import H2JVM.Internal.Raw.Types
 import H2JVM.Internal.Util (bug)
 import H2JVM.Name (QualifiedClassName)
@@ -174,40 +177,41 @@ filterImplicitTops (LocalVariable (PrimitiveFieldType JLong) : Uninitialised : r
 filterImplicitTops (x : xs) = x : filterImplicitTops xs
 
 -- | Compute the frame state after executing all instructions in a basic block.
-analyseBlockDiff :: HasCallStack => Frame -> BasicBlock -> Frame
-analyseBlockDiff current block = foldl' (flip analyseInstruction) current block.instructions
+analyseBlockDiff :: HasCallStack => Frame -> BasicBlock -> Either StackMapError Frame
+analyseBlockDiff current block = foldM (flip analyseInstruction) current block.instructions
   where
-    analyseInstruction :: HasCallStack => Instruction -> Frame -> Frame
+    analyseInstruction :: HasCallStack => Instruction -> Frame -> Either StackMapError Frame
     analyseInstruction inst frame =
         runPureEff $
-            runReader block $
-                execState frame $
-                    analyse inst
+            runErrorNoCallStack @StackMapError $
+                runReader block $
+                    execState frame $
+                        analyse inst
 
 -- | analyse a single instruction's effect on the stack and locals
 analyse :: HasCallStack => Instruction -> Analyser
 analyse = \case
     (Label _) -> bug "Label should not be encountered in analyseInstruction"
-    AALoad -> do
+    inst@AALoad -> do
         s <- gets (.stack)
         case s of
             (_index : StackEntry (ArrayFieldType innerType) : _) -> do
                 pops 2 -- index, arrayref
                 pushes innerType
             (_index : StackEntryTop : _) ->
-                error "AAload: arrayref is Uninitialised (Top)"
+                throwError $ InvalidStackState inst s (Just "AAload: arrayref is Uninitialised (Top)")
             (_index : StackEntryNull : _) -> do
                 -- this will npe at runtime but isn't technically invalid
                 pops 2
                 pushesEntry StackEntryTop
-            _ -> error $ "Stack underflow or invalid types for AAload. Stack: " <> show s
+            _ -> throwError $ StackUnderflow inst
     ArrayLength -> do
         pops 1 -- arrayref
         pushes (PrimitiveFieldType JInt)
-    (ALoad i) -> loads "ALoad" i
-    (ILoad i) -> loads "ILoad" i
-    (AStore i) -> stores (into i)
-    (IStore i) -> stores (into i)
+    inst@(ALoad i) -> loads inst i
+    inst@(ILoad i) -> loads inst i
+    inst@(AStore i) -> stores inst (into i)
+    inst@(IStore i) -> stores inst (into i)
     AReturn -> pops 1
     IReturn -> pops 1
     AConstNull -> pushesEntry StackEntryNull
@@ -215,10 +219,10 @@ analyse = \case
     LDC t -> pushes (ldcEntryToFieldType t)
     IConst0 -> pushes (PrimitiveFieldType JInt)
     IConst1 -> pushes (PrimitiveFieldType JInt)
-    Dup -> do
+    inst@Dup -> do
         s <- gets (.stack)
         case s of
-            [] -> error "Stack underflow during dup"
+            [] -> throwError $ StackUnderflow inst
             head : _ -> pushesEntry head
     IAnd -> do
         pops 2
@@ -323,16 +327,17 @@ seToVerificationTypeInfo (StackEntry ft) = case ft of
 Returns 'Nothing' if frames are identical, 'Just' the merged frame otherwise.
 Uses a conservative merge where differing types become 'Uninitialised'.
 -}
-mergeFrames :: HasCallStack => Frame -> Frame -> Maybe Frame
-mergeFrames (Frame locals1 stack1) (Frame locals2 stack2)
-    | locals1 == locals2 && stack1 == stack2 = Nothing
-    | length stack1 /= length stack2 = error "Cannot merge frames with different stack heights"
+mergeFrames :: HasCallStack => Frame -> Frame -> Either StackMapError (Maybe Frame)
+mergeFrames frame1@(Frame locals1 stack1) frame2@(Frame locals2 stack2)
+    | locals1 == locals2 && stack1 == stack2 = pure Nothing
+    | length stack1 /= length stack2 = Left $ IncompatibleFrameMerge frame1 frame2
     | otherwise =
-        Just $
-            Frame
-                { locals = zipWithDefault Uninitialised mergeLocal locals1 locals2
-                , stack = zipWith mergeStack stack1 stack2
-                }
+        pure $
+            Just $
+                Frame
+                    { locals = zipWithDefault Uninitialised mergeLocal locals1 locals2
+                    , stack = zipWith mergeStack stack1 stack2
+                    }
   where
     mergeLocal :: LocalVariable -> LocalVariable -> LocalVariable
     mergeLocal Uninitialised _ = Uninitialised
@@ -358,7 +363,7 @@ getSuccessors labelToBlock blockIdx block =
     let jumpTargetIndices = mapMaybe (jumpTarget >=> (`Map.lookup` labelToBlock)) block.instructions
         lastInst = if null block.instructions then Nothing else Just (last block.instructions)
         fallThroughIdx = if isTerminator lastInst then Nothing else Just (blockIdx + 1)
-     in jumpTargetIndices ++ Data.Maybe.maybeToList fallThroughIdx
+     in jumpTargetIndices <> maybeToList fallThroughIdx
   where
     isTerminator (Just (Goto _)) = True
     isTerminator (Just AReturn) = True
@@ -368,8 +373,8 @@ getSuccessors labelToBlock blockIdx block =
 {- | Compute the frame state at the entry of each basic block using a worklist algorithm.
 Handles control flow merges by conservatively merging frame states with 'mergeFrames'.
 -}
-computeBlockFrames :: HasCallStack => Frame -> NonEmpty BasicBlock -> Map Int Frame
-computeBlockFrames initialFrame blocks =
+computeBlockFrames :: HasCallStack => Frame -> NonEmpty BasicBlock -> Either StackMapError (Map Int Frame)
+computeBlockFrames initialFrame blocks = do
     let labelToBlock = buildLabelToBlockMap blocks
         blockArray = Map.fromList [(b.index, b) | b <- NE.toList blocks]
         numBlocks = length (NE.toList blocks)
@@ -377,25 +382,26 @@ computeBlockFrames initialFrame blocks =
         initialWorklist = Set.singleton 0
      in worklistLoop initialWorklist initialFrames labelToBlock blockArray numBlocks
   where
-    worklistLoop :: HasCallStack => Set Int -> Map Int Frame -> Map Label Int -> Map Int BasicBlock -> Int -> Map Int Frame
+    worklistLoop :: HasCallStack => Set Int -> Map Int Frame -> Map Label Int -> Map Int BasicBlock -> Int -> Either StackMapError (Map Int Frame)
     worklistLoop worklist frames labelToBlock blockArray numBlocks
-        | Set.null worklist = frames
-        | otherwise =
+        | Set.null worklist = pure frames
+        | otherwise = do
             let (blockIdx, worklist') = Set.deleteFindMin worklist
                 block = blockArray Map.! blockIdx
                 inputFrame = frames Map.! blockIdx
-                outputFrame = analyseBlockDiff inputFrame block
-                successorIndices = filter (< numBlocks) $ getSuccessors labelToBlock blockIdx block
-                (frames', worklist'') = foldl' (propagateFrame outputFrame) (frames, worklist') successorIndices
-             in worklistLoop worklist'' frames' labelToBlock blockArray numBlocks
+            outputFrame <- analyseBlockDiff inputFrame block
+            let successorIndices = filter (< numBlocks) $ getSuccessors labelToBlock blockIdx block
+            (frames', worklist'') <- foldlM (propagateFrame outputFrame) (frames, worklist') successorIndices
+            worklistLoop worklist'' frames' labelToBlock blockArray numBlocks
 
-    propagateFrame :: Frame -> (Map Int Frame, Set Int) -> Int -> (Map Int Frame, Set Int)
+    propagateFrame :: Frame -> (Map Int Frame, Set Int) -> Int -> Either StackMapError (Map Int Frame, Set Int)
     propagateFrame outFrame (frames, worklist) succIdx =
         case Map.lookup succIdx frames of
             Nothing ->
-                (Map.insert succIdx outFrame frames, Set.insert succIdx worklist)
-            Just existingFrame ->
-                case mergeFrames existingFrame outFrame of
+                Right (Map.insert succIdx outFrame frames, Set.insert succIdx worklist)
+            Just existingFrame -> do
+                merged <- mergeFrames existingFrame outFrame
+                pure $ case merged of
                     Nothing -> (frames, worklist)
                     Just mergedFrame ->
                         (Map.insert succIdx mergedFrame frames, Set.insert succIdx worklist)
@@ -416,13 +422,14 @@ calculateStackMapFrames ::
     -- | The method's instruction list
     NonEmpty Instruction ->
     -- | (stack map frames, max stack, max locals)
-    ([StackMapFrame], Int, Int)
+    Either StackMapError ([StackMapFrame], Int, Int)
 calculateStackMapFrames enclosingClassName flags md code = do
     let blocks = splitIntoBasicBlocks code
     let top = topFrame enclosingClassName flags md
-    let blockFrames = computeBlockFrames top blocks
 
-    let (maxStack, maxLocals) = calculateMethodMaxes blockFrames blocks
+    blockFrames <- computeBlockFrames top blocks
+
+    (maxStack, maxLocals) <- calculateMethodMaxes blockFrames blocks
 
     let labelToBlockIdx = buildLabelToBlockMap blocks
     let orderedPairs =
@@ -435,7 +442,7 @@ calculateStackMapFrames enclosingClassName flags md code = do
             ]
 
     case orderedPairs of
-        [] -> ([], maxStack, maxLocals)
+        [] -> pure ([], maxStack, maxLocals)
         ((firstLabel, firstFrame) : rest) ->
             let firstSMF = diffFrames top firstFrame firstLabel
                 restSMFs =
@@ -443,7 +450,7 @@ calculateStackMapFrames enclosingClassName flags md code = do
                         (\(_, prevFrame) (currLabel, currFrame) -> diffFrames prevFrame currFrame currLabel)
                         orderedPairs
                         rest
-             in (firstSMF : restSMFs, maxStack, maxLocals)
+             in pure (firstSMF : restSMFs, maxStack, maxLocals)
 
 -- | Replace element at index in list, growing with 'Uninitialised' if needed.
 replaceAtOrGrow :: Int -> LocalVariable -> [LocalVariable] -> [LocalVariable]
@@ -464,7 +471,15 @@ replaceAt i x xs = take i xs <> [x] <> drop (i + 1) xs
 We can modify the current frame and read the current basic block.
 This monad acts a mini embedded DSL for describing the effect of each instruction on the frame.
 -}
-type Analyser = Eff '[State Frame, Reader BasicBlock] ()
+type Analyser = Eff '[State Frame, Reader BasicBlock, Error StackMapError] ()
+
+data StackMapError
+    = StackUnderflow Instruction
+    | InvalidStackState Instruction [StackEntry] (Maybe Text)
+    | LocalIndexOutOfBounds Instruction U2 Frame BasicBlock
+    | IncompatibleFrameMerge Frame Frame
+    | MissingBlockFrame Int
+    deriving (Show)
 
 -- | Pops n items off the stack
 pops :: Int -> Analyser
@@ -490,23 +505,23 @@ replaceTop ft = do
     pushes ft
 
 -- | Loads a local variable onto the stack
-loads :: String -> U2 -> Analyser
-loads instName i = do
-    f <- get
+loads :: Instruction -> U2 -> Analyser
+loads inst i = do
+    frame <- get
     block <- ask
-    if i >= genericLength f.locals
+    if i >= genericLength frame.locals
         then
-            indexOOBError instName i f block
+            throwError $ LocalIndexOutOfBounds inst i frame block
         else do
-            let lv = f.locals !! into i
+            let lv = frame.locals !! into i
             pushesEntry (lvToStackEntry lv)
 
 -- | Stores the top of the stack into a local variable at the given index
-stores :: Int -> Analyser
-stores i = do
+stores :: Instruction -> Int -> Analyser
+stores inst i = do
     f <- get
     case f.stack of
-        [] -> error "Stack underflow during store"
+        [] -> throwError $ StackUnderflow inst
         (top : rest) -> do
             let lv = stackEntryToLV top
             let locals' = replaceAtOrGrow i lv f.locals
@@ -519,18 +534,6 @@ stores i = do
                     { locals = finalLocals
                     , stack = rest
                     }
-
--- | Report an error when a local variable index is out of bounds.
-indexOOBError :: HasCallStack => String -> U2 -> Frame -> BasicBlock -> a
-indexOOBError instName i ba block =
-    error $
-        showPretty
-            ( vsep
-                [ pretty instName <> " at index " <> pretty i <> " is out of bounds."
-                , "Locals: " <> pretty ba.locals
-                , "Instructions: " <> pretty block.instructions
-                ]
-            )
 
 -- | How many stack slots does a given 'FieldType' take up?
 fieldTypeSlotSize :: FieldType -> Int
@@ -566,16 +569,25 @@ calculateMethodMaxes ::
     -- | The method's basic blocks
     NonEmpty BasicBlock ->
     -- | (max stack, max locals)
-    (Int, Int)
-calculateMethodMaxes blockFrames blocks =
-    let allFrames = concatMap getIntermediateFrames (NE.toList blocks)
-
-        getIntermediateFrames block =
-            let startFrame = Map.findWithDefault (error "Missing block frame") block.index blockFrames
-             in scanl
-                    (\f inst -> runPureEff $ runReader block $ execState f (analyse inst))
-                    startFrame
-                    block.instructions
-     in ( maximum (0 : map frameStackSize allFrames)
+    Either StackMapError (Int, Int)
+calculateMethodMaxes blockFrames blocks = do
+    allFrames <- fmap concat $ for (NE.toList blocks) $ \block -> do
+        startFrame <-
+            maybe
+                (Left $ MissingBlockFrame block.index)
+                Right
+                (Map.lookup block.index blockFrames)
+        scanlM
+            (\f inst -> runPureEff $ runErrorNoCallStack $ runReader block $ execState f $ analyse inst)
+            startFrame
+            block.instructions
+    pure
+        ( maximum (0 : map frameStackSize allFrames)
         , maximum (0 : map frameLocalsSize allFrames)
         )
+
+scanlM :: Monad m => (b -> a -> m b) -> b -> [a] -> m [b]
+scanlM _ z [] = pure [z]
+scanlM f z (x : xs) = do
+    z' <- f z x
+    (z :) <$> scanlM f z' xs
