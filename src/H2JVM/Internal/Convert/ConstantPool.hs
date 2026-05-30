@@ -4,24 +4,27 @@
 {- | Conversion of the high level constant pool types to the low level representation.
 This uses the 'H2JVM.Internal.IndexedMap.IndexedMap' type to keep the constant pool free from duplication.
 -}
-module H2JVM.Internal.Convert.ConstantPool (ConstantPool, ConstantPoolState (..), runConstantPool, runConstantPoolWith, findIndexOf) where
+module H2JVM.Internal.Convert.ConstantPool (ConstantPool, ConstantPoolState (..), runConstantPool, runConstantPoolWith, runConstantPoolWithPure, findIndexOf) where
 
+import Control.Monad ((>=>))
 import Data.Text.Encoding
 import Data.Word (Word32)
 import Effectful
+import Effectful.Error.Static
 import Effectful.State.Static.Local
-import GHC.Stack
 import Witch
 
 import Data.Vector qualified as V
 
 import H2JVM.ConstantPool
+import H2JVM.Internal.Convert.Error
 import H2JVM.Internal.Convert.Numbers
 import H2JVM.Internal.Convert.Type
 import H2JVM.Internal.IndexedMap (IndexedMap)
 import H2JVM.Internal.Raw.ConstantPool
 import H2JVM.Internal.Raw.MagicNumbers
 import H2JVM.Internal.Raw.Types
+import H2JVM.Internal.Util (bug)
 
 import H2JVM.Internal.IndexedMap qualified as IM
 import H2JVM.Internal.Raw.ClassFile qualified as Raw
@@ -36,22 +39,27 @@ data ConstantPoolState = ConstantPoolState
     deriving (Eq, Ord, Show)
 
 -- | A simple state monad for accumulating a 'ConstantPoolState'
-type ConstantPool = State ConstantPoolState
+type ConstantPoolEff r = (State ConstantPoolState :> r, Error CodeConverterError :> r)
 
-runConstantPoolWith :: ConstantPoolState -> Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
+type ConstantPoolEffs r = State ConstantPoolState ': Error CodeConverterError ': r
+
+runConstantPoolWith :: ConstantPoolState -> Eff (ConstantPoolEffs r) a -> Eff (Error CodeConverterError ': r) (a, ConstantPoolState)
 runConstantPoolWith s =
     runState s
         . inject
 
+runConstantPoolWithPure :: ConstantPoolState -> Eff (ConstantPoolEffs r) a -> Eff r (Either CodeConverterError (a, ConstantPoolState))
+runConstantPoolWithPure s = runErrorNoCallStack . runState s . inject
+
 -- | Run a 'ConstantPool' effect with an empty initial state.
-runConstantPool :: Eff (ConstantPool ': r) a -> Eff r (a, ConstantPoolState)
+runConstantPool :: Eff (ConstantPoolEffs r) a -> Eff (Error CodeConverterError ': r) (a, ConstantPoolState)
 runConstantPool = runConstantPoolWith mempty
 
 {- | Insert or lookup a value within one of the fields of 'ConstantPoolState'.
 Essentially a wrapper of 'IM.lookupOrInsert' over some getter and setter function.
 -}
 lookupOrInsertMOver ::
-    (ConstantPool :> r, Ord a) =>
+    (ConstantPoolEff r, Ord a) =>
     a ->
     -- | Getter function.
     (ConstantPoolState -> IndexedMap a) ->
@@ -66,18 +74,18 @@ lookupOrInsertMOver cpInfo getter setter = do
     pure $ IM.indexValue i
 
 -- | Insert or lookup a value within the 'constantPool' field of 'ConstantPoolState'.
-lookupOrInsertMCP :: ConstantPool :> r => ConstantPoolInfo -> Eff r Word32
+lookupOrInsertMCP :: ConstantPoolEff r => ConstantPoolInfo -> Eff r Word32
 lookupOrInsertMCP cpInfo = lookupOrInsertMOver cpInfo (.constantPool) (\s x -> s{constantPool = x})
 
 -- | Insert or lookup a value within the 'bootstrapMethods' field of 'ConstantPoolState'.
-lookupOrInsertMBM :: ConstantPool :> r => Raw.BootstrapMethod -> Eff r Word32
+lookupOrInsertMBM :: ConstantPoolEff r => Raw.BootstrapMethod -> Eff r Word32
 lookupOrInsertMBM bmInfo = lookupOrInsertMOver bmInfo (.bootstrapMethods) (\s x -> s{bootstrapMethods = x})
 
 {- | Transform a single, high-level 'ConstantPoolEntry' into a raw constant pool entry by upserting it into the 'ConstantPoolState'.
 Returns the index of the upserted entry.
 A little bit partial in the case of invalid/overflowing indices, which should be impossible in most normal cases.
 -}
-transformEntry :: (HasCallStack, ConstantPool :> r) => ConstantPoolEntry -> Eff r Word32
+transformEntry :: (HasCallStack, ConstantPoolEff r, Error CodeConverterError :> r) => ConstantPoolEntry -> Eff r Word32
 transformEntry (CPUTF8Entry text) = lookupOrInsertMCP (UTF8Info $ encodeUtf8 text)
 transformEntry (CPIntegerEntry i) = lookupOrInsertMCP (IntegerInfo $ fromIntegral i)
 transformEntry (CPFloatEntry f) = lookupOrInsertMCP (FloatInfo (toJVMFloat f))
@@ -147,7 +155,9 @@ transformEntry (CPInvokeDynamicEntry bootstrapMethod name methodDescriptor) = do
     nameAndTypeIndex <- findIndexOf (CPNameAndTypeEntry name (convertMethodDescriptor methodDescriptor))
     bmIndex <- convertBootstrapMethod bootstrapMethod
     if bmIndex == 0 -- bootstrap methods are 0 indexed because of course they are
-        then error "Invalid Bootstrap Method Index 0"
+    -- since IndexedMap is 1-indexed, this should always be at least 1
+    -- but it's better to guard against it here explicitly than get a more obscure underflow error from unsafeInto
+        then bug "Invalid Bootstrap Method Index 0"
         else
             lookupOrInsertMCP
                 ( InvokeDynamicInfo
@@ -159,7 +169,7 @@ transformEntry (CPMethodTypeEntry methodDescriptor) = do
     lookupOrInsertMCP (MethodTypeInfo (unsafeInto descriptorIndex))
 
 -- | Convert a 'BootstrapMethod' to its low level representation by upserting it into the 'ConstantPoolState'.
-convertBootstrapMethod :: ConstantPool :> r => BootstrapMethod -> Eff r Word32
+convertBootstrapMethod :: ConstantPoolEff r => BootstrapMethod -> Eff r Word32
 convertBootstrapMethod (BootstrapMethod mhEntry args) = do
     mhIndex <- findIndexOf (CPMethodHandleEntry mhEntry) -- upsert a method handle entry to the CP
     bsArgs <- traverse (findIndexOf . bmArgToCPEntry) args -- upsert each argument into the CP
@@ -173,11 +183,11 @@ instance Monoid ConstantPoolState where
     mempty = ConstantPoolState mempty mempty
 
 -- | Find the index of a constant pool entry, inserting it in the first free location if it doesn't exist.
-findIndexOf :: (HasCallStack, ConstantPool :> r) => ConstantPoolEntry -> Eff r U2
-findIndexOf = fmap toU2OrError . transformEntry
+findIndexOf :: forall r. (HasCallStack, ConstantPoolEff r) => ConstantPoolEntry -> Eff r U2
+findIndexOf = transformEntry >=> toU2OrError
   where
-    toU2OrError :: Word32 -> U2
+    toU2OrError :: Word32 -> Eff r U2
     toU2OrError i =
         if i > into (maxBound @U2)
-            then error "Constant pool index out of bounds, too many entries?"
-            else unsafeInto i
+            then throwError ConstantPoolOverflow
+            else pure $ unsafeInto i

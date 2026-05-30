@@ -45,6 +45,7 @@ library
       H2JVM.Internal.Convert
       H2JVM.Internal.Convert.AccessFlag
       H2JVM.Internal.Convert.ConstantPool
+      H2JVM.Internal.Convert.Error
       H2JVM.Internal.Convert.Field
       H2JVM.Internal.Convert.Instruction
       H2JVM.Internal.Convert.Method

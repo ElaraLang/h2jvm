@@ -8,6 +8,7 @@ import Control.Monad (foldM)
 import Data.List (nubBy, sortOn)
 import Data.Word (Word16)
 import Effectful
+import Effectful.Error.Static (throwError)
 import GHC.Stack (HasCallStack)
 import Witch
 
@@ -50,8 +51,8 @@ convertMethodAttribute (Abs.Code (Abs.CodeAttributeData{..})) = do
     convertExceptionTable :: ConvertEff r => [Abs.ExceptionTableEntry] -> Eff r (V.Vector Raw.ExceptionTableEntry)
     convertExceptionTable = fmap V.fromList . traverse convertExceptionTableEntry
 
-    convertExceptionTableEntry :: Abs.ExceptionTableEntry -> Eff r Raw.ExceptionTableEntry
-    convertExceptionTableEntry = undefined
+    convertExceptionTableEntry :: ConvertEff r => Abs.ExceptionTableEntry -> Eff r Raw.ExceptionTableEntry
+    convertExceptionTableEntry _ = throwError $ UnsupportedAttribute "ExceptionTable"
 
     convertCodeAttributes :: CodeConverterEff r => [Abs.CodeAttribute] -> Eff r (V.Vector Raw.AttributeInfo)
     convertCodeAttributes = fmap V.fromList . traverse convertCodeAttribute'

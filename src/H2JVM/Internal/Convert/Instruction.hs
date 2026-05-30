@@ -31,7 +31,7 @@ import H2JVM.Type
 
 import H2JVM.Internal.Raw.MagicNumbers qualified as MagicNumbers
 
-type CodeConverterEff r = (ConstantPool :> r, State ConvertState :> r, Error CodeConverterError :> r)
+type CodeConverterEff r = (ConstantPool r, State ConvertState :> r, Error CodeConverterError :> r)
 
 fullyRunCodeConverter :: ConvertEff r' => Eff (State ConvertState : r') a -> Eff r' a
 fullyRunCodeConverter r = do
@@ -109,7 +109,7 @@ convertInstructions xs = do
     finalInsts <- catMaybes <$> traverse convertInstruction (NE.toList insts)
     case NE.nonEmpty finalInsts of
         Just ne -> pure ne
-        Nothing -> error "All instructions were invalid"
+        Nothing -> throwError $ NoValidInstructions xs
 
 data MaybeResolvedLabel = ResolvedLabel Word16 | UnresolvedLabel Label
 

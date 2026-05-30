@@ -7,6 +7,7 @@ module H2JVM.Internal.Convert (jloName, convert) where
 
 import Data.Maybe (fromMaybe)
 import Effectful
+import Effectful.Error.Static
 
 import Data.Vector qualified as V
 
@@ -41,7 +42,7 @@ convertClassAttributes = traverse convertClassAttribute
         nameIndex <- findIndexOf (CPUTF8Entry "InnerClasses")
         classes' <- traverse convertInnerClass classes
         pure $ Raw.AttributeInfo nameIndex (Raw.InnerClassesAttribute (V.fromList classes'))
-    convertClassAttribute other = error $ "Unsupported class attribute: " <> show other
+    convertClassAttribute other = throwError $ UnsupportedClassAttribute (show other)
 
     convertInnerClass Abs.InnerClassInfo{..} = do
         innerIndex <- findIndexOf (CPClassEntry $ ClassInfoType innerClassInfo)
@@ -51,8 +52,8 @@ convertClassAttributes = traverse convertClassAttribute
         pure $ Raw.InnerClassInfo innerIndex outerIndex nameIndex innerFlags
 
 convert :: Abs.ClassFile -> Either CodeConverterError Raw.ClassFile
-convert Abs.ClassFile{..} = do
-    (tempClass, cpState) <- runPureEff $ runConvertM $ do
+convert Abs.ClassFile{..} = runPureEff $ runErrorNoCallStack $ do
+    (tempClass, cpState) <- runConstantPool $ do
         nameIndex <- findIndexOf (CPClassEntry $ ClassInfoType name)
         superIndex <- findIndexOf (CPClassEntry $ ClassInfoType (fromMaybe jloName superClass))
         let flags = accessFlagsToWord16 accessFlags
@@ -75,9 +76,9 @@ convert Abs.ClassFile{..} = do
                 (V.fromList methods')
                 (V.fromList attributes')
 
-    let (bmIndex, finalConstantPool) = runPureEff $ runConstantPoolWith cpState $ do
-            let bootstrapAttr = BootstrapMethodsAttribute (IM.toVector cpState.bootstrapMethods)
-            attrNameIndex <- findIndexOf (CPUTF8Entry "BootstrapMethods")
-            pure $ Raw.AttributeInfo attrNameIndex bootstrapAttr
+    (bmIndex, finalConstantPool) <- runConstantPoolWith cpState $ do
+        let bootstrapAttr = BootstrapMethodsAttribute (IM.toVector cpState.bootstrapMethods)
+        attrNameIndex <- findIndexOf (CPUTF8Entry "BootstrapMethods")
+        pure $ Raw.AttributeInfo attrNameIndex bootstrapAttr
 
     pure $ tempClass{Raw.constantPool = IM.toVector finalConstantPool.constantPool, Raw.attributes = bmIndex `V.cons` tempClass.attributes}
