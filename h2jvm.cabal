@@ -113,7 +113,7 @@ test-suite h2jvm-test
   build-depends:
       base >=4.20.2.0 && <4.22
     , effectful >=2.2.2.0 && <2.7
-    , h2jvm
+    , h2jvm <0.2
     , hedgehog >=1.4 && <1.8
     , sydtest >=0.16.0.0 && <0.24
     , sydtest-hedgehog >=0.4.0.0 && <0.5

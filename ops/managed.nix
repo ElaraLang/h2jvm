@@ -35,7 +35,7 @@
       };
       h2jvm = {
         lower = null;
-        upper = null;
+        upper = "0.2";
       };
       hedgehog = {
         lower = "1.4";
@@ -110,7 +110,7 @@
     };
   };
   initial = {
-    latest = {};
+    latest = { };
     lower = {
       binary = "0.8.9.3";
       bytestring = "0.12.2.0";
@@ -496,9 +496,13 @@
     };
   };
   solver = {
-    latest = {};
-    lower = {};
+    latest = { };
+    lower = { };
   };
-  packages = {};
+  packages = {
+    h2jvm = {
+      version = "0.1.0.0";
+    };
+  };
   resolving = false;
 }
