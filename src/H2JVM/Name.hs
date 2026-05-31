@@ -47,7 +47,7 @@ parseClassName :: Text -> ClassName
 parseClassName = ClassName
 
 {- | A fully qualified JVM class name, consisting of a 'PackageName' and a 'ClassName'.
-For example, @"java.lang.Object"@ would be represented as @QualifiedClassName (PackageName ["java","lang"]) (ClassName "Object")@.
+For example, @"java.lang.Object"@ would be represented as @'QualifiedClassName' ('PackageName' ["java","lang"]) ('ClassName' \"Object")@.
 -}
 data QualifiedClassName = QualifiedClassName PackageName ClassName deriving (Data, Eq, Ord, Show)
 
