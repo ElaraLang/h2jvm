@@ -12,23 +12,31 @@ module H2JVM.Builder (
     addInterface,
     addField,
     addMethod,
+    addMethodWithCode,
+    addMethodWithCode_,
     addAttribute,
     addBootstrapMethod,
     runClassBuilder,
 )
 where
 
+import Data.Text (Text)
 import Data.Tuple (swap)
 import Effectful
 import Effectful.Dispatch.Dynamic
+import Effectful.Error.Static
 import Effectful.State.Static.Local
 import Effectful.TH
 
+import H2JVM (CodeBuilder)
+import H2JVM.Analyse.StackMap (StackMapError, calculateStackMapFrames)
+import H2JVM.Builder.Code (runCodeBuilder)
 import H2JVM.ClassFile (ClassFile (..), ClassFileAttribute (BootstrapMethods))
-import H2JVM.ClassFile.AccessFlags (ClassAccessFlag)
+import H2JVM.ClassFile.AccessFlags (ClassAccessFlag, MethodAccessFlag)
 import H2JVM.ClassFile.Field
 import H2JVM.ClassFile.Method
 import H2JVM.ConstantPool
+import H2JVM.Descriptor (MethodDescriptor)
 import H2JVM.JVMVersion
 import H2JVM.Name
 
@@ -72,6 +80,49 @@ addField f = modifyClass (\c -> c{fields = f : c.fields})
 -- | Add a method definition to the class being built.
 addMethod :: ClassBuilder :> r => ClassFileMethod -> Eff r ()
 addMethod m = modifyClass (\c -> c{methods = m : c.methods})
+
+{- | Add a method definition to the class being built, whose body is the result of some 'CodeBuilder' monad.
+This is essentially a convenience function to:
+1. Run the 'CodeBuilder'
+2. Calculate the 'StackMapTable' etc.
+3. Setup the 'ClassFileMethod' and 'CodeAttributeData'
+4. Add the method to this 'ClassBuilder'.
+-}
+addMethodWithCode :: (ClassBuilder :> r, Error StackMapError :> r, HasCallStack) => Text -> [MethodAccessFlag] -> MethodDescriptor -> Eff (CodeBuilder ': r) a -> Eff r a
+addMethodWithCode methodName methodAccessFlags methodDescriptor codeBlock = do
+    className <- getName
+    (res, userCodeAttrs, instructions) <- runCodeBuilder codeBlock
+
+    (frames, maxStack, maxLocals) <-
+        case calculateStackMapFrames className methodAccessFlags methodDescriptor instructions of
+            Left err -> throwError err
+            Right res -> pure res
+
+    let finalCodeAttrs = StackMapTable frames : userCodeAttrs
+        codeData =
+            CodeAttributeData
+                { maxStack = fromIntegral maxStack
+                , maxLocals = fromIntegral maxLocals
+                , code = instructions
+                , exceptionTable = [] -- TODO: this will be supported in more depth soon
+                , codeAttributes = finalCodeAttrs
+                }
+        methodInfo =
+            ClassFileMethod
+                { methodAccessFlags = methodAccessFlags
+                , methodName = methodName
+                , methodDescriptor = methodDescriptor
+                , methodAttributes = TML.fromList [Code codeData]
+                }
+
+    addMethod methodInfo
+    pure res
+
+-- | Like 'addMethodWithCode', but ignoring the result of the function.
+addMethodWithCode_ :: (ClassBuilder :> r, Error StackMapError :> r, HasCallStack) => Text -> [MethodAccessFlag] -> MethodDescriptor -> Eff (CodeBuilder ': r) a -> Eff r ()
+addMethodWithCode_ methodName methodAccessFlags methodDescriptor codeBlock = do
+    _ <- addMethodWithCode methodName methodAccessFlags methodDescriptor codeBlock
+    pure ()
 
 -- | Add a class file attribute to the class being built.
 addAttribute :: ClassBuilder :> r => ClassFileAttribute -> Eff r ()
