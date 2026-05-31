@@ -68,6 +68,8 @@
 
                 managed.lower.enable = true;
 
+                hackage.repos."hackage.haskell.org".user = "bristermitten";
+
                 outputs.devShells = {
                   # extending the default devshell to add the pre-commit hooks and some other nice things
                   default = config.pkgs.mkShell {
