@@ -6,7 +6,18 @@
 This process MUST run last in the high level stage,
 modifications to the code after this point will invalidate the stack map table and cause invalid class files to be generated.
 -}
-module H2JVM.Analyse.StackMap (calculateStackMapFrames, BasicBlock (..), Frame (..), LocalVariable (..), analyseBlockDiff, diffFrames, splitIntoBasicBlocks, topFrame) where
+module H2JVM.Analyse.StackMap (
+    calculateStackMapFrames,
+    BasicBlock (..),
+    Frame (..),
+    LocalVariable (..),
+    analyseBlockDiff,
+    diffFrames,
+    splitIntoBasicBlocks,
+    topFrame,
+    StackMapError (..),
+)
+where
 
 import Control.Monad (foldM, (>=>))
 import Data.Foldable (foldlM)
