@@ -49,6 +49,7 @@
 
             };
             pre-commit.settings.hooks.treefmt.enable = true;
+            pre-commit.settings.hooks.treefmt.excludes = [ "ops/" ];
             devShells.pre-commit = config.pre-commit.devShell;
           };
         flake =
