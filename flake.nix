@@ -39,12 +39,14 @@
             treefmt = {
               programs.actionlint.enable = true;
               programs.nixfmt.enable = true;
+              programs.nixfmt.excludes = [ "ops/" ]; # generated files
               programs.fourmolu.enable = true;
               programs.fourmolu.package = pkgs.haskell.packages.ghc912.fourmolu;
               programs.hlint.enable = true;
               programs.hlint.package = pkgs.haskell.packages.ghc912.hlint;
               programs.yamlfmt.enable = true;
               programs.toml-sort.enable = true;
+
             };
             pre-commit.settings.hooks.treefmt.enable = true;
             devShells.pre-commit = config.pre-commit.devShell;
