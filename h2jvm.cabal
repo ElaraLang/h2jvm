@@ -77,18 +77,18 @@ library
       TypeFamilies
   ghc-options: -Wall -Werror=missing-export-lists -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -fplugin=Effectful.Plugin
   build-depends:
-      base <5
-    , binary <0.9
-    , bytestring <0.13
-    , containers <0.8
-    , effectful-core <2.7
-    , effectful-plugin <2.1
-    , effectful-th <1.1
-    , lens <5.4
-    , prettyprinter <1.8
-    , text <2.2
-    , vector <0.14
-    , witch <1.4
+      base >=4.20.2.0 && <4.22
+    , binary >=0.8.9.3 && <0.9
+    , bytestring >=0.12.2.0 && <0.13
+    , containers ==0.7.*
+    , effectful-core >=2.2.2.0 && <2.7
+    , effectful-plugin >=1.1.0.3 && <2.1
+    , effectful-th >=1.0.0.2 && <1.1
+    , lens ==5.3.*
+    , prettyprinter >=1.7.0 && <1.8
+    , text >=2.0.2 && <2.2
+    , vector >=0.13.1.0 && <0.14
+    , witch >=1.2.1.1 && <1.4
   default-language: GHC2021
 
 test-suite h2jvm-test
@@ -111,10 +111,10 @@ test-suite h2jvm-test
       TypeFamilies
   ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -threaded -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base <5
-    , effectful <2.7
+      base >=4.20.2.0 && <4.22
+    , effectful >=2.2.2.0 && <2.7
     , h2jvm
-    , hedgehog <1.8
-    , sydtest <0.24
-    , sydtest-hedgehog <0.5
+    , hedgehog >=1.4 && <1.8
+    , sydtest >=0.16.0.0 && <0.24
+    , sydtest-hedgehog >=0.4.0.0 && <0.5
   default-language: GHC2021
