@@ -2,6 +2,8 @@
 
 `h2jvm` (Haskell to JVM) is a high-level, type-safe library for building and generating JVM bytecode in Haskell. 
 
+Interested? Join the [Elara Discord](https://discord.gg/xu5gSTV)
+
 It handles the complex, low-level details of JVM class file generation automatically, including:
 * **Label Offset Calculations**.
 * **Stack Map Frame** analysis and `StackMapTable` attribute generation.
