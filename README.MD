@@ -25,6 +25,7 @@ H2JVM does _not_ currently, but may consider adding in the future:
 - Automatically optimise bytecode.
 - Read bytecode from a file.
 - Fully verify the safety of emitted bytecode before its execution
+- Version compatibility, i.e. making sure the emitted code is supported by the designated target JVM version.
 
 H2JVM is _not_ intended to:
 - Deviate from the JVM spec in any meaningful way, e.g. adding new instructions.
