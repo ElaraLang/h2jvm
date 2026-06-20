@@ -27,7 +27,7 @@
       };
       effectful-plugin = {
         lower = "1.1.0.3";
-        upper = "2.1";
+        upper = "2.2";
       };
       effectful-th = {
         lower = "1.0.0.2";
@@ -79,7 +79,7 @@
       containers = "0.7";
       effectful = "2.6.1.0";
       effectful-core = "2.6.1.0";
-      effectful-plugin = "2.0.0.1";
+      effectful-plugin = "2.1.0.0";
       effectful-th = "1.0.0.3";
       hedgehog = "1.7";
       lens = "5.3.6";
@@ -88,7 +88,7 @@
       sydtest-hedgehog = "0.4.0.0";
       text = "2.1.3";
       vector = "0.13.2.0";
-      witch = "1.3.1.0";
+      witch = "1.3.3.0";
     };
     lower = {
       base = "4.20.2.0";
@@ -131,6 +131,11 @@
   };
   overrides = {
     latest = {
+      effectful-plugin = {
+        version = "2.1.0.0";
+        hash = "1gn4429dy6pbpg0hmj16nb1yp098cpn0fmr7m5v9k557azzixh7a";
+        repo = "hackage.haskell.org";
+      };
       hedgehog = {
         version = "1.7";
         hash = "04cjnz4i1qs3v9bza8a3ry1czapwqgxazhywkjzq2rg1544gjmby";
@@ -149,6 +154,11 @@
       sydtest-hedgehog = {
         version = "0.4.0.0";
         hash = "06an6p0mhdxm4rhqnhd92f2k248b70fs67xxg74v0v3g7l27iy1s";
+        repo = "hackage.haskell.org";
+      };
+      witch = {
+        version = "1.3.3.0";
+        hash = "1ph6wql5jfk8jlyw6662jcafn09082x1h37pwvandlqmjfd4fay9";
         repo = "hackage.haskell.org";
       };
     };
