@@ -1,5 +1,24 @@
 {
   latest = {
+    effectful-plugin = {
+  meta = {
+    sha256 = "1gn4429dy6pbpg0hmj16nb1yp098cpn0fmr7m5v9k557azzixh7a";
+    url = "https://hackage.haskell.org";
+    ver = "2.1.0.0";
+  };
+  drv = { mkDerivation, base, containers, effectful-core, ghc, lib }:
+mkDerivation {
+  pname = "effectful-plugin";
+  version = "2.1.0.0";
+  src = /nix/store/ias60mnn964si8p20s46fpb255jnc07j-source;
+  libraryHaskellDepends = [ base containers ghc ];
+  testHaskellDepends = [ base effectful-core ];
+  description = "A GHC plugin for improving disambiguation of effects";
+  license = lib.meta.getLicenseFromSpdxId "BSD-3-Clause";
+}
+;
+}
+;
     hedgehog = {
   meta = {
     sha256 = "04cjnz4i1qs3v9bza8a3ry1czapwqgxazhywkjzq2rg1544gjmby";
@@ -113,6 +132,33 @@ mkDerivation {
   homepage = "https://github.com/NorfairKing/sydtest#readme";
   description = "A Hedgehog companion library for sydtest";
   license = "unknown";
+}
+;
+}
+;
+    witch = {
+  meta = {
+    sha256 = "0lpd9rvsm391wm5rq5k1i9lxjb9419z03mmb8lx3yd5d9jlry3py";
+    url = "https://hackage.haskell.org";
+    ver = "1.4.0.0";
+  };
+  drv = { mkDerivation, base, bytestring, containers, hedgehog, HUnit, lib
+, os-string, tagged, template-haskell, text, time, transformers
+}:
+mkDerivation {
+  pname = "witch";
+  version = "1.4.0.0";
+  src = /nix/store/9phvk833ab984nls6a7rw5hdpq0l9q6y-source;
+  libraryHaskellDepends = [
+    base bytestring containers os-string tagged template-haskell text
+    time
+  ];
+  testHaskellDepends = [
+    base bytestring containers hedgehog HUnit os-string tagged text
+    time transformers
+  ];
+  description = "Convert values from one type into another";
+  license = lib.meta.getLicenseFromSpdxId "MIT";
 }
 ;
 }
