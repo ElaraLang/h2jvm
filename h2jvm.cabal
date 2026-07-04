@@ -82,13 +82,13 @@ library
     , bytestring >=0.12.2.0 && <0.13
     , containers ==0.7.*
     , effectful-core >=2.2.2.0 && <2.7
-    , effectful-plugin >=1.1.0.3 && <2.1
+    , effectful-plugin >=1.1.0.3 && <2.2
     , effectful-th >=1.0.0.2 && <1.1
     , lens ==5.3.*
     , prettyprinter >=1.7.0 && <1.8
     , text >=2.0.2 && <2.2
     , vector >=0.13.1.0 && <0.14
-    , witch >=1.2.1.1 && <1.4
+    , witch >=1.2.1.1 && <1.5
   default-language: GHC2021
 
 test-suite h2jvm-test
