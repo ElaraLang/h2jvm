@@ -115,6 +115,6 @@ test-suite h2jvm-test
     , effectful >=2.2.2.0 && <2.7
     , h2jvm <0.2
     , hedgehog >=1.4 && <1.8
-    , sydtest >=0.16.0.0 && <0.24
+    , sydtest >=0.16.0.0 && <0.28
     , sydtest-hedgehog >=0.4.0.0 && <0.5
   default-language: GHC2021
