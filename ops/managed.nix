@@ -27,7 +27,7 @@
       };
       effectful-plugin = {
         lower = "1.1.0.3";
-        upper = "2.1";
+        upper = "2.2";
       };
       effectful-th = {
         lower = "1.0.0.2";
@@ -51,7 +51,7 @@
       };
       sydtest = {
         lower = "0.16.0.0";
-        upper = "0.24";
+        upper = "0.28";
       };
       sydtest-hedgehog = {
         lower = "0.4.0.0";
@@ -67,7 +67,7 @@
       };
       witch = {
         lower = "1.2.1.1";
-        upper = "1.4";
+        upper = "1.5";
       };
     };
   };
@@ -79,16 +79,16 @@
       containers = "0.7";
       effectful = "2.6.1.0";
       effectful-core = "2.6.1.0";
-      effectful-plugin = "2.0.0.1";
+      effectful-plugin = "2.1.0.0";
       effectful-th = "1.0.0.3";
       hedgehog = "1.7";
       lens = "5.3.6";
       prettyprinter = "1.7.1";
-      sydtest = "0.23.0.2";
+      sydtest = "0.27.2.0";
       sydtest-hedgehog = "0.4.0.0";
       text = "2.1.3";
       vector = "0.13.2.0";
-      witch = "1.3.1.0";
+      witch = "1.4.0.0";
     };
     lower = {
       base = "4.20.2.0";
@@ -131,6 +131,31 @@
   };
   overrides = {
     latest = {
+      effectful-plugin = {
+        version = "2.1.0.0";
+        hash = "1gn4429dy6pbpg0hmj16nb1yp098cpn0fmr7m5v9k557azzixh7a";
+        repo = "hackage.haskell.org";
+      };
+      genvalidity = {
+        version = "1.1.1.0";
+        hash = "09xwwzq1kfz37y1z81ddryp8kr84f1l1j5qj6b6qzn4kal4s215z";
+        repo = "hackage.haskell.org";
+      };
+      genvalidity-containers = {
+        version = "1.0.0.2";
+        hash = "0c2wdj8bn6hdprbnwnyh74fhpp3gcnkbg2ngvylg6dg0sx9y02b6";
+        repo = "hackage.haskell.org";
+      };
+      genvalidity-path = {
+        version = "1.0.0.1";
+        hash = "1fla1cjm7yrpdyj8gifl7kg4m9livc0liwqc30sf4q966g1jd7zs";
+        repo = "hackage.haskell.org";
+      };
+      genvalidity-text = {
+        version = "1.0.0.1";
+        hash = "0kk7c4y2ymim2k62r5bzmsbqw6m0pr1hxvgf5bnkgy71lfr8pwg9";
+        repo = "hackage.haskell.org";
+      };
       hedgehog = {
         version = "1.7";
         hash = "04cjnz4i1qs3v9bza8a3ry1czapwqgxazhywkjzq2rg1544gjmby";
@@ -142,13 +167,28 @@
         repo = "hackage.haskell.org";
       };
       sydtest = {
-        version = "0.23.0.2";
-        hash = "0l0hbi44cjwic7nczs9nfwywlajg6acr3ja7nr4vz9pa7kw4r38d";
+        version = "0.27.2.0";
+        hash = "01l4hvin0q49zp89s7pran54mgavjd0xqq4swbab91fykb7nq1lc";
         repo = "hackage.haskell.org";
       };
       sydtest-hedgehog = {
         version = "0.4.0.0";
         hash = "06an6p0mhdxm4rhqnhd92f2k248b70fs67xxg74v0v3g7l27iy1s";
+        repo = "hackage.haskell.org";
+      };
+      sydtest-mutation-runtime = {
+        version = "0.1.1.0";
+        hash = "1ifxp27kr1grrmzps565p8snjyw2jnbq1c129qdrvvn02g39dw5f";
+        repo = "hackage.haskell.org";
+      };
+      validity-path = {
+        version = "0.4.0.1";
+        hash = "16m76x5p9ihjp5ndhawf79hj26bpy8j9inpxg36jziy5dvc608hf";
+        repo = "hackage.haskell.org";
+      };
+      witch = {
+        version = "1.4.0.0";
+        hash = "0lpd9rvsm391wm5rq5k1i9lxjb9419z03mmb8lx3yd5d9jlry3py";
         repo = "hackage.haskell.org";
       };
     };
