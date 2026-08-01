@@ -1,5 +1,136 @@
 {
   latest = {
+    effectful-plugin = {
+  meta = {
+    sha256 = "1gn4429dy6pbpg0hmj16nb1yp098cpn0fmr7m5v9k557azzixh7a";
+    url = "https://hackage.haskell.org";
+    ver = "2.1.0.0";
+  };
+  drv = { mkDerivation, base, containers, effectful-core, ghc, lib }:
+mkDerivation {
+  pname = "effectful-plugin";
+  version = "2.1.0.0";
+  src = /nix/store/ias60mnn964si8p20s46fpb255jnc07j-source;
+  libraryHaskellDepends = [ base containers ghc ];
+  testHaskellDepends = [ base effectful-core ];
+  description = "A GHC plugin for improving disambiguation of effects";
+  license = lib.meta.getLicenseFromSpdxId "BSD-3-Clause";
+}
+;
+}
+;
+    genvalidity = {
+  meta = {
+    sha256 = "09xwwzq1kfz37y1z81ddryp8kr84f1l1j5qj6b6qzn4kal4s215z";
+    url = "https://hackage.haskell.org";
+    ver = "1.1.1.0";
+  };
+  drv = { mkDerivation, base, hspec, hspec-core, lib, QuickCheck, random
+, validity
+}:
+mkDerivation {
+  pname = "genvalidity";
+  version = "1.1.1.0";
+  src = /nix/store/bpfjzq4x6yd9fj7mb9mszmavk36pfvrx-source;
+  libraryHaskellDepends = [ base QuickCheck random validity ];
+  testHaskellDepends = [ base hspec hspec-core QuickCheck ];
+  homepage = "https://github.com/NorfairKing/validity#readme";
+  description = "Testing utilities for the validity library";
+  license = lib.licenses.mit;
+}
+;
+}
+;
+    genvalidity-containers = {
+  meta = {
+    sha256 = "0c2wdj8bn6hdprbnwnyh74fhpp3gcnkbg2ngvylg6dg0sx9y02b6";
+    url = "https://hackage.haskell.org";
+    ver = "1.0.0.2";
+  };
+  drv = { mkDerivation, base, containers, criterion, genvalidity
+, genvalidity-criterion, genvalidity-hspec, genvalidity-property
+, hspec, lib, QuickCheck, validity, validity-containers
+}:
+mkDerivation {
+  pname = "genvalidity-containers";
+  version = "1.0.0.2";
+  src = /nix/store/l2lkmsw1zydcvjx8xm0cnk9aqbfllqvq-source;
+  libraryHaskellDepends = [
+    base containers genvalidity QuickCheck validity validity-containers
+  ];
+  testHaskellDepends = [
+    base containers genvalidity genvalidity-hspec genvalidity-property
+    hspec QuickCheck validity validity-containers
+  ];
+  benchmarkHaskellDepends = [
+    base containers criterion genvalidity genvalidity-criterion
+    QuickCheck
+  ];
+  homepage = "https://github.com/NorfairKing/validity#readme";
+  description = "GenValidity support for containers";
+  license = lib.licenses.mit;
+}
+;
+}
+;
+    genvalidity-path = {
+  meta = {
+    sha256 = "1fla1cjm7yrpdyj8gifl7kg4m9livc0liwqc30sf4q966g1jd7zs";
+    url = "https://hackage.haskell.org";
+    ver = "1.0.0.1";
+  };
+  drv = { mkDerivation, base, criterion, genvalidity, genvalidity-criterion
+, genvalidity-hspec, hspec, lib, path, QuickCheck, validity-path
+}:
+mkDerivation {
+  pname = "genvalidity-path";
+  version = "1.0.0.1";
+  src = /nix/store/j4nix7xgr2y6h248ihg44g3k0mpxlrbv-source;
+  libraryHaskellDepends = [
+    base genvalidity path QuickCheck validity-path
+  ];
+  testHaskellDepends = [ base genvalidity-hspec hspec path ];
+  benchmarkHaskellDepends = [
+    base criterion genvalidity genvalidity-criterion path QuickCheck
+  ];
+  homepage = "https://github.com/NorfairKing/validity#readme";
+  description = "GenValidity support for Path";
+  license = lib.licenses.mit;
+}
+;
+}
+;
+    genvalidity-text = {
+  meta = {
+    sha256 = "0kk7c4y2ymim2k62r5bzmsbqw6m0pr1hxvgf5bnkgy71lfr8pwg9";
+    url = "https://hackage.haskell.org";
+    ver = "1.0.0.1";
+  };
+  drv = { mkDerivation, array, base, criterion, genvalidity
+, genvalidity-criterion, genvalidity-hspec, hspec, lib, QuickCheck
+, random, text, validity, validity-text
+}:
+mkDerivation {
+  pname = "genvalidity-text";
+  version = "1.0.0.1";
+  src = /nix/store/2rhln87zxl3f2j6sqv71bfzf352prh3r-source;
+  libraryHaskellDepends = [
+    array base genvalidity QuickCheck random text validity
+    validity-text
+  ];
+  testHaskellDepends = [
+    base genvalidity genvalidity-hspec hspec QuickCheck text
+  ];
+  benchmarkHaskellDepends = [
+    base criterion genvalidity genvalidity-criterion QuickCheck text
+  ];
+  homepage = "https://github.com/NorfairKing/validity#readme";
+  description = "GenValidity support for Text";
+  license = lib.licenses.mit;
+}
+;
+}
+;
     hedgehog = {
   meta = {
     sha256 = "04cjnz4i1qs3v9bza8a3ry1czapwqgxazhywkjzq2rg1544gjmby";
@@ -66,26 +197,27 @@ mkDerivation {
 ;
     sydtest = {
   meta = {
-    sha256 = "0l0hbi44cjwic7nczs9nfwywlajg6acr3ja7nr4vz9pa7kw4r38d";
+    sha256 = "01l4hvin0q49zp89s7pran54mgavjd0xqq4swbab91fykb7nq1lc";
     url = "https://hackage.haskell.org";
-    ver = "0.23.0.2";
+    ver = "0.27.2.0";
   };
   drv = { mkDerivation, async, autodocodec, base, bytestring, containers
 , deepseq, dlist, fast-myers-diff, filepath, lib, MonadRandom, mtl
 , opt-env-conf, path, path-io, pretty-show, QuickCheck
 , quickcheck-io, random, random-shuffle, safe, safe-coloured-text
-, safe-coloured-text-terminfo, stm, svg-builder, text, vector
+, safe-coloured-text-terminfo, stm, svg-builder
+, sydtest-mutation-runtime, text, transformers, vector
 }:
 mkDerivation {
   pname = "sydtest";
-  version = "0.23.0.2";
-  src = /nix/store/rrpk3ycldcchi68gkln1j9rrg3s62ac2-source;
+  version = "0.27.2.0";
+  src = /nix/store/5dpjakp363spf9l32aqxs7d99i3nkpaz-source;
   libraryHaskellDepends = [
     async autodocodec base bytestring containers deepseq dlist
     fast-myers-diff filepath MonadRandom mtl opt-env-conf path path-io
     pretty-show QuickCheck quickcheck-io random random-shuffle safe
-    safe-coloured-text safe-coloured-text-terminfo stm svg-builder text
-    vector
+    safe-coloured-text safe-coloured-text-terminfo stm svg-builder
+    sydtest-mutation-runtime text transformers vector
   ];
   homepage = "https://github.com/NorfairKing/sydtest#readme";
   description = "A modern testing framework for Haskell with good defaults and advanced testing features";
@@ -113,6 +245,86 @@ mkDerivation {
   homepage = "https://github.com/NorfairKing/sydtest#readme";
   description = "A Hedgehog companion library for sydtest";
   license = "unknown";
+}
+;
+}
+;
+    sydtest-mutation-runtime = {
+  meta = {
+    sha256 = "1ifxp27kr1grrmzps565p8snjyw2jnbq1c129qdrvvn02g39dw5f";
+    url = "https://hackage.haskell.org";
+    ver = "0.1.1.0";
+  };
+  drv = { mkDerivation, aeson, autodocodec, base, bytestring, containers
+, fast-myers-diff, genvalidity, genvalidity-containers
+, genvalidity-path, genvalidity-text, lib, path, path-io
+, QuickCheck, safe-coloured-text, text, unordered-containers
+, vector
+}:
+mkDerivation {
+  pname = "sydtest-mutation-runtime";
+  version = "0.1.1.0";
+  src = /nix/store/xjjyxmk337kzp2dj7hvfa2scxz6d36g2-source;
+  libraryHaskellDepends = [
+    aeson autodocodec base bytestring containers fast-myers-diff
+    genvalidity genvalidity-containers genvalidity-path
+    genvalidity-text path path-io QuickCheck safe-coloured-text text
+    unordered-containers vector
+  ];
+  homepage = "https://github.com/NorfairKing/sydtest#readme";
+  description = "Runtime support library for sydtest's mutation testing";
+  license = "unknown";
+}
+;
+}
+;
+    validity-path = {
+  meta = {
+    sha256 = "16m76x5p9ihjp5ndhawf79hj26bpy8j9inpxg36jziy5dvc608hf";
+    url = "https://hackage.haskell.org";
+    ver = "0.4.0.1";
+  };
+  drv = { mkDerivation, base, filepath, genvalidity-hspec, hspec, lib, path
+, validity
+}:
+mkDerivation {
+  pname = "validity-path";
+  version = "0.4.0.1";
+  src = /nix/store/h9l73q5cc6qpps2lgmm193bas8fc27v4-source;
+  libraryHaskellDepends = [ base filepath path validity ];
+  testHaskellDepends = [
+    base filepath genvalidity-hspec hspec path validity
+  ];
+  homepage = "https://github.com/NorfairKing/validity#readme";
+  description = "Validity instances for Path";
+  license = lib.licenses.mit;
+}
+;
+}
+;
+    witch = {
+  meta = {
+    sha256 = "0lpd9rvsm391wm5rq5k1i9lxjb9419z03mmb8lx3yd5d9jlry3py";
+    url = "https://hackage.haskell.org";
+    ver = "1.4.0.0";
+  };
+  drv = { mkDerivation, base, bytestring, containers, hedgehog, HUnit, lib
+, os-string, tagged, template-haskell, text, time, transformers
+}:
+mkDerivation {
+  pname = "witch";
+  version = "1.4.0.0";
+  src = /nix/store/9phvk833ab984nls6a7rw5hdpq0l9q6y-source;
+  libraryHaskellDepends = [
+    base bytestring containers os-string tagged template-haskell text
+    time
+  ];
+  testHaskellDepends = [
+    base bytestring containers hedgehog HUnit os-string tagged text
+    time transformers
+  ];
+  description = "Convert values from one type into another";
+  license = lib.meta.getLicenseFromSpdxId "MIT";
 }
 ;
 }
