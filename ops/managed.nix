@@ -3,7 +3,7 @@
     h2jvm = {
       base = {
         lower = "4.20.2.0";
-        upper = "4.22";
+        upper = "4.23";
       };
       binary = {
         lower = "0.8.9.3";
@@ -15,7 +15,7 @@
       };
       containers = {
         lower = "0.7";
-        upper = "0.8";
+        upper = "0.9";
       };
       effectful = {
         lower = "2.2.2.0";
@@ -73,10 +73,10 @@
   };
   versions = {
     latest = {
-      base = "4.21.1.0";
+      base = "4.22.0.0";
       binary = "0.8.9.3";
       bytestring = "0.12.2.0";
-      containers = "0.7";
+      containers = "0.8";
       effectful = "2.6.1.0";
       effectful-core = "2.6.1.0";
       effectful-plugin = "2.2.0.0";
@@ -821,7 +821,11 @@
     };
   };
   solver = {
-    latest = {};
+    latest = {
+      svg-builder = {
+        jailbreak = true;
+      };
+    };
     lower = {};
   };
   packages = {

@@ -60,6 +60,7 @@
                 ghcVersions = [
                   "ghc9103"
                   "ghc912"
+                  "ghc914"
                 ];
                 compiler = "ghc912";
                 gen-overrides.enable = true;
@@ -67,6 +68,8 @@
                 managed.debug = true;
 
                 managed.lower.enable = true;
+
+                overrides = { jailbreak, ... }: { svg-builder = jailbreak; };
 
                 hackage.repos."hackage.haskell.org".user = "bristermitten";
 
