@@ -51,7 +51,7 @@
       };
       sydtest = {
         lower = "0.16.0.0";
-        upper = "0.29";
+        upper = "0.30";
       };
       sydtest-hedgehog = {
         lower = "0.4.0.0";
@@ -84,7 +84,7 @@
       hedgehog = "1.7";
       lens = "5.3.6";
       prettyprinter = "1.7.2";
-      sydtest = "0.28.0.0";
+      sydtest = "0.29.0.0";
       sydtest-hedgehog = "0.4.0.0";
       text = "2.1.4";
       vector = "0.13.2.0";
@@ -372,8 +372,8 @@
         repo = "hackage.haskell.org";
       };
       sydtest = {
-        version = "0.28.0.0";
-        hash = "105frfhkjhmq6ivwyvwfkf5p0jc1b3cwydpqsx8ppy10dmg7dnqa";
+        version = "0.29.0.0";
+        hash = "005lcccixp5m8jjj23kh1qigkq3lckafmaxcsnm260qi00d9x2zx";
         repo = "hackage.haskell.org";
       };
       sydtest-hedgehog = {

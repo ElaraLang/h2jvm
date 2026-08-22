@@ -1306,9 +1306,9 @@ mkDerivation {
 ;
     sydtest = {
   meta = {
-    sha256 = "105frfhkjhmq6ivwyvwfkf5p0jc1b3cwydpqsx8ppy10dmg7dnqa";
+    sha256 = "005lcccixp5m8jjj23kh1qigkq3lckafmaxcsnm260qi00d9x2zx";
     url = "https://hackage.haskell.org";
-    ver = "0.28.0.0";
+    ver = "0.29.0.0";
   };
   drv = { mkDerivation, async, autodocodec, base, bytestring, containers
 , deepseq, dlist, fast-myers-diff, filepath, lib, MonadRandom, mtl
@@ -1319,8 +1319,8 @@ mkDerivation {
 }:
 mkDerivation {
   pname = "sydtest";
-  version = "0.28.0.0";
-  src = /nix/store/yi8smnvz9mzq4z29qk8glm7m0yk7jjvs-source;
+  version = "0.29.0.0";
+  src = /nix/store/3ik70xxd8xw8kggj50cc5lmwcakfgm3s-source;
   libraryHaskellDepends = [
     async autodocodec base bytestring containers deepseq dlist
     fast-myers-diff filepath MonadRandom mtl opt-env-conf path path-io
