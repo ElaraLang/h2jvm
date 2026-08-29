@@ -82,7 +82,7 @@ library
     , bytestring >=0.12.2.0 && <0.13
     , containers ==0.7.*
     , effectful-core >=2.2.2.0 && <2.7
-    , effectful-plugin >=1.1.0.3 && <2.2
+    , effectful-plugin >=1.1.0.3 && <2.3
     , effectful-th >=1.0.0.2 && <1.1
     , lens ==5.3.*
     , prettyprinter >=1.7.0 && <1.8
@@ -115,6 +115,6 @@ test-suite h2jvm-test
     , effectful >=2.2.2.0 && <2.7
     , h2jvm <0.2
     , hedgehog >=1.4 && <1.8
-    , sydtest >=0.16.0.0 && <0.29
+    , sydtest >=0.16.0.0 && <0.30
     , sydtest-hedgehog >=0.4.0.0 && <0.5
   default-language: GHC2021
