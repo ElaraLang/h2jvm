@@ -112,7 +112,7 @@ test-suite h2jvm-test
   ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -threaded -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.20.2.0 && <4.22
-    , effectful >=2.2.2.0 && <2.7
+    , effectful >=2.2.2.0 && <2.8
     , h2jvm <0.2
     , hedgehog >=1.4 && <1.8
     , sydtest >=0.16.0.0 && <0.29
