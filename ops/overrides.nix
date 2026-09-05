@@ -397,15 +397,15 @@ mkDerivation {
 ;
     effectful-plugin = {
   meta = {
-    sha256 = "1gn4429dy6pbpg0hmj16nb1yp098cpn0fmr7m5v9k557azzixh7a";
+    sha256 = "0xjnjdp31zmhx0cg1rzjw655gksjqin6rhl2mc1y19rmgp0jgz1f";
     url = "https://hackage.haskell.org";
-    ver = "2.1.0.0";
+    ver = "2.2.0.0";
   };
   drv = { mkDerivation, base, containers, effectful-core, ghc, lib }:
 mkDerivation {
   pname = "effectful-plugin";
-  version = "2.1.0.0";
-  src = /nix/store/ias60mnn964si8p20s46fpb255jnc07j-source;
+  version = "2.2.0.0";
+  src = /nix/store/z9fn333vgp1n3wf6v02j8m4mxmsrxvyr-source;
   libraryHaskellDepends = [ base containers ghc ];
   testHaskellDepends = [ base effectful-core ];
   description = "A GHC plugin for improving disambiguation of effects";
@@ -1306,9 +1306,9 @@ mkDerivation {
 ;
     sydtest = {
   meta = {
-    sha256 = "105frfhkjhmq6ivwyvwfkf5p0jc1b3cwydpqsx8ppy10dmg7dnqa";
+    sha256 = "1l9kcy748qnimps25cbgpwgva3m9j7rby63ywa93j7awpdjvk1hp";
     url = "https://hackage.haskell.org";
-    ver = "0.28.0.0";
+    ver = "0.30.0.0";
   };
   drv = { mkDerivation, async, autodocodec, base, bytestring, containers
 , deepseq, dlist, fast-myers-diff, filepath, lib, MonadRandom, mtl
@@ -1319,8 +1319,8 @@ mkDerivation {
 }:
 mkDerivation {
   pname = "sydtest";
-  version = "0.28.0.0";
-  src = /nix/store/yi8smnvz9mzq4z29qk8glm7m0yk7jjvs-source;
+  version = "0.30.0.0";
+  src = /nix/store/6wb0bnlqjjf6l95q1yzpn0wwyhg2qbf7-source;
   libraryHaskellDepends = [
     async autodocodec base bytestring containers deepseq dlist
     fast-myers-diff filepath MonadRandom mtl opt-env-conf path path-io

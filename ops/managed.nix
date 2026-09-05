@@ -27,7 +27,7 @@
       };
       effectful-plugin = {
         lower = "1.1.0.3";
-        upper = "2.2";
+        upper = "2.3";
       };
       effectful-th = {
         lower = "1.0.0.2";
@@ -51,7 +51,7 @@
       };
       sydtest = {
         lower = "0.16.0.0";
-        upper = "0.29";
+        upper = "0.31";
       };
       sydtest-hedgehog = {
         lower = "0.4.0.0";
@@ -79,12 +79,12 @@
       containers = "0.7";
       effectful = "2.6.1.0";
       effectful-core = "2.6.1.0";
-      effectful-plugin = "2.1.0.0";
+      effectful-plugin = "2.2.0.0";
       effectful-th = "1.0.0.3";
       hedgehog = "1.7";
       lens = "5.3.6";
       prettyprinter = "1.7.2";
-      sydtest = "0.28.0.0";
+      sydtest = "0.30.0.0";
       sydtest-hedgehog = "0.4.0.0";
       text = "2.1.4";
       vector = "0.13.2.0";
@@ -202,8 +202,8 @@
         repo = "hackage.haskell.org";
       };
       effectful-plugin = {
-        version = "2.1.0.0";
-        hash = "1gn4429dy6pbpg0hmj16nb1yp098cpn0fmr7m5v9k557azzixh7a";
+        version = "2.2.0.0";
+        hash = "0xjnjdp31zmhx0cg1rzjw655gksjqin6rhl2mc1y19rmgp0jgz1f";
         repo = "hackage.haskell.org";
       };
       fast-myers-diff = {
@@ -372,8 +372,8 @@
         repo = "hackage.haskell.org";
       };
       sydtest = {
-        version = "0.28.0.0";
-        hash = "105frfhkjhmq6ivwyvwfkf5p0jc1b3cwydpqsx8ppy10dmg7dnqa";
+        version = "0.30.0.0";
+        hash = "1l9kcy748qnimps25cbgpwgva3m9j7rby63ywa93j7awpdjvk1hp";
         repo = "hackage.haskell.org";
       };
       sydtest-hedgehog = {
