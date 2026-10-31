@@ -51,7 +51,7 @@
       };
       sydtest = {
         lower = "0.16.0.0";
-        upper = "0.32";
+        upper = "0.34";
       };
       sydtest-hedgehog = {
         lower = "0.4.0.0";
@@ -84,11 +84,11 @@
       hedgehog = "1.7";
       lens = "5.3.6";
       prettyprinter = "1.7.2";
-      sydtest = "0.31.0.0";
+      sydtest = "0.33.3.0";
       sydtest-hedgehog = "0.4.0.0";
       text = "2.1.4";
       vector = "0.13.2.0";
-      witch = "1.4.0.0";
+      witch = "1.4.0.1";
     };
     lower = {
       base = "4.20.2.0";
@@ -372,8 +372,8 @@
         repo = "hackage.haskell.org";
       };
       sydtest = {
-        version = "0.31.0.0";
-        hash = "1dsv2wpyzhagzkq3h52is2j1n18sq5rsc3nvy4mbdvz4ab3fj3gv";
+        version = "0.33.3.0";
+        hash = "02k49pmcaxji0k545vbp2mw7xis4fbim5wf50hbds00sgqj242g7";
         repo = "hackage.haskell.org";
       };
       sydtest-hedgehog = {
@@ -457,8 +457,8 @@
         repo = "hackage.haskell.org";
       };
       witch = {
-        version = "1.4.0.0";
-        hash = "0lpd9rvsm391wm5rq5k1i9lxjb9419z03mmb8lx3yd5d9jlry3py";
+        version = "1.4.0.1";
+        hash = "1qnp2a8aqbnpwlpvfy4flc27y9mm30dj1qbb6prsm9hgandih41x";
         repo = "hackage.haskell.org";
       };
       witherable = {
