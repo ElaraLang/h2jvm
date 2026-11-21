@@ -1306,9 +1306,9 @@ mkDerivation {
 ;
     sydtest = {
   meta = {
-    sha256 = "1dsv2wpyzhagzkq3h52is2j1n18sq5rsc3nvy4mbdvz4ab3fj3gv";
+    sha256 = "1a4ass7qp92mc6g46281d20cv4c0sbrr7ns0vxl1h1psjzngjg5h";
     url = "https://hackage.haskell.org";
-    ver = "0.31.0.0";
+    ver = "0.33.4.0";
   };
   drv = { mkDerivation, async, autodocodec, base, bytestring, containers
 , deepseq, dlist, fast-myers-diff, filepath, lib, MonadRandom, mtl
@@ -1319,8 +1319,8 @@ mkDerivation {
 }:
 mkDerivation {
   pname = "sydtest";
-  version = "0.31.0.0";
-  src = /nix/store/cvwk9r4bm8gd0ccdaxsk2kmsnfljvyns-source;
+  version = "0.33.4.0";
+  src = /nix/store/ihr8pap9y1zcjfcaswjgyjy3lxk5myy1-source;
   libraryHaskellDepends = [
     async autodocodec base bytestring containers deepseq dlist
     fast-myers-diff filepath MonadRandom mtl opt-env-conf path path-io
@@ -1755,17 +1755,17 @@ mkDerivation {
 ;
     witch = {
   meta = {
-    sha256 = "0lpd9rvsm391wm5rq5k1i9lxjb9419z03mmb8lx3yd5d9jlry3py";
+    sha256 = "1qnp2a8aqbnpwlpvfy4flc27y9mm30dj1qbb6prsm9hgandih41x";
     url = "https://hackage.haskell.org";
-    ver = "1.4.0.0";
+    ver = "1.4.0.1";
   };
   drv = { mkDerivation, base, bytestring, containers, hedgehog, HUnit, lib
 , os-string, tagged, template-haskell, text, time, transformers
 }:
 mkDerivation {
   pname = "witch";
-  version = "1.4.0.0";
-  src = /nix/store/9phvk833ab984nls6a7rw5hdpq0l9q6y-source;
+  version = "1.4.0.1";
+  src = /nix/store/5zjmw7rc257vn5a63732fyjd4gmql6ld-source;
   libraryHaskellDepends = [
     base bytestring containers os-string tagged template-haskell text
     time
