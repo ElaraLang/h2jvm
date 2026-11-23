@@ -66,7 +66,7 @@ codeBuilderToState =
         ( \_ -> \case
             AddCodeAttribute ca -> modify $ \s -> s{attributes = s.attributes `TML.snoc` ca}
             NewLabel -> do
-                c <- gets (.currentLabel)
+                c <- gets @CodeState (.currentLabel)
                 modify $ \s -> s{currentLabel = c + 1}
                 pure (unsafeMkLabel c)
             Emit' is -> modify $ \s -> s{code = reverse is <> s.code}

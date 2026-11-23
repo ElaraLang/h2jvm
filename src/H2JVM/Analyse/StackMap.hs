@@ -204,7 +204,7 @@ analyse :: HasCallStack => Instruction -> Analyser
 analyse = \case
     (Label _) -> bug "Label should not be encountered in analyseInstruction"
     inst@AALoad -> do
-        s <- gets (.stack)
+        s <- gets @Frame (.stack)
         case s of
             (_index : StackEntry (ArrayFieldType innerType) : _) -> do
                 pops 2 -- index, arrayref
@@ -231,7 +231,7 @@ analyse = \case
     IConst0 -> pushes (PrimitiveFieldType JInt)
     IConst1 -> pushes (PrimitiveFieldType JInt)
     inst@Dup -> do
-        s <- gets (.stack)
+        s <- gets @Frame (.stack)
         case s of
             [] -> throwError $ StackUnderflow inst
             head : _ -> pushesEntry head

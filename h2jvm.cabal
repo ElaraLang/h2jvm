@@ -75,14 +75,13 @@ library
       OverloadedRecordDot
       OverloadedStrings
       TypeFamilies
-  ghc-options: -Wall -Werror=missing-export-lists -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns -fplugin=Effectful.Plugin
+  ghc-options: -Wall -Werror=missing-export-lists -Wunused-packages -Wno-name-shadowing -Werror=incomplete-patterns
   build-depends:
       base >=4.20.2.0 && <4.23
     , binary >=0.8.9.3 && <0.9
     , bytestring >=0.12.2.0 && <0.13
     , containers >=0.7 && <0.9
     , effectful-core >=2.2.2.0 && <2.7
-    , effectful-plugin >=1.1.0.3 && <2.3
     , effectful-th >=1.0.0.2 && <1.1
     , lens ==5.3.*
     , prettyprinter >=1.7.0 && <1.8

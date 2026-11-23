@@ -117,7 +117,6 @@
                         "lens >=5.0"
                         "effectful-core"
                         "effectful-th"
-                        "effectful-plugin"
                         "prettyprinter"
                         "text"
                         "vector"
@@ -139,7 +138,6 @@
                         "-Wunused-packages"
                         "-Wno-name-shadowing"
                         "-Werror=incomplete-patterns"
-                        "-fplugin=Effectful.Plugin"
                       ];
                       component = {
                       };
