@@ -13,16 +13,14 @@ import Data.List.NonEmpty qualified as NE
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 
+import H2JVM
 import H2JVM.Analyse.StackMap
-import H2JVM.Builder.Code
-import H2JVM.ClassFile.AccessFlags
-import H2JVM.ConstantPool
-import H2JVM.Descriptor (MethodDescriptor (MethodDescriptor), ReturnDescriptor (TypeReturn, VoidReturn))
-import H2JVM.Instruction (Instruction' (..), LDCEntry (..))
-import H2JVM.Internal.Convert (jloName)
+import H2JVM.Builder
+import H2JVM.Internal.Convert (convert, jloName)
 import H2JVM.Internal.Convert.ConstantPool (ConstantPoolState (ConstantPoolState))
 import H2JVM.Internal.Raw.ConstantPool (ConstantPoolInfo (..))
-import H2JVM.Type (ClassInfoType (ClassInfoType), FieldType (..), PrimitiveType (JBoolean, JChar, JInt))
+import H2JVM.Internal.Raw.MagicNumbers (accessFlag_ENUM, accessFlag_INTERFACE)
+import H2JVM.Type (ClassInfoType (ClassInfoType))
 import Util
 
 import H2JVM.Internal.IndexedMap qualified as IM
@@ -83,6 +81,14 @@ spec = describe "test conversions" $ do
 
         bms === IM.singleton (Raw.BootstrapMethod (fromIntegral indexOfMethodHandle) [fromIntegral strArgIndex])
         inst === Raw.InvokeDynamic (fromIntegral indexOfIndy)
+
+    it "Handles duplicate / conflicting access flags properly" $ do
+        let (classFile, ()) = runPureEff $ runClassBuilder "Test" java8 $ do
+                addAccessFlag CInterface
+                addAccessFlag CEnum
+        converted <- shouldBeRight (convert classFile)
+
+        converted.accessFlags `shouldBe` accessFlag_ENUM -- later flag should win
 
 findCPIndex :: MonadTest m => (a -> Bool) -> IM.IndexedMap a -> m Word32
 findCPIndex pred cp = fmap IM.indexValue $ shouldBeJust $ IM.lookupIndexWhere pred cp

@@ -30,7 +30,7 @@ data FieldAccessFlag
     | FTransient
     | FSynthetic
     | FEnum
-    deriving (Data, Show)
+    deriving (Data, Eq, Show)
 
 -- | Access flags for a method.
 data MethodAccessFlag

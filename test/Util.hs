@@ -5,6 +5,7 @@ import Effectful
 import GHC.Stack (HasCallStack, withFrozenCallStack)
 import Hedgehog
 import Hedgehog.Internal.Property
+import Test.Syd (expectationFailure)
 
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
@@ -48,6 +49,10 @@ runConv =
 shouldBeJust :: MonadTest m => HasCallStack => Maybe a -> m a
 shouldBeJust (Just a) = pure a
 shouldBeJust Nothing = withFrozenCallStack $ failWith Nothing "Expected Just, got Nothing" -- This is safe because we know that the expectationFailure function will never return
+
+shouldBeRight :: Show e => Either e a -> IO a
+shouldBeRight (Right a) = pure a
+shouldBeRight (Left e) = expectationFailure $ "Expected Right, got Left: " <> show e
 
 shouldContain :: (HasCallStack, MonadTest m, Eq a, Show a, Foldable t, Show (t a)) => t a -> a -> m ()
 shouldContain t a = withFrozenCallStack $ diff a elem t
