@@ -185,9 +185,9 @@
       }
     );
   nixConfig = {
-    extra-substituters = [ "https://elara.cachix.org" ];
+    extra-substituters = [ "https://cache.bristermitten.me/elara" ];
     extra-trusted-public-keys = [
-      "elara.cachix.org-1:d129AMaRCJ6Q86oVUvIccZ1NsRZ6kyL5IkceevfQDWI="
+      "elara:6GWLPsvcEXZFVCx4J8I8sB4jjppOB2/ISjt5oGXXkLo="
     ];
   };
 }
