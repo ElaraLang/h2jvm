@@ -69,7 +69,12 @@
 
                 managed.lower.enable = true;
 
-                overrides = { jailbreak, ... }: { svg-builder = jailbreak; };
+                overrides =
+                  { jailbreak, ... }:
+                  {
+                    svg-builder = jailbreak;
+                    unordered-containers = jailbreak;
+                  };
 
                 hackage.repos."hackage.haskell.org".user = "bristermitten";
 
