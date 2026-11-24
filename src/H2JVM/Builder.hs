@@ -43,6 +43,7 @@ import H2JVM.Name
 import H2JVM.Data.TypeMergingList qualified as TML
 
 -- | The class builder effect for constructing a 'ClassFile' statefully.
+type ClassBuilder :: Effect
 data ClassBuilder m a where
     ModifyClass :: (ClassFile -> ClassFile) -> ClassBuilder m ()
     GetClass :: ClassBuilder m ClassFile

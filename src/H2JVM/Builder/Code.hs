@@ -29,7 +29,7 @@ import H2JVM.Instruction
 import H2JVM.Data.TypeMergingList qualified as TML
 
 -- | The 'CodeBuilder' effect, which allows emitting instructions and adding code attributes in a monadic style.
-data CodeBuilder (m :: Type -> Type) (a :: Type) where
+data CodeBuilder m a where
     -- | Add a code attribute to the current code block. If an attribute of the same type already exists, it will be merged with the existing one using the 'H2JVM.Data.TypeMergingList.merge' function from the 'H2JVM.Data.TypeMergingList.DataMergeable' instance for that attribute type.
     AddCodeAttribute ::
         -- | the code attribute to add
