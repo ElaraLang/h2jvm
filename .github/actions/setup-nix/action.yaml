@@ -1,12 +1,12 @@
 name: "Setup Nix"
-description: "Installs Nix with Elara and Tek Cachix configurations"
+description: "Installs Nix with the Elara attic cache and the Tek Cachix cache"
 inputs:
   github-token:
     description: "GitHub Token for Nix access-tokens"
     required: true
     default: ${{ github.token }}
-  cachix-auth-token:
-    description: "Cachix Auth Token"
+  attic-token:
+    description: "Attic token for the Elara cache"
     required: true
 runs:
   using: "composite"
@@ -15,9 +15,10 @@ runs:
     - uses: DeterminateSystems/nix-installer-action@main
       with:
         extra-conf: |
-          extra-substituters = https://elara.cachix.org https://tek.cachix.org
-          extra-trusted-public-keys = elara.cachix.org-1:d129AMaRCJ6Q86oVUvIccZ1NsRZ6kyL5IkceevfQDWI= tek.cachix.org-1:+sdc73WFq8aEKnrVv5j/kuhmnW2hQJuqdPJF5SnaCBk=
-    - uses: cachix/cachix-action@v17
+          extra-substituters = https://cache.bristermitten.me/elara https://tek.cachix.org
+          extra-trusted-public-keys = elara:6GWLPsvcEXZFVCx4J8I8sB4jjppOB2/ISjt5oGXXkLo= tek.cachix.org-1:+sdc73WFq8aEKnrVv5j/kuhmnW2hQJuqdPJF5SnaCBk=
+    - uses: ryanccn/attic-action@v0
       with:
-        name: elara
-        authToken: ${{ inputs.cachix-auth-token }}
+        endpoint: https://cache.bristermitten.me/
+        cache: elara
+        token: ${{ inputs.attic-token }}

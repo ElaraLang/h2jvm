@@ -18,7 +18,7 @@ jobs:
       - uses: ./.github/actions/setup-nix
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          attic-token: ${{ secrets.ATTIC_TOKEN }}
       - id: bounds
         name: Bump dependency bounds
         run: nix run --accept-flake-config .#bump -- --output=ga-pr
