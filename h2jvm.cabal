@@ -81,7 +81,7 @@ library
     , binary >=0.8.9.3 && <0.9
     , bytestring >=0.12.2.0 && <0.13
     , containers >=0.7 && <0.9
-    , effectful-core >=2.2.2.0 && <2.7
+    , effectful-core >=2.2.2.0 && <2.8
     , effectful-th >=1.0.0.2 && <1.1
     , lens ==5.3.*
     , prettyprinter >=1.7.0 && <1.8
@@ -111,7 +111,7 @@ test-suite h2jvm-test
   ghc-options: -Wall -Wunused-packages -Wno-name-shadowing -threaded -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.20.2.0 && <4.23
-    , effectful >=2.2.2.0 && <2.7
+    , effectful >=2.2.2.0 && <2.8
     , h2jvm <0.2
     , hedgehog >=1.4 && <1.8
     , sydtest >=0.16.0.0 && <0.34

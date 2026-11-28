@@ -146,6 +146,64 @@ mkDerivation {
 ;
 }
 ;
+    effectful = {
+  meta = {
+    sha256 = "1a2gb1q2yrjh73pd03z7s8a53jxs7iby7vsq6srzl6sxd6wznfnn";
+    url = "https://hackage.haskell.org";
+    ver = "2.7.1.0";
+  };
+  drv = { mkDerivation, async, base, bytestring, containers, directory
+, effectful-core, exceptions, file-io, filepath, lib, lifted-base
+, primitive, process, random, safe-exceptions, stm
+, strict-mutable-base, tasty, tasty-bench, tasty-hunit, text, time
+, unix, unliftio
+}:
+mkDerivation {
+  pname = "effectful";
+  version = "2.7.1.0";
+  src = /nix/store/x6r8bxr7xnigyibvdjc0daln7r2k8cqq-source;
+  libraryHaskellDepends = [
+    async base bytestring directory effectful-core file-io filepath
+    process stm strict-mutable-base time unliftio
+  ];
+  testHaskellDepends = [
+    base bytestring containers effectful-core exceptions filepath
+    lifted-base primitive random safe-exceptions strict-mutable-base
+    tasty tasty-hunit unliftio
+  ];
+  benchmarkHaskellDepends = [
+    async base tasty-bench text unix unliftio
+  ];
+  description = "An easy to use, performant extensible effects library";
+  license = lib.meta.getLicenseFromSpdxId "BSD-3-Clause";
+}
+;
+}
+;
+    effectful-core = {
+  meta = {
+    sha256 = "1kswfv5cz9rz1fs2j10w7fgy2pdwq84h257a2wb17p0q8n9ld61r";
+    url = "https://hackage.haskell.org";
+    ver = "2.7.1.2";
+  };
+  drv = { mkDerivation, base, containers, deepseq, exceptions, lib
+, monad-control, mtl, primitive, strict-mutable-base
+, transformers-base, unliftio-core
+}:
+mkDerivation {
+  pname = "effectful-core";
+  version = "2.7.1.2";
+  src = /nix/store/0bby82rr0mvi3h9ixijwck8n39xlqyvl-source;
+  libraryHaskellDepends = [
+    base containers deepseq exceptions monad-control mtl primitive
+    strict-mutable-base transformers-base unliftio-core
+  ];
+  description = "An easy to use, performant extensible effects library";
+  license = lib.meta.getLicenseFromSpdxId "BSD-3-Clause";
+}
+;
+}
+;
     effectful-plugin = {
   meta = {
     sha256 = "0xjnjdp31zmhx0cg1rzjw655gksjqin6rhl2mc1y19rmgp0jgz1f";
@@ -160,6 +218,29 @@ mkDerivation {
   libraryHaskellDepends = [ base containers ghc ];
   testHaskellDepends = [ base effectful-core ];
   description = "A GHC plugin for improving disambiguation of effects";
+  license = lib.meta.getLicenseFromSpdxId "BSD-3-Clause";
+}
+;
+}
+;
+    effectful-th = {
+  meta = {
+    sha256 = "028almybk17l1ys1v47q7a5xnrinri2bi0z4k3vikhb8rglrmjd5";
+    url = "https://hackage.haskell.org";
+    ver = "1.0.0.4";
+  };
+  drv = { mkDerivation, base, containers, effectful-core, lib
+, template-haskell, th-abstraction
+}:
+mkDerivation {
+  pname = "effectful-th";
+  version = "1.0.0.4";
+  src = /nix/store/79vhia5xx1hnmf0j2z5pznmri9q9bz3d-source;
+  libraryHaskellDepends = [
+    base containers effectful-core template-haskell th-abstraction
+  ];
+  testHaskellDepends = [ base effectful-core template-haskell ];
+  description = "Template Haskell utilities for the effectful library";
   license = lib.meta.getLicenseFromSpdxId "BSD-3-Clause";
 }
 ;
@@ -543,6 +624,26 @@ mkDerivation {
   homepage = "https://github.com/haskellari/these";
   description = "Align and Zip type-classes from the common Semialign ancestor";
   license = lib.licenses.bsd3;
+}
+;
+}
+;
+    strict-mutable-base = {
+  meta = {
+    sha256 = "1sdps117s8vdirhwqfma1b37q1i5dg939cmsa3xsbrr5vwq8z3fy";
+    url = "https://hackage.haskell.org";
+    ver = "2.0.0.0";
+  };
+  drv = { mkDerivation, base, deepseq, lib, tasty, tasty-hunit }:
+mkDerivation {
+  pname = "strict-mutable-base";
+  version = "2.0.0.0";
+  src = /nix/store/mwba8i3ahwsh6f0msxxrkqzs397n0m2v-source;
+  libraryHaskellDepends = [ base deepseq ];
+  testHaskellDepends = [ base tasty tasty-hunit ];
+  homepage = "https://github.com/arybczak/strict-mutable";
+  description = "Strict variants of mutable data types from base";
+  license = lib.meta.getLicenseFromSpdxId "BSD-3-Clause";
 }
 ;
 }
