@@ -19,11 +19,11 @@
       };
       effectful = {
         lower = "2.2.2.0";
-        upper = "2.7";
+        upper = "2.8";
       };
       effectful-core = {
         lower = "2.2.2.0";
-        upper = "2.7";
+        upper = "2.8";
       };
       effectful-th = {
         lower = "1.0.0.2";
@@ -73,9 +73,9 @@
       binary = "0.8.9.3";
       bytestring = "0.12.2.0";
       containers = "0.8";
-      effectful = "2.6.1.0";
-      effectful-core = "2.6.1.0";
-      effectful-th = "1.0.0.3";
+      effectful = "2.7.1.0";
+      effectful-core = "2.7.1.2";
+      effectful-th = "1.0.0.4";
       hedgehog = "1.7";
       lens = "5.3.6";
       prettyprinter = "1.7.2";
@@ -149,9 +149,24 @@
         hash = "07x0y0ipfwkcjz12kflsbj84rnps24g2050qcdv1n59x0apaij5q";
         repo = "hackage.haskell.org";
       };
+      effectful = {
+        version = "2.7.1.0";
+        hash = "1a2gb1q2yrjh73pd03z7s8a53jxs7iby7vsq6srzl6sxd6wznfnn";
+        repo = "hackage.haskell.org";
+      };
+      effectful-core = {
+        version = "2.7.1.2";
+        hash = "1kswfv5cz9rz1fs2j10w7fgy2pdwq84h257a2wb17p0q8n9ld61r";
+        repo = "hackage.haskell.org";
+      };
       effectful-plugin = {
         version = "2.2.0.0";
         hash = "0xjnjdp31zmhx0cg1rzjw655gksjqin6rhl2mc1y19rmgp0jgz1f";
+        repo = "hackage.haskell.org";
+      };
+      effectful-th = {
+        version = "1.0.0.4";
+        hash = "028almybk17l1ys1v47q7a5xnrinri2bi0z4k3vikhb8rglrmjd5";
         repo = "hackage.haskell.org";
       };
       fast-myers-diff = {
@@ -227,6 +242,11 @@
       semialign = {
         version = "1.4";
         hash = "1hanj5gkmk9sbzbx6zbk4xin9s4vgk1zidk100kvg20xsgfpkwi0";
+        repo = "hackage.haskell.org";
+      };
+      strict-mutable-base = {
+        version = "2.0.0.0";
+        hash = "1sdps117s8vdirhwqfma1b37q1i5dg939cmsa3xsbrr5vwq8z3fy";
         repo = "hackage.haskell.org";
       };
       svg-builder = {
